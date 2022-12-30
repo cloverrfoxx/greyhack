@@ -1,0 +1,98 @@
+encrypt=function(pass,secret,type)
+
+	cryptChars=function(pass)
+		if typeof(pass) == "string" then
+		newList=[]
+		for chr in pass
+			newList.push(bitwise("^",chr.code,key))
+		end for
+		return newList.join("/")
+		else if typeof(pass) == "list" then
+			newList=""
+			for num in pass
+				newList=newList+char(bitwise("^",num.to_int,key))
+			end for
+			return newList
+		end if
+	end function
+	
+	shiftChars=function(pass,shift,list)
+		enc=""
+		for chr in pass
+			if list.indexOf(chr) == null then continue
+			newChar=shift[list.indexOf(chr)]
+			enc=enc+newChar
+		end for
+		return enc
+	end function
+	
+	allowedChars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789/_.@=!#$%^&*()-+|?<>"
+	shiftedChars="Cy|=a+!@z^M7rmg*BUh(Ne-5tV8dTq?$u4vo1>kWxJpARLcKSb320%EQH6<w_nOG#.&/ZsXI)PjfiFYDl9"
+	passLen=pass.len
+	key=0
+	for chr in secret
+		key=key+chr.code
+	end for
+	if type == "enc" then
+		enc1=cryptChars(pass)
+		crypt=shiftChars(enc1,shiftedChars,allowedChars)
+	else if type == "dec" then
+		dec=shiftChars(pass,allowedChars,shiftedChars)
+		dec=dec.split("/")
+		dec=cryptChars(dec)
+		crypt=dec
+	end if
+	return(crypt)
+end function
+
+if params.len > 3 then exit(program_path.split("/")[-1]+" (user@password) (address) (port)")
+if params.len == 0 then
+	current=get_shell
+	chains=get_shell.host_computer.File(current_path+"/proxies")
+	if not chains then
+		get_shell.host_computer.touch(current_path,"proxies")
+		exit(program_path.split("/")[-1]+" (user@password) (address) (port)")
+	end if
+	if chains.get_content.len < 1 then exit(program_path.split("/")[-1]+" (user@password) (address) (port)")
+	chains=chains.get_content.split("\n")
+	for proxy in chains
+		if proxy == "" then continue
+		proxy=encrypt(proxy,"autoproxy","dec").split("/")
+		server=proxy[0]
+		port=proxy[1].to_int
+		user=proxy[2]
+		pass=proxy[3]
+		//server/port/user/pass
+		print("connecting server "+server)
+		attempt=current.connect_service(server,port,user,pass,"ssh")
+		if typeof(attempt) != "shell" then
+			print("Couldn't connect")
+			continue
+		end if
+		current=attempt
+	end for
+	print("starting terminal at "+server)
+	current.start_terminal
+else
+	if params.len < 2 then exit(program_path.split("/")[-1]+" (user@password) (address) (port)")
+	server=params[1]
+	user=params[0].split("@")[0]
+	pass=params[0].split("@")[1]
+	port=22
+	if params.len == 3 then
+		port=params[2].to_int
+		if typeof(port) != "number" then exit("invalid port")
+	end if
+	chains=get_shell.host_computer.File(current_path+"/proxies")
+	if not chains then
+		get_shell.host_computer.touch(current_path,"proxies")
+		chains=get_shell.host_computer.File(current_path+"/proxies")
+	end if
+	//server/port:user@pass
+	print("Checking connection. . .")
+	if typeof(get_shell.connect_service(server,port,user,pass,"ssh")) != "shell" then exit("Could not connect to server "+server)
+	newServ=encrypt(server+"/"+str(port)+"/"+user+"/"+pass,"autoproxy","enc")
+	cont=chains.get_content
+	chains.set_content(cont+newServ+char(10))
+	print("added proxy")
+end if

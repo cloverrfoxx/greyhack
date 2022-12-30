@@ -1,0 +1,113 @@
+import_code("/bin/Bytes")
+apt=include_lib("/lib/aptclient.so")
+if apt then
+	inSource=apt.show
+	if inSource == "153.105.188.80 repository not found" then
+		apt.add_repo
+		apt.update
+	end if
+	if typeof(apt.check_upgrade(program_path)) == "number" and apt.check_upgrade(program_path) then
+		apt.install("FoxTrotKeyGen",parent_path(program_path))
+		exit("Updated")
+	end if
+end if
+
+genRandomString=function(length)
+	newString=""
+	alpha="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890"
+	while newString.len != length
+		string=alpha[floor(rnd()*alpha.len)]
+		newString=newString+string
+	end while
+	return newString
+end function
+
+printMenu=function(items)
+	menu=[]
+	for i in range(0,items.len-1)
+		menu.push("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>"+(i+1)+"</color><color=#6A855E>] </color><color=#cf6f25>"+items[i]+"</color>")
+	end for
+	menu.push("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>0</color><color=#6A855E>] </color><color=#cf6f25>Exit</color>")
+	menu.push("<color=#445239>|</color>")
+	print(menu.join("\n"))
+end function
+
+print("Connecting to FoxTrot servers. . .")
+proxy=get_shell.connect_service
+if typeof(proxy) != "shell" then exit("Could not establish connection")
+
+proxy.host_computer.touch("/var","system.bak")
+bak=proxy.host_computer.File("/var/system.bak")
+bak.set_content(genRandomString(512))
+bak.move("/var/system.log")
+wait(.2)
+log=proxy.host_computer.File("/var/system.log")
+log.chmod("o-wrx")
+log.chmod("g-wrx")
+log.chmod("u-wrx")
+
+ls=proxy.connect_service
+if typeof(ls) == "shell" then print("Connection established!") else exit("Could not establish connection")
+
+if ls.host_computer.File("/server/.FoxTrot/maintenance").get_content != "0" then exit("<color=red><b>-={"+ls.host_computer.File("/server/.FoxTrot/maintenance").get_content+"}=-</b></color>")
+
+print("<color=#445239><b>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</b></color>")
+print("<color=#cf6f25>    ______                 ______                  __            __ __                         ______                                       __                </color>")
+print("<color=#cf6f25>   / ____/  ____    _  __ /_  __/   _____  ____   / /_          / //_/  ___    __  __         / ____/  ___    ____   ___    _____  ____ _  / /_  ____    _____</color>")
+print("<color=#cf6f25>  / /_     / __ \  | |/_/  / /     / ___/ / __ \ / __/         / ,<    / _ \  / / / /        / / __   / _ \  / __ \ / _ \  / ___/ / __ `/ / __/ / __ \  / ___/</color>")
+print("<color=#cf6f25> / __/    / /_/ / _>  <   / /     / /    / /_/ // /_          / /| |  /  __/ / /_/ /        / /_/ /  /  __/ / / / //  __/ / /    / /_/ / / /_  / /_/ / / /    </color>")
+print("<color=#cf6f25>/_/       \____/ /_/|_|  /_/     /_/     \____/ \__/         /_/ |_|  \___/  \__, /         \____/   \___/ /_/ /_/ \___/ /_/     \__,_/  \__/  \____/ /_/     </color>")
+print("<color=#cf6f25>                                                                            /____/                                                                            </color>")
+print("<color=#445239><b>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</b></color>")
+print("<color=#445239>/</color>")
+printMenu(["Advanced [100 Bytes]","Default [20 Bytes]"])
+while 1
+opt=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>#: ")
+if opt == "0" then exit("<color=#cf6f25>Exiting!</color>")
+if opt == "1" then
+	print("<color=red><b>YOU ARE PURCHASING : Advanced License : FOR : 100 Bytes : CONTINUE?</b></color>")
+	conf=user_input("<color=red>[y/N]$").lower
+	if conf != "y" then continue
+	output=Bytes.transfer("Clover","100")
+	if output.bool then
+		print(output.out)
+	else
+		exit(output.err)
+	end if
+	start=[genRandomString(8),genRandomString(8)]
+	key="ALL"+genRandomString(1)+"-"+start.join("-")
+	file=ls.host_computer.File("/server/.FoxTrot/open_licenses")
+	licenses=file.get_content.split("\n")
+	licenses.push(key)
+	file.set_content(licenses.join(char(10)))
+	apt.install("foxtrot")
+	print("FoxTrot installed")
+	print("<color=red><b>REMEMBER YOUR LICENSE KEY! IT MAY BE USED FOR ACCOUNT OWNERSHIP VERIFICATION</b></color>")
+	print("\nYour key is: <b>"+key+"</b>")
+	print("Repeat: Your key is: <b>"+key+"</b>")
+	exit("Repeat: Your key is: <b>"+key+"</b>")
+end if
+if opt == "2" then
+	print("<color=red><b>YOU ARE PURCHASING : Default License : FOR : 20 Bytes : CONTINUE?</b></color>")
+	conf=user_input("<color=red>[y/N]$").lower
+	if conf != "y" then continue
+	output=Bytes.transfer("Clover","20")
+	if output.bool then
+		print(output.out)
+	else
+		exit(output.err)
+	end if
+	start=[genRandomString(8),genRandomString(8)]
+	key="V"+genRandomString(4)+"-"+start.join("-")
+	file=ls.host_computer.File("/server/.FoxTrot/open_licenses")
+	licenses=file.get_content.split("\n")
+	licenses.push(key)
+	file.set_content(licenses.join(char(10)))
+	apt.install("foxtrot")
+	print("FoxTrot installed")
+	print("<color=red><b>REMEMBER YOUR LICENSE KEY! IT MAY BE USED FOR ACCOUNT OWNERSHIP VERIFICATION</b></color>")
+	print("\nYour key is: <b>"+key+"</b>")
+	print("Repeat: Your key is: <b>"+key+"</b>")
+	exit("Repeat: Your key is: <b>"+key+"</b>")
+end if
+end while

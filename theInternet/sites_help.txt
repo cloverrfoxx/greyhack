@@ -1,0 +1,16 @@
+//site.conf
+site.downloads=false
+site.subsite1="/[subsite]"
+site.subsite2=false
+site.subsite3=false
+site.priv=true
+site.users{
+"[username]"
+"[username]"
+}
+//site.conf end
+
+//site
+//each line = 1 line of content, 30 lines max? 30 characters max?
+
+//site end

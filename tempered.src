@@ -1,0 +1,461 @@
+//clovers tmprd templated exploit generator
+mxf=null
+root=get_shell.host_computer.File("/")
+if not root then return
+newFiles=root.get_folders+root.get_files
+while newFiles.len
+    currFile=newFiles.pull
+    if currFile.is_folder then newFiles=currFile.get_folders+currFile.get_files+newFiles
+    test=include_lib(currFile.path)
+    if typeof(test) == "MetaxploitLib" then mxf=currFile.path
+end while
+if not mxf then exit("Could not find metaxploit.so in the system")
+mx=include_lib(mxf)
+
+templates={}
+//locate required libraries
+templates.libscan={}
+templates.libscan.meta="metaX = null" + char(10) + "metaX = include_lib(""/lib/metaxploit.so"")" + char(10)
+templates.libscan.meta=templates.libscan.meta + "if not metaX then metaX = include_lib(current_path+""/metaxploit.so"")" + char(10)
+templates.libscan.meta=templates.libscan.meta + "if not metaX then exit(""Could not find metaxploit.so in the system"")" + char(10)
+
+templates.libscan.crypto="crypto = null" + char(10) + "crypto = include_lib(""/lib/crypto.so"")" + char(10)
+templates.libscan.crypto=templates.libscan.crypto + "if not crypto then crypto = include_lib(current_path+""/crypto.so"")" + char(10)
+templates.libscan.crypto=templates.libscan.crypto + "if not crypto then exit(""Could not find crypto.so in the system"")" + char(10)
+
+templates.ml={}
+//access metalib
+//both give the same kind of metalib for use, just for different circumstances
+templates.ml.local="metaLib = metaX.load($libpath$)" + char(10)
+templates.ml.remote="if params.len != 2 then exit(""Invalid parameters - [ip] [port]"")"+char(10)
+templates.ml.remote=templates.ml.remote+"params[1]=params[1].to_int"+char(10)+"if typeof(params[1]) != ""number"" then exit(""Invalid parameters - [ip] [port]"")"+char(10)
+templates.ml.remote=templates.ml.remote+"netSession = metaX.net_use(params[0],params[1])" + char(10) + "metaLib = netSession.dump_lib" + char(10)
+
+templates.ml.router="if params.len != 1 then exit(""Invalid parameters - [ip]"")"+char(10)
+templates.ml.router=templates.ml.router+"netSession = metaX.net_use(params[0],0)" + char(10) + "metaLib = netSession.dump_lib" + char(10)
+templates.of={}
+//overflows
+//check for exploits that require an argument (router, password)
+templates.of.none="result = metaLib.overflow($memory$,$value$)" + char(10)
+templates.of.args="print(""Hey! This exploit has some extra requirements. If this is a router bounce, enter a local ip on the network. If this is a password change, enter the password!"")" +char(10)
+templates.of.args=templates.of.args+"args=user_input(""Arguments: "")"+char(10)
+templates.of.args=templates.of.args+"result = metaLib.overflow($memory$,$value$,args)" + char(10)
+
+templates.results={}
+//shell
+//check result and start terminal
+templates.results.shell="if typeof(result) != ""shell"" then exit(""Exploit failed."")" + char(10) + "result.start_terminal" + char(10) + "exit"
+
+//computer
+//check result
+cmp="if typeof(result) != ""computer"" then exit(""Exploit failed."")" + char(10)
+
+//check result permissions
+cmp=cmp+"passwds = false" + char(10) + "users = false" + char(10) + "root = false" + char(10)
+cmp=cmp+"if result.File(""/etc/passwd"") and result.File(""/etc/passwd"").has_permission(""r"") then passwds = 2" + char (10)
+cmp=cmp+"if result.File(""/home"") and result.File(""/home"").get_folders.len > 1 then users = 3" + char(10)
+cmp=cmp+"if result.File(""/"").has_permission(""w"") then root = 4" + char(10)+char(10)
+
+//use results
+cmp=cmp+"tmp=0 + passwds + users + root" + char(10) + "if tmp == 0 then exit(""Exploit failed."")" + char(10)
+cmp=cmp+"perms=[]" + char(10) + "for i in range(1,tmp)" + char(10)
+cmp=cmp+"	if passwds == 2 then"+char(10)+"     passwds = passwds - 1"+char(10)+"     perms.push(str(i) + "") Get all passwords in /etc/passwd"")"+char(10)+" end if"+char(10)
+cmp=cmp+" if users == 3 then"+char(10)+"      users = users - 1"+char(10)+"       perms.push(str(i) + "") Get all users emails"")"+char(10)+" continue"+char(10)+" end if"+char(10)
+cmp=cmp+" if users == 2 then"+char(10)+"      users = users - 1"+char(10)+"       perms.push(str(i) + "") Get all users banks"")"+char(10)+" continue"+char(10)+"  end if"+char(10)
+cmp=cmp+" if root == 4 then"+char(10)+"       root = root - 1"+char(10)+"     perms.push(str(i) + "") Change user password"")"+char(10)+" continue"+char(10)+"   end if"+char(10)
+cmp=cmp+" if root == 3 then"+char(10)+"       root = root - 1"+char(10)+"     perms.push(str(i) + "") Add a user"")"+char(10)+" continue"+char(10)+"   end if"+char(10)
+cmp=cmp+" if root == 2 then"+char(10)+"       root = root - 1"+char(10)+"     perms.push(str(i) + "") Delete a user"")"+char(10)+" continue"+char(10)+"   end if"+char(10)
+cmp=cmp+"end for"+char(10)
+cmp=cmp+"print perms.join(char(10))"+char(10)+char(10)
+
+//get user selection
+cmp=cmp+"selection=0"+char(10)
+cmp=cmp+"while typeof(selection) != ""number"" or selection < 1 or selection > perms.len"+char(10)
+cmp=cmp+" selection=user_input(""Select #> "")"+char(10)
+cmp=cmp+" selection=selection.to_int"+char(10)
+cmp=cmp+"end while"+char(10)
+cmp=cmp+"selection=selection-1"+char(10)+char(10)
+
+//functions
+cmp=cmp+"passwdfunc=function()"+char(10)
+cmp=cmp+templates.libscan.crypto
+cmp=cmp+"   passwds=result.File(""/etc/passwd"").get_content"+char(10)
+cmp=cmp+"   passwds=passwds.split(char(10))"+char(10)
+cmp=cmp+"   for pass in passwds"+char(10)
+cmp=cmp+"       pass=pass.split("":"")[-1]"+char(10)
+cmp=cmp+"       if pass.len < 32 then continue"+char(10)
+cmp=cmp+"       print crypto.decipher(pass)"+char(10)
+cmp=cmp+"   end for"+char(10)
+cmp=cmp+"   exit"+char(10)
+cmp=cmp+"end function"+char(10)+char(10)
+
+cmp=cmp+"emailfunc=function()"+char(10)
+cmp=cmp+templates.libscan.crypto
+cmp=cmp+"   users=result.File(""/home"").get_folders"+char(10)
+cmp=cmp+"   for user in users"+char(10)
+cmp=cmp+"       if user.name == ""guest"" then continue"+char(10)
+cmp=cmp+"       mail=result.File(user.path+""/Config/Mail.txt"")"+char(10)
+cmp=cmp+"       if not mail or not mail.has_permission(""r"") then continue"+char(10)
+cmp=cmp+"       mail=mail.get_content.split("":"")"+char(10)
+cmp=cmp+"       user=mail[0]"+char(10)
+cmp=cmp+"       pass=mail[-1]"+char(10)
+cmp=cmp+"       if pass.len < 32 then"+char(10)
+cmp=cmp+"           print(""Password for ""+user+"" not found"")"+char(10)
+cmp=cmp+"           continue"+char(10)
+cmp=cmp+"       end if"+char(10)
+cmp=cmp+"       print(user+"" : ""+crypto.decipher(pass))"+char(10)
+cmp=cmp+"   end for"+char(10)
+cmp=cmp+"   exit"+char(10)
+cmp=cmp+"end function"+char(10)+char(10)
+
+cmp=cmp+"bankfunc=function()"+char(10)
+cmp=cmp+templates.libscan.crypto
+cmp=cmp+"   users=result.File(""/home"").get_folders"+char(10)
+cmp=cmp+"   for user in users"+char(10)
+cmp=cmp+"       if user.name == ""guest"" then continue"+char(10)
+cmp=cmp+"       bank=result.File(user.path+""/Config/Bank.txt"")"+char(10)
+cmp=cmp+"       if not bank or not bank.has_permission(""r"") then continue"+char(10)
+cmp=cmp+"       bank=bank.get_content.split("":"")"+char(10)
+cmp=cmp+"       user=bank[0]"+char(10)
+cmp=cmp+"       pass=bank[-1]"+char(10)
+cmp=cmp+"       if pass.len < 32 then"+char(10)
+cmp=cmp+"           print(""Password for ""+user+"" not found"")"+char(10)
+cmp=cmp+"           continue"+char(10)
+cmp=cmp+"       end if"+char(10)
+cmp=cmp+"       print(user+"" : ""+crypto.decipher(pass))"+char(10)
+cmp=cmp+"   end for"+char(10)
+cmp=cmp+"   exit"+char(10)
+cmp=cmp+"end function"+char(10)+char(10)
+
+cmp=cmp+"passwd=function()"+char(10)
+cmp=cmp+"   exit result.change_password(user_input(""User: ""),user_input(""Password: "", 1))"+char(10)
+cmp=cmp+"end function"+char(10)+char(10)
+
+cmp=cmp+"useradd=function()"+char(10)
+cmp=cmp+"   exit result.create_user(user_input(""User: ""),user_input(""Password: "", 1))"+char(10)
+cmp=cmp+"end function"+char(10)+char(10)
+
+cmp=cmp+"userdel=function()"+char(10)
+cmp=cmp+"   exit result.delete_user(user_input(""User: ""))"+char(10)
+cmp=cmp+"end function"+char(10)+char(10)
+
+//if cases
+cmp=cmp+"if passwds and users and root then"+char(10)
+cmp=cmp+"   if selection == 0 then passwdfunc"+char(10)
+cmp=cmp+"   if selection == 1 then emailfunc"+char(10)
+cmp=cmp+"   if selection == 2 then bankfunc"+char(10)
+cmp=cmp+"   if selection == 3 then passwd"+char(10)
+cmp=cmp+"   if selection == 4 then useradd"+char(10)
+cmp=cmp+"   if selection == 5 then userdel"+char(10)
+cmp=cmp+"end if"+char(10)
+
+cmp=cmp+"if users and root then"+char(10)
+cmp=cmp+"   if selection == 0 then emailfunc"+char(10)
+cmp=cmp+"   if selection == 1 then bankfunc"+char(10)
+cmp=cmp+"   if selection == 2 then passwd"+char(10)
+cmp=cmp+"   if selection == 3 then useradd"+char(10)
+cmp=cmp+"   if selection == 4 then userdel"+char(10)
+cmp=cmp+"end if"+char(10)
+
+cmp=cmp+"if passwds and root then"+char(10)
+cmp=cmp+"   if selection == 0 then passwdfunc"+char(10)
+cmp=cmp+"   if selection == 1 then useradd"+char(10)
+cmp=cmp+"   if selection == 2 then userdel"+char(10)
+cmp=cmp+"end if"+char(10)
+
+cmp=cmp+"if passwds and users then"+char(10)
+cmp=cmp+"   if selection == 0 then passwdfunc"+char(10)
+cmp=cmp+"   if selection == 1 then emailfunc"+char(10)
+cmp=cmp+"   if selection == 2 then bankfunc"+char(10)
+cmp=cmp+"end if"+char(10)
+
+cmp=cmp+"if root then"+char(10)
+cmp=cmp+"   if selection == 0 then useradd"+char(10)
+cmp=cmp+"   if selection == 1 then userdel"+char(10)
+cmp=cmp+"end if"+char(10)
+
+cmp=cmp+"if users then"+char(10)
+cmp=cmp+"   if selection == 0 then emailfunc"+char(10)
+cmp=cmp+"   if selection == 1 then bankfunc"+char(10)
+cmp=cmp+"end if"+char(10)
+
+cmp=cmp+"if passwds then"+char(10)
+cmp=cmp+"   if selection == 0 then passwdfunc"+char(10)
+cmp=cmp+"end if"+char(10)
+
+cmp=cmp+"exit(""Exploit failed."")"
+templates.results.computer=cmp
+
+print("tmprd Exploit Generator")
+print("By Clover")
+print
+
+sel=0
+print("Create a")
+print("1. Local Library Exploit")
+print("Or a")
+print("2. Remote System Exploit")
+sel=0
+while typeof(sel) != "number" or sel < 1 or sel > 2
+    sel=user_input("#> ")
+    sel=sel.to_int
+end while
+init=sel
+print
+base=templates.libscan.meta
+
+compile=function
+    type="unk"
+    if init == 1 then type="local"
+    if init == 2 then type="remote"
+    if port == 0 then type="router"
+    get_shell.host_computer.touch(current_path,sel+"."+exp.result+"."+ml.lib_name+"."+ml.version+"."+type+".src")
+    get_shell.host_computer.File(current_path+"/"+sel+"."+exp.result+"."+ml.lib_name+"."+ml.version+"."+type+".src").set_content(base)
+    print("Saved exploit code to "+current_path+"/"+sel+"."+exp.result+"."+ml.lib_name+"."+ml.version+"."+type+".src")
+    get_shell.build(current_path+"/"+sel+"."+exp.result+"."+ml.lib_name+"."+ml.version+"."+type+".src",current_path)
+    print("Saved compiled code to "+current_path+"/"+sel+"."+exp.result+"."+ml.lib_name+"."+ml.version+"."+type)
+    exit
+end function
+
+if sel == 1 then
+    base=base+templates.ml.local
+    libs=get_shell.host_computer.File("/lib").get_files
+    print("Select library")
+    for l in range(1,libs.len)
+        print(l+") "+libs[l-1].name)
+    end for
+    sel=0
+    while typeof(sel) != "number" or sel < 1 or sel > libs.len
+        sel=user_input("#> ")
+        sel=sel.to_int
+    end while
+    lib=libs[sel-1]
+    base=base.replace("$libpath$",""""+lib.path+"""")
+    exploits=[]
+
+    print("Scanning exploits, this may take a second...")
+    ml=mx.load(lib.path)
+    scan=mx.scan(ml)
+    for mem in scan
+        mems=mx.scan_address(ml,mem).split("Unsafe check: ")
+        for ent in mems
+            if ent == mems[0] then continue
+            ent=ent[ent.indexOf("<b>")+3:ent.indexOf("</b>")]
+            jump=0
+            result=ml.overflow(mem,ent)
+            print("Memory is "+mem+", vulnerable string is "+ent)
+            if get_shell.host_computer.network_gateway == "0.0.0.0" and result == null then
+                result=ml.overflow(mem,ent,get_shell.host_computer.local_ip)
+                print("Take 2")
+                print("We got a "+typeof(result))
+                if typeof(result) == "computer" then jump=1
+            end if
+            if result == null then continue
+            type=typeof(result)
+            if type == "number" or type == "file" then continue
+            ex={}
+            ex.mem=mem
+            ex.ent=ent
+            ex.result=type
+            ex.type=type
+            ex.jump=jump
+            //if type == "number" then ex.result="firewall_or_password"
+            if jump then ex.result="bounce"
+            print("Exploit return type is a "+ex.result)
+            exploits.push(ex)
+        end for
+    end for
+    if not exploits.len then exit("No exploits found, sorry")
+	exps={"shell": [], "comp": [], "num": []}
+	for ex in exploits
+		if ex.type == "shell" then
+			exps.shell.push(ex)
+		else if ex.type == "computer" then
+			exps.comp.push(ex)
+        else if ex.type == "number" then
+            exps.num.push(ex)
+		end if
+	end for
+	exploits=exps.shell+exps.comp+exps.num
+    print
+    print("Select exploit")
+    for i in range(1,exploits.len)
+        print(i+") "+exploits[i-1].result+" = "+exploits[i-1].mem+" + "+exploits[i-1].ent)
+    end for
+    sel=0
+    while typeof(sel) != "number" or sel < 1 or sel > exploits.len
+        sel=user_input("#> ")
+        sel=sel.to_int
+    end while
+    exp=exploits[sel-1]
+
+    if exp.jump == 1 then
+        base=base+templates.of.args
+        base=base.replace("$memory$",""""+exp.mem+"""")
+        base=base.replace("$value$",""""+exp.ent+"""")
+        base=base+templates.results.computer
+        compile
+    end if
+
+    if exp.type == "shell" then
+        base=base+templates.of.none
+        base=base.replace("$memory$",""""+exp.mem+"""")
+        base=base.replace("$value$",""""+exp.ent+"""")
+        base=base+templates.results.shell
+        compile
+    end if
+
+    if exp.type == "computer" then
+        base=base+templates.of.none
+        base=base.replace("$memory$",""""+exp.mem+"""")
+        base=base.replace("$value$",""""+exp.ent+"""")
+        base=base+templates.results.computer
+        compile
+    end if
+    exit
+end if
+
+if sel == 2 then
+    r=user_input("IP Address: ")
+    if not is_valid_ip(r) then exit("Invalid IP")
+    islan=is_lan_ip(r)
+	router=get_router(r)
+	if islan then router=get_router
+	if not router then return error("Invalid address")
+	rver=router.kernel_version
+	if islan then
+		ports=router.device_ports(r)
+	else
+		ports=router.used_ports
+	end if
+	ips=[]
+	if r != router.local_ip then
+		hport=router.device_ports(router.local_ip)[0]
+		m={}
+		m.ip=router.local_ip
+		m.ports=[hport]
+		ips.push(m)
+		m=null
+	end if
+	info="# LAN PORT STATUS LIBRARY VERSION"
+	num=0
+	for port in ports
+		inm=0
+		for m in ips
+			if m.ip == port.get_lan_ip then
+				m.ports.push(port)
+				inm=1
+			end if
+		end for
+		if not inm then
+			m={}
+			m.ip=port.get_lan_ip
+			m.ports=[port]
+			ips.push(m)
+		end if
+	end for
+	for m in ips
+		ports=m.ports
+		ip=m.ip
+		info=info+"\n"+num+" "+ip+" /"
+		if ip == router.local_ip then info=info+"\n  |0 routed router "+rver
+		for port in ports
+			service=router.port_info(port)
+			status="routed"
+			if port.is_closed then status="closed"
+			info=info+"\n  |"+port.port_number+" "+status+" "+service
+		end for
+		num=num+1
+	end for
+	print(format_columns(info)+"\n")
+
+    port=user_input("Port# ")
+    port=port.to_int
+    if typeof(port) != "number" then exit("Invalid port")
+    if port != 0 then base=base+templates.ml.remote else base=base+templates.ml.router
+    
+    ns=mx.net_use(r,port)
+    if not ns then exit("Invalid service")
+    ml=ns.dump_lib
+    exploits=[]
+
+    print("Scanning exploits, this may take a second...")
+    scan=mx.scan(ml)
+    for mem in scan
+        mems=mx.scan_address(ml,mem).split("Unsafe check: ")
+        for ent in mems
+            if ent == mems[0] then continue
+            ent=ent[ent.indexOf("<b>")+3:ent.indexOf("</b>")]
+            jump=0
+            result=ml.overflow(mem,ent)
+            print("Memory is "+mem+", vulnerable string is "+ent)
+            if port == 0 then
+                result=ml.overflow(mem,ent,router.local_ip)
+                print("Take 2")
+                print("We got a "+typeof(result))
+                if typeof(result) == "computer" then jump=1
+            end if
+            if result == null then continue
+            type=typeof(result)
+            if type == "number" or type == "file" then continue
+            ex={}
+            ex.mem=mem
+            ex.ent=ent
+            ex.result=type
+            ex.type=type
+            ex.jump=jump
+            //if type == "number" then ex.result="firewall_or_password"
+            if jump then ex.result="bounce"
+            print("Exploit return type is a "+ex.result)
+            exploits.push(ex)
+        end for
+    end for
+    if not exploits.len then exit("No exploits found, sorry")
+	exps={"shell": [], "comp": [], "num": []}
+	for ex in exploits
+		if ex.type == "shell" then
+			exps.shell.push(ex)
+		else if ex.type == "computer" then
+			exps.comp.push(ex)
+        else if ex.type == "number" then
+            exps.num.push(ex)
+		end if
+	end for
+	exploits=exps.shell+exps.comp+exps.num
+    print
+    print("Select exploit")
+    for i in range(1,exploits.len)
+        print(i+") "+exploits[i-1].result+" = "+exploits[i-1].mem+" + "+exploits[i-1].ent)
+    end for
+    sel=0
+    while typeof(sel) != "number" or sel < 1 or sel > exploits.len
+        sel=user_input("#> ")
+        sel=sel.to_int
+    end while
+    exp=exploits[sel-1]
+
+    if exp.jump == 1 then
+        base=base+templates.of.args
+        base=base.replace("$memory$",""""+exp.mem+"""")
+        base=base.replace("$value$",""""+exp.ent+"""")
+        base=base+templates.results.computer
+        compile
+    end if
+
+    if exp.type == "shell" then
+        base=base+templates.of.none
+        base=base.replace("$memory$",""""+exp.mem+"""")
+        base=base.replace("$value$",""""+exp.ent+"""")
+        base=base+templates.results.shell
+        compile
+    end if
+
+    if exp.type == "computer" then
+        base=base+templates.of.none
+        base=base.replace("$memory$",""""+exp.mem+"""")
+        base=base.replace("$value$",""""+exp.ent+"""")
+        base=base+templates.results.computer
+        compile
+    end if
+    exit
+end if

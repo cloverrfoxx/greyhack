@@ -1,0 +1,175 @@
+//Four Leaf Calculator, by Clover
+//Give credit!!
+Token=function(type,value)
+    return {"type": type, "value": value}
+end function
+
+Lexer=function(text)
+    out={}
+    out.text=text
+    out.pos=0
+    out.currChar=out.text[out.pos]
+
+    out.error=function()
+        exit("Invalid character")
+    end function
+
+    out.advance=function(self)
+        self.pos=self.pos+1
+        if self.pos > self.text.len-1 then
+            self.currChar=null
+        else
+            self.currChar=self.text[self.pos]
+        end if
+    end function
+
+    out.skip_ws=function(self)
+        while self.currChar and self.currChar == " "
+            self.advance
+        end while
+    end function
+
+    out.integer=function(self)
+        result=""
+        while self.currChar and typeof(self.currChar.to_int) == "number"
+            result=result+self.currChar
+            self.advance
+        end while
+        return result.val
+    end function
+
+    out.gnt=function(self)
+        while self.currChar
+            if self.currChar == " " then
+                self.skip_ws
+                continue
+            end if
+
+            if typeof(self.currChar.to_int) == "number" then
+                return Token("INT",self.integer)
+            end if
+
+            if self.currChar == "+" then
+                self.advance
+                return Token("ADD","+")
+            end if
+
+            if self.currChar == "-" then
+                self.advance
+                return Token("SUB","-")
+            end if
+
+            if self.currChar == "*" then
+                self.advance
+                return Token("MUL","*")
+            end if
+
+            if self.currChar == "/" then
+                self.advance
+                return Token("DIV","/")
+            end if
+
+            if self.currChar == "^" then
+                self.advance
+                return Token("EXP","^")
+            end if
+
+            if self.currChar == "(" then
+                self.advance
+                return Token("LPAREN","(")
+            end if
+
+            if self.currChar == ")" then
+                self.advance
+                return Token("RPAREN",")")
+            end if
+
+            self.error
+        end while
+
+        return Token("EOF",null)
+    end function
+
+    return out
+end function
+
+Interpreter=function(lexer)
+    out={}
+    out.lexer=lexer
+    out.ct=out.lexer.gnt
+
+    out.error=function()
+        exit("Invalid syntax")
+    end function
+
+    out.eat=function(self,ttype)
+        if self.ct.type == ttype then self.ct=self.lexer.gnt else self.error
+    end function
+
+    out.factor=function(self)
+        token=self.ct
+        if token.type == "INT" then
+            self.eat("INT")
+            return token.value
+        else if token.type == "LPAREN" then
+            self.eat("LPAREN")
+            result=self.expr()
+            self.eat("RPAREN")
+            return result
+        end if
+    end function
+
+    out.exp=function(self)
+        result=self.factor
+        while self.ct.type == "EXP"
+            token=self.ct
+            self.eat("EXP")
+            result=result ^ self.factor()
+        end while
+        return result
+    end function
+
+    out.term=function(self)
+        result=self.exp
+        while ["MUL","DIV"].indexOf(self.ct.type) != null
+            token=self.ct
+            if token.type == "MUL" then
+                self.eat("MUL")
+                result=result*self.exp
+            else if token.type == "DIV" then
+                self.eat("DIV")
+                result=result/self.exp
+            end if
+        end while
+        return result
+    end function
+
+    out.expr=function(self)
+        result=self.term
+        while ["ADD","SUB"].indexOf(self.ct.type) != null
+            token=self.ct
+            if token.type == "ADD" then
+                self.eat("ADD")
+                result=result+self.term
+            else if token.type == "SUB" then
+                self.eat("SUB")
+                result=result-self.term
+            end if
+        end while
+        return result
+    end function
+    
+    return out
+end function
+
+print("Four Leaf Calculator")
+print("By Clover")
+print
+while 1
+    text=user_input("calc> ")
+    if not text then continue
+    lexer=Lexer(text)
+    interp=Interpreter(lexer)
+    result=interp.expr
+    print(result)
+end while

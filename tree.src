@@ -1,0 +1,38 @@
+root=comp.File("/")
+safeFiles=[]
+newFile={}
+newFile.path=root.path
+newFile.indent=0
+newFile.perms=root.permissions
+newFile.own=root.owner
+newFile.grp=root.group
+newFile.size=root.size
+safeFiles.push(newFile)
+
+newFiles=[]
+newFiles=newFiles+root.get_folders+root.get_files
+while newFiles.len
+	alreadyIn=0
+	currFile=newFiles.pull
+	for i in safeFiles
+		if i.path == currFile.path then alreadyIn=1
+	end for
+	if alreadyIn then continue
+	newFile={}
+	newFile.path=currFile.path
+	newFile.indent=currFile.path.split("/")[1:].len
+	newFile.perms=currFile.permissions
+	newFile.own=currFile.owner
+	newFile.grp=currFile.group
+	newFile.size=currFile.size
+	safeFiles.push(newFile)
+	if currFile.is_folder then
+		newFiles=currFile.get_folders+currFile.get_files+newFiles
+	end if
+end while
+
+for file in safeFiles
+	indent="	"*file.indent
+	string=indent+"<color=#309FFF>["+file.own+"/"+file.grp+"/"+file.size+"/"+file.perms+"] "+file.path
+	print(string)
+end for

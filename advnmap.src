@@ -1,0 +1,76 @@
+if params.len != 1 then exit("<b>Usage: "+program_path.split("/")[-1]+" [address]")
+address=params[0]
+if address[:3] == "www" then address=nslookup(address)
+islan=is_lan_ip(address)
+router=get_router(address)
+if islan then router=get_router
+if not router then exit("invalid ip")
+wifi=router.essid_name
+rver=router.kernel_version
+fwr=router.firewall_rules
+if islan then
+	ports=router.device_ports(address)
+else
+	ports=router.used_ports
+end if
+ips=[]
+if address != router.local_ip then
+	hport=null
+	if router.device_ports(router.local_ip).len then hport=router.device_ports(router.local_ip)[0]
+	m={}
+	m.ip=router.local_ip
+	if hport then m.ports=[hport] else m.ports=[]
+	ips.push(m)
+	m=null
+end if
+fwinfo="action port source dest"
+for rules in fwr
+	fwinfo=fwinfo+"\n"+rules
+end for
+extinfo="<color=white>"+address+"</color><color=#6A855E>|rkernel: "+rver+"</color><color=#445239>|wifi: "+wifi+"</color>"
+info="# lan port status service version"
+print(extinfo)
+if fwr then print(format_columns(fwinfo))
+num=0
+for port in ports
+	inm=0
+	for m in ips
+		if m.ip == port.get_lan_ip then
+			m.ports.push(port)
+			inm=1
+		end if
+	end for
+	if not inm then
+		m={}
+		m.ip=port.get_lan_ip
+		m.ports=[port]
+		ips.push(m)
+	end if
+end for
+for m in ips
+	ports=m.ports
+	ip=m.ip
+	info=info+"\n"+num+" "+ip+" /"
+	if ip == router.local_ip then info=info+"\n  |0 routed router "+rver
+	for port in ports
+		service=router.port_info(port)
+		status="open"
+		if port.is_closed then status="lan"
+		info=info+"\n  |"+port.port_number+" "+status+" "+service
+	end for
+	num=num+1
+end for
+if not islan or address[-2:] == ".1" then; for sub in router.devices_lan_ip
+	subIn=0
+	for m in ips
+		if sub == m.ip then subIn=1
+	end for
+	if subIn then continue
+	info=info+"\n"+num+" "+sub
+	num=num+1
+end for;end if
+print(format_columns(info)+"\n")
+whoisinfo=whois(address).split("\n")
+print("WhoIs results")
+if whoisinfo.len < 3 then exit("could not perform WhoIs operation")
+print(whoisinfo[0]+"\n"+whoisinfo[1]+"\n"+whoisinfo[2])

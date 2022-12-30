@@ -1,0 +1,111 @@
+//Treasure Client API Functions
+ver="0.0.1"
+PWpath="/bin/TC"
+func=false
+if program_path != PWpath then func=true
+//start private functions
+callPW=function()
+    globals.PW=get_shell.connect_service
+	if not PW then exit("server not found")
+end function
+
+info = function(user,pass)
+	if not PW or not typeof(PW) then callPW
+	bytes = PW.host_computer.File("/server/.PirateWay/users/"+user+"/bytes").get_content
+	key = PW.host_computer.File("/server/.PirateWay/users/"+user+"/PW.Skey").get_content
+	return "Hello "+user + char(10) + "Bytes: "+bytes + char(10) + "Secrete key: "+key	
+end function
+
+
+
+GenKey = function()
+	setchar = "PW"
+	setchar = setchar + "-" + floor(rnd*10000) + "-" + floor(rnd*10000) + "-" + floor(rnd*10000)
+	return setchar
+end function
+
+
+
+ByteLogo = function()
+	print("            
+                         :#@@d`           
+                  `     -Q@@8.            
+             `:]qBy     W@@#=             
+          -xGB@8s|-    L@@@}              
+      =uO##Gx:`       *@@@z               
+     :@@#m:          _B@@$`               
+      ,v3Q#6V^`      Z@@#!                
+          `rk$@#ZT, *@@@*                 
+              -rz$l_Q@@K'                 
+                  `Z@@Ry#Dy*'             
+                  k@@Q- -rk0@BZY_         
+                 r@@@<      .*V9#8e\`     
+                ,B@@E          .y#@@*     
+               .g@@Q-     `=TZ##MY!`      
+               e@@#<   _ud##Dy*'          
+              v@@@u    xDy*'              
+             <#@@m                        
+            -Q@@8.                        
+            -lwl'")
+end function
+
+BytePrice = function()
+	print("4 btc = 8 Bytes
+40 btc = 80 Bytes
+60 btc = 150 Bytes")
+end function
+//End private functions
+
+
+
+TC={}
+
+
+TC.Bytes = function()
+	clear_screen
+	ByteLogo()
+	BytePrice()
+end function
+
+
+TC.get = function(item)
+	if not PW or not typeof(PW) then callPW
+	item_folder = PW.host_computer.File("/server/.PirateWay/textItems").get_files
+	for items in item_folder
+		if items.name == item then return PW.host_computer.File(items.path).get_content
+	end for
+	return "File not found."
+end function
+
+TC.register = function(user)
+	if not PW or not typeof(PW) then callPW
+	if not user then user=user_input("Register username: ")
+	if PW.host_computer.File("/server/.PirateWay/users/"+user) then exit("Username already taken")
+	Rpass = user_input("Register password: ",1)
+	Cpass = user_input("Confirm password: ",1)
+	if not Cpass == Rpass then exit("Password is not the same as the first one")
+	print("[%]Creating account: "+user)
+	PW.host_computer.create_folder("/server/.PirateWay/users",user)
+	PW.host_computer.touch("/server/.PirateWay/users/"+user,"passwd.enc")
+	PW.host_computer.touch("/server/.PirateWay/users/"+user,"bytes")
+	PW.host_computer.touch("/server/.PirateWay/users/"+user,"PW.Skey")
+	PW.host_computer.File("/server/.PirateWay/users/"+user).chmod("o-wrx",1)
+	PW.host_computer.File("/server/.PirateWay/users/"+user).chmod("u-wrx",1)
+	PW.host_computer.File("/server/.PirateWay/users/"+user).chmod("g-wrx",1)
+	PW.host_computer.File("/server/.PirateWay/users/"+user+"/passwd.enc").set_content(Encrypt(Cpass))
+	PW.host_computer.File("/server/.PirateWay/users/"+user+"/bytes").set_content("0")
+	PW.host_computer.File("/server/.PirateWay/users/"+user+"/PW.Skey").set_content(GenKey)
+	print("[+]User "+user+" added.")
+end function
+
+TC.login = function(user,pass)
+	if user and pass then
+		if not callPW.host_computer.File("/server/.PirateWay/users/"+user) then exit("User does not exist")
+		if Encrypt(pass) == callPW.host_computer.File("/server/.PirateWay/users/"+user+"/passwd.enc").get_content then login = user + ":" + pass
+		if not Encrypt(pass) == callPW.host_computer.File("/server/.PirateWay/users/"+user+"/passwd.enc").get_content then login = "False"
+	end if
+	
+	if login == "False" then exit("Password incorrect.")
+	login = login.split(":")
+	print(info(login[0],login[1]))
+end function

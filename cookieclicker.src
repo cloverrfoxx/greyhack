@@ -1,0 +1,126 @@
+//cookie clicker
+save=get_shell.host_computer.File(current_path+"/hc.save")
+if not save then
+	get_shell.host_computer.touch(current_path,"hc.save")
+	save=get_shell.host_computer.File(current_path+"/hc.save")
+end if
+if save.get_content.len == 0 then save.set_content("0"+char(10)+"0"+char(10)+"0"+char(10)+"0"+char(10)+"0"+char(10)+"0"+char(10)+"0"+char(10)+"0"+char(10)+"Starting out - Start a new game")
+cont=save.get_content.split("\n")
+
+notFine=function()
+	print("Something has gone terribly wrong! (Most likely you went over the game's max number limit of around 1,000,000,000)")
+	print("Create new save?")
+	opt=user_input("[Y/N]> ").lower
+	if opt == "y" then
+		save.delete
+		exit("Please restart game")
+	else
+		exit("Reverting to pre-launch save. Please restart game")
+	end if
+end function
+
+btc=cont[0].val
+upgrade=cont[1].val
+kiddies=cont[2].val
+jpgr=cont[3].val
+ehck=cont[4].val
+mine=cont[5].val
+botnet=cont[6].val
+rans=cont[7].val
+achievements=cont[8:]
+
+while true
+clear_screen
+allFine=1
+if typeof(btc) != "number" then allFine=0
+if typeof(upgrade) != "number" then allFine=0
+if typeof(kiddies) != "number" then allFine=0
+if typeof(jpgr) != "number" then allFine=0
+if typeof(ehck) != "number" then allFine=0
+if typeof(mine) != "number" then allFine=0
+if typeof(botnet) != "number" then allFine=0
+if typeof(rans) != "number" then allFine=0
+if not allFine then notFine()
+cps=1*(1+kiddies+(2*jpgr)+(3*ehck)+(4*mine)+(5*botnet)+(6*rans))-1
+cpc=1*(1+upgrade)
+btc=btc+cps
+
+print(kiddies+" Script Kiddies")
+print(jpgr+" Junior Programmers")
+print(ehck+" Experienced hackers")
+print(mine+" Bitcoin Mines")
+print(botnet+" Botnets")
+print(rans+" Ransoms")
+print("\n"+btc+" Bitcoin")
+print(cps+" Per second")
+print(cpc+" Per hack")
+
+if btc >= 100 and not achievements.indexOf("100 Bitcoin! - Make 100 Bitcoin.") then
+	achievements.push("100 Bitcoin! - Make 100 Bitcoin.")
+	print("Achievement get! 100 Bitcoin!")
+end if
+if btc >= 1000 and not achievements.indexOf("1000 Bitcoin! - Make 1000 Bitcoin.") then
+	achievements.push("1000 Bitcoin! - Make 1000 Bitcoin.")
+	print("Achievement get! 1000 Bitcoin!")
+end if
+if btc >= 10000 and not achievements.indexOf("10000 Bitcoin! - Make 10000 Bitcoin.") then
+	achievements.push("10000 Bitcoin! - Make 10000 Bitcoin.")
+	print("Achievement get! 10000 Bitcoin!")
+end if
+if btc >= 10000000 and not achievements.indexOf("Bet ya didn't click those.") then
+	achievements.push("Bet ya didn't click those.")
+	print("Achievement get! Cheat Bitcoin.")
+end if
+
+saved=[btc,upgrade,kiddies,jpgr,ehck,mine,botnet,rans]
+saved=saved+achievements
+
+print("Actions:")
+print("Remember to use the exit action to save your progress!")
+print("[Hack] [Shop] [Achievements] [Exit]")
+term=user_input("~$ ").lower
+
+if term == "hack" then btc=btc+cpc
+
+if term == "shop" then
+	while true
+	clear_screen
+	costs=[10*(1+(kiddies/5)),100*(1+(jpgr/5)),1000*(1+(ehck/5)),10000*(1+(mine/5)),100000*(1+(botnet/5)),1000000*(1+(rans/5)),100*(1+upgrade)]
+	print("[1] Script Kiddies: "+kiddies+" +1 Cost: "+costs[0])
+	print("[2] Junior Programmers: "+jpgr+" +1 Cost: "+costs[1])
+	print("[3] Experienced Hackers: "+ehck+" +1 Cost: "+costs[2])
+	print("[4] Bitcoin Mines: "+mine+" +1 Cost: "+costs[3])
+	print("[5] Botnets: "+botnet+" +1 Cost: "+costs[4])
+	print("[6] Ransoms: "+rans+" +1 Cost: "+costs[5])
+	print("[7] Upgrade Hacking: "+upgrade+" +1 Cost: "+costs[6])
+	print("[8] Return")
+	opt=user_input("~$").to_int
+	if opt == 8 or typeof(opt) != "number" or opt > 8 or opt <= 0 then break
+	attempt=btc-costs[opt-1]
+	if typeof(attempt) != "number" then allFine=0
+	if not allFine then notFine()
+	if attempt < 0 then
+		print("Insufficient Bitcoin")
+		wait(1)
+		continue
+	end if
+	btc=attempt
+	if opt == 1 then kiddies=kiddies+1
+	if opt == 2 then jpgr=jpgr+1
+	if opt == 3 then ehck=ehck+1
+	if opt == 4 then mine=mine+1
+	if opt == 5 then botnet=botnet+1
+	if opt == 6 then rans=rans+1
+	if opt == 7 then upgrade=upgrade+1
+	end while
+else if term == "achievements" then
+	clear_screen
+	for achievement in achievements
+		print(achievement)
+	end for
+	user_input("[Return]")
+else if term == "exit" then
+	save.set_content(saved.join(char(10)))
+	exit("-=Exiting!=-")
+end if
+end while

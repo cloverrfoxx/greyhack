@@ -1,0 +1,46 @@
+//FourMan "Window Manager"
+import_code("/root/dapi.so")
+CHAR_EMPTY=" "
+CHAR_POINTER="X"
+pointer=[floor(60/2),floor(13/2)]
+tinput_focus=0
+apps={}
+windows={}
+apps.exit={"name": "ExitMan", "index": 0, "icon": [["E","X","I","T"]], "file": current_path+"/fourmandata/apps/exit.fs"}
+
+changeframe=function()
+    frame=[]
+    for y in range(0,13)
+        n=[]
+        for x in range(0,60)
+            if x == pointer[0] and y == pointer[1] then n.push(CHAR_POINTER) else n.push(CHAR_EMPTY)
+        end for
+        frame.push(n)
+    end for
+    frame.reverse
+    return frame
+end function
+
+interpret_input=function(input)
+    if ["DownArrow","UpArrow","LeftArrow","RightArrow"].indexOf(input) != null and not tinput_focus then
+        y=pointer[1]
+        x=pointer[0]
+        if input == "DownArrow" then y=y-1
+        if input == "UpArrow" then y=y+1
+        if y > 13 then y=13
+        if y < 0 then y=0
+        if input == "LeftArrow" then x=x-1
+        if input == "RightArrow" then x=x+1
+        if x > 60 then x=60
+        if x < 0 then x=0
+        return [x,y]
+    end if
+end function
+
+
+print("FourMan Window Manager")
+while true
+    frame=changeframe
+    dim.printf(frame,0)
+    pointer=interpret_input(user_input(char(10),0,1))
+end while

@@ -1,0 +1,189 @@
+//primBrowser private functions
+ver="0.0.1"
+
+callINET=function()
+	globals.inet=get_shell.connect_service
+	if not inet then exit("could not connect to the Internet")
+end function
+
+Encrypt=function(password)
+	o=[]
+	for ch in password
+		k=ch.code*10
+		a=k*4
+		s=a+100*10
+		t=s+1000*10*2000+10000000000
+		o.push("ДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийл©"+"ДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийл©"+bitwise("^",t,7777)+"ДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийл©"+"ДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийл©")
+	end for
+	return o.join("ДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийл©")
+end function
+
+GenKey=function()
+	setchar="INET"
+	setchar=setchar+"-"+floor(rnd*10000)+"-"+floor(rnd*10000)+"-"+floor(rnd*10000)
+	return setchar
+end function
+
+info=function(user,pass)
+	bytes=inet.host_computer.File("/server/.theInternet/users/"+user+"/bytes").get_content
+	key=inet.host_computer.File("/server/.theInternet/users/"+user+"/IN.Skey")
+	return "Hello "+user+char(10)+"Bytes: "+bytes+char(10)+"Secret key: "+key
+end function
+
+ByteLogo = function()
+	print("                         :#@@d`           ")
+	print("                  `     -Q@@8.            ")
+	print("             `:]qBy     W@@#=             ")
+	print("          -xGB@8s|-    L@@@}              ")
+	print("      =uO##Gx:`       *@@@z               ")
+	print("     :@@#m:          _B@@$`               ")
+	print("      ,v3Q#6V^`      Z@@#!                ")
+	print("          `rk$@#ZT, *@@@*                 ")
+	print("              -rz$l_Q@@K'                 ")
+	print("                  `Z@@Ry#Dy*'             ")
+	print("                  k@@Q- -rk0@BZY_         ")
+	print("                 r@@@<      .*V9#8e\`     ")
+	print("                ,B@@E          .y#@@*     ")
+	print("               .g@@Q-     `=TZ##MY!`      ")
+	print("               e@@#<   _ud##Dy*'          ")
+	print("              v@@@u    xDy*'              ")
+	print("             <#@@m                        ")
+	print("            -Q@@8.                        ")
+	print("            -lwl'")
+end function
+
+BytePrice = function()
+	print("4 btc = 8 Bytes")
+	print("40 btc = 80 Bytes")
+	print("60 btc = 150 Bytes")
+end function
+
+login=function()
+	user=user_input("Username: ")
+	if not inet.host_computer.File("/server/.theInternet/users/"+user) then return "null_user"
+	pass=user_input("Password: ")
+	if not Encrypt(pass) == inet.host_computer.File("/server/.theInternet/users/"+user+"/passwd.enc").get_content then return "inc_pass"
+	return user+":"+pass
+end function
+	
+register=function()
+	user=user_input("Register username: ")
+	if inet.host_computer.File("/server/.theInternet/users/"+user) then return "exist_user"
+	Rpass=user_input("Register password: ",1)
+	Cpass=user_input("Confirm password: ",1)
+	if not Cpass == Rpass then return "pass_mismatch"
+	print("[%]Creating account: "+user)
+	inet.host_computer.create_folder("/server/.theInternet/users",user)
+	inet.host_computer.touch("/server/.theInternet/users/"+user,"passwd.enc")
+	inet.host_computer.touch("/server/.theInternet/users/"+user,"bytes")
+	inet.host_computer.touch("/server/.theInternet/users/"+user,"IN.Skey")
+	inet.host_computer.File("/server/.theInternet/users/"+user).chmod("o-wrx",1)
+	inet.host_computer.File("/server/.theInternet/users/"+user).chmod("u-wrx",1)
+	inet.host_computer.File("/server/.theInternet/users/"+user).chmod("g-wrx",1)
+	inet.host_computer.File("/server/.theInternet/users/"+user+"/passwd.enc").set_content(Encrypt(Cpass))
+	inet.host_computer.File("/server/.theInternet/users/"+user+"/bytes").set_content("0")
+	inet.host_computer.File("/server/.theInternet/users/"+user+"/IN.Skey").set_content(GenKey)
+	print("[+]Created user: "+user)
+	return user+":"+Cpass
+end function
+
+browse=function(anon)
+	sites=inet.host_computer.File("/server/.theInternet/sites").get_folders
+	trustsites=inet.host_computer.File("/server/.theInternet/tsites").get_folders
+	//sites == user generated sites, trustsites == verified sites
+	//5 sites per page
+	//add more code later
+	//site structure:
+	//.theInternet/sites/[sitename]
+	//->site.conf, tells if main page, if other pages, how to navigate to other pages
+	//->site, actual website data (ie: display)
+	//.theInternet/sites/[sitename]/[subsite]
+	//->site.conf, practically the same as main page's site.conf
+	//->site, same as main page's site file
+	//.theInternet/sites/[sitename]/[subsite]/[subsite]
+	//you can have 1 extra subsite in a subsite
+	//you can have 3 subsites in a main site
+	//.theInternet/sites/[sitename]/downloads
+	//add in site.conf if downloads
+	//.theInternet/sites/[sitename]/[subsite]/downloads
+	//can have downloads in subsite too
+	//10000 Byte site creation fee?
+	//3 site per user max?
+	//if anon, no Byte purchases can be made
+end function
+
+globe=function()
+	print("             ___.....___")
+	print("       ,..-.=--.-.       "".")
+	print("     .{_..        `        ,. .")
+	print("   .'     \      /        | ,'.\`.")
+	print("  /        :   ;'          `____> \")
+	print(" :         `. (           /       :")
+	print(" |           `>\_         \      r|")
+	print(" |            /   \         `._   |")
+	print(" |          |      `          ;   |")
+	print("  :          \     /          `   ;")
+	print("   \          \.  '            ` /")
+	print("     `.        | /             .'")
+	print("        `      `/          . '")
+	print("           `---'.....---''")
+	print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+	print("<color=#6A855E><b>primBrowser: Access theInternet!</b></color>")
+	print("<color=#6A855E>Current version: "+ver+"</color>")
+	print("<color=#6A855E><b>By: Sparki and Darkness</b></color>")
+end function
+//end primBrowser private functions
+
+anon=true
+if anon then
+	clear_screen
+	globe()
+	print("[0] - Browse")
+	print("[1] - Login")
+	print("[2] - Register")
+	opt=null
+	while typeof(opt) != "number" or opt > 2
+		opt=user_input("Selection> ").to_int
+	end while
+	
+	if opt == 1 then
+		print("Login to theInternet")
+		out=login()
+		if out == "null_user" then exit("User does not exist")
+		if out == "inc_pass" then exit("Incorrect password")
+		logged=out.split(":")
+		print(info(logged[0],logged[1]))
+		anon=false
+	end if
+
+	if opt == 2 then
+		print("Register account for theInternet")
+		out=register()
+		if out == "exist_user" then exit("User already exists")
+		if out == "pass_mismatch" then exit("Passwords do not match")
+		logged=out.split(":")
+		print(info(logged[0],logged[1]))
+		anon=false
+	end if
+end if
+if not anon then
+	clear_screen
+	printinet()
+	print("[0] - Browse")
+	print("[1] - Account settings")
+	print("[2] - Website management")
+	opt=null
+	while typeof(opt) != "number" or opt > 2
+		opt=user_input("Selection> ").to_int
+	end while
+	if opt == 1 then
+	end if
+	
+	if opt == 2 then
+	end if
+end if
+	
+if opt == 0 then // browse
+	browse(anon)
+end if
+

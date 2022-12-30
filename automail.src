@@ -1,0 +1,33 @@
+if params.len != 1 then exit("invalid command usage")
+alpha="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+al=alpha.len
+counters=[]
+max=32
+
+for i in range(1,max)
+	counters=[]
+	for _ in range(0,max-1)
+		counters.push(0)
+	end for
+	while 1
+		cy=counters[:i]
+		ps=[]
+		for x in cy
+			ps.push(x*(al ^ __x_idx))
+		end for
+		cy=ps.sum
+		pass=""
+		for q in range(0,(i-1))
+			if floor(counters[q]/al) then
+				counters[q]=0
+				if q != i-1 then counters[q+1]=counters[q+1]+1 else continue
+			end if
+			pass=pass+alpha[counters[q]]
+		end for
+		print("Attempting password <b>"+pass+"</b>, <b>"+(cy+1)+"/"+(al^i)+"</b> of length <b>"+i+"</b>")
+		attempt=mail_login(params[0],pass)
+		if typeof(attempt) != "string" then exit("<color=red><b>PASSWORD FOUND - "+pass+"</b></color>")
+		counters[0]=counters[0]+1
+		if floor((counters[:i].sum-1)/(al-1)) == i then break
+	end while
+end for

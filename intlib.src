@@ -1,0 +1,455 @@
+//clover intlib
+int={}
+
+int.baseint=function()
+    out={}
+    out.int=[]
+    out.neg=0
+    out.classID="BigInt"
+    out.string=function(self)
+        st=""
+        if self.neg then st="-"
+        for i in self.int
+            st=st+str(i)
+        end for
+        return st
+    end function
+    out.trim=function(self)
+        num=int.copy(self)
+        i=0
+        while num.int[i] == 0 and num.int[i:].len != 1
+            i=i+1
+        end while
+        num.int=num.int[i:]
+        return num
+    end function
+    return out
+end function
+
+int.copy=function(num=0)
+    if typeof(num) != "BigInt" then return 0
+    out=int.baseint
+    out.neg=num.neg
+    for i in num.int
+        out.int.push(i)
+    end for
+    return out
+end function
+
+int.zero=function(length=1)
+    newint=int.baseint
+    while newint.int.len < length
+        newint.int.push(0)
+    end while
+    return newint
+end function
+
+int.one=function(length=1)
+    newint=int.baseint
+    while newint.int.len < length
+        if newint.int.len+1 == length then newint.int.push(1) else newint.int.push(0)
+    end while
+    return newint
+end function
+
+int.rnd=function(length=1,neg=0)
+    newint=int.baseint
+    newint.neg=neg
+    while newint.int.len < length
+        newint.int.push(floor(rnd*10))
+    end while
+    return newint
+end function
+
+int.fromint=function(num=0)
+    newint=int.baseint
+    if typeof(num) != "string" then num=str(num)
+    if typeof (val(num)) != "number" then return 0
+    if num[0] == "-" then
+        newint.neg=1
+        num=num[1:]
+    end if
+
+    for i in num
+        if "0123456789".indexOf(i) == null then break
+        newint.int.push(val(i))
+    end for
+    return newint
+end function
+
+int.toint=function(num=0)
+    if typeof(num) != "BigInt" then return 0
+    return val(num.string)
+end function
+
+
+//ok done with integer stuff, now on to more mathy things
+
+math={}
+
+math.add=function(num1=0,num2=0)
+    if typeof(num1) != "BigInt" then
+        num1=int.fromint(num1)
+        if num1 == 0 then return 0
+    end if
+    if typeof(num2) != "BigInt" then
+        num2=int.fromint(num2)
+        if num2 == 0 then return 0
+    end if
+
+    actuallySubtraction=0
+    negAdd=0
+    if num1.neg and num2.neg then negAdd=1
+    if not negAdd then
+        if num1.neg then actuallySubtraction=1
+
+        if num2.neg then actuallySubtraction=1
+    end if
+
+    if actuallySubtraction then
+        if num1.neg then
+            num1=int.copy(num1)
+            num1.neg=0
+            return math.sub(num2,num1)
+        else if num2.neg then
+            num2=int.copy(num2)
+            num2.neg=0
+            return math.sub(num1,num2)
+        end if
+    end if
+
+    num1.int.reverse
+    num2.int.reverse
+    outnum=int.baseint
+    outnum.neg=negAdd
+
+    i=0
+
+    while 1
+        n=[]
+        if not num1.int.indexes.hasIndex(i) and not num2.int.indexes.hasIndex(i) then break
+
+        if not num1.int.indexes.hasIndex(i) then
+            outnum.int.push(num2.int[i])
+            i=i+1
+            continue
+        end if
+
+        if not num2.int.indexes.hasIndex(i) then
+            outnum.int.push(num1.int[i])
+            i=i+1
+            continue
+        end if
+
+        calc=num1.int[i]+num2.int[i]
+
+        if calc >= 10 then
+            c=i+1
+            added=0
+            while num1.int.indexes.hasIndex(c)
+                if num1.int[c] < 9 then
+                    num1.int[c] = num1.int[c]+1
+                    added=1
+                    break
+                end if
+                if num1.int[c] == 9 then num1.int[c] = 0
+                c=c+1
+            end while
+            if not num1.int.hasIndex(c) and not added then num1.int.push(1)
+            calc=calc-10
+            //outnum.int.push(calc)
+        end if
+
+        for c in str(calc)
+            n.push(c)
+        end for
+
+        n.reverse
+
+        for c in n
+            outnum.int.push(val(c))
+        end for
+
+        i=i+1
+    end while
+
+    outnum.int.reverse
+    num1.int.reverse
+    num2.int.reverse
+    if int.toint(outnum) == 0 then outnum.neg=0
+    return outnum
+end function
+
+math.sub=function(num1=0,num2=0)
+    if typeof(num1) != "BigInt" then
+        num1=int.fromint(num1)
+        if num1 == 0 then return 0
+    end if
+    if typeof(num2) != "BigInt" then
+        num2=int.fromint(num2)
+        if num2 == 0 then return 0
+    end if
+
+    actuallyAddition=0
+    negAdd=0
+    if num1.neg and num2.neg then actuallyAddition=1
+    if actuallyAddition then
+        num1.neg=0
+        num2.neg=0
+        return math.add(num1,num2)
+    end if
+    if not actuallyAddition then
+        if num1.neg then
+            num1.neg=0
+            negAdd=negAdd+1%2
+        end if
+        if num2.neg then
+            num2.neg=0
+            negAdd=negAdd+1%2
+        end if
+    end if
+
+    num1.int.reverse
+    num2.int.reverse
+    outnum=int.baseint
+    outnum.neg=negAdd
+
+    i=0
+    
+    if num2.int.len > num1.int.len then
+        num3=int.copy(num1)
+        num1=int.copy(num2)
+        num2=int.copy(num3)
+    end if
+
+    while 1
+        n=[]
+        if not num1.int.indexes.hasIndex(i) and not num2.int.indexes.hasIndex(i) then break
+
+        if not num1.int.indexes.hasIndex(i) then
+            outnum.int.push(num2.int[i])
+            i=i+1
+            continue
+        end if
+
+        if not num2.int.indexes.hasIndex(i) then
+            outnum.int.push(num1.int[i])
+            i=i+1
+            continue
+        end if
+
+        calc=num1.int[i]-num2.int[i]
+        
+        if calc < 0 then
+            if num1.int.indexes.hasIndex(i+1) then
+                outnum.int.push(10+calc)
+                num1.int[i+1]=num1.int[i+1]-1
+            end if
+            if not num1.int.indexes.hasIndex(i+1) then
+                outnum.int.push(0-calc)
+                outnum.neg=(outnum.neg+1)%2
+            end if
+        else
+            for c in str(calc)
+                n.push(c)
+            end for
+            
+            n.reverse
+            
+            for c in n
+                outnum.int.push(val(c))
+            end for
+        end if
+
+        i=i+1
+    end while
+    outnum.int.reverse
+    num1.int.reverse
+    num2.int.reverse
+    if int.toint(outnum) == 0 then outnum.neg=0
+    return outnum
+end function
+
+math.mul=function(num1,num2)
+    if typeof(num1) != "BigInt" then
+        num1=int.fromint(num1)
+        if num1 == 0 then return 0
+    end if
+    if typeof(num2) != "BigInt" then
+        num2=int.fromint(num2)
+        if num2 == 0 then return 0
+    end if
+
+    isNegative=0
+    if (num1.neg and not num2.neg) or (num2.neg and not num1.neg) then isNegative=1
+
+    c=1
+    outnum=int.copy(num1)
+
+    while c != int.toint(num2)
+        c=c+1
+        outnum=math.add(outnum,num1)
+    end while
+    outnum.neg=isNegative
+    return outnum
+end function
+
+math.div=function(num1,num2)
+    if typeof(num1) != "BigInt" then
+        num1=int.fromint(num1)
+        if num1 == 0 then return 0
+    end if
+    if typeof(num2) != "BigInt" then
+        num2=int.fromint(num2)
+        if num2 == 0 then return 0
+    end if
+
+    isNegative=0
+    if (num1.neg and not num2.neg) or (num2.neg and not num1.neg) then isNegative=1
+
+    c=0
+    outnum=int.copy(num1)
+    outnum.neg=isNegative
+
+    while int.toint(outnum) >= int.toint(num2)
+        outnum=math.sub(outnum,num2)
+        c=c+1
+    end while
+    outnum=int.fromint(c)
+    outnum.neg=isNegative
+    return outnum
+end function
+
+math.mod=function(num1,num2)
+    if typeof(num1) != "BigInt" then
+        num1=int.fromint(num1)
+        if num1 == 0 then return 0
+    end if
+    if typeof(num2) != "BigInt" then
+        num2=int.fromint(num2)
+        if num2 == 0 then return 0
+    end if
+
+    isNegative=0
+    if num1.neg or num2.neg then isNegative=1
+
+    outnum=int.copy(num1)
+
+    while int.toint(outnum) >= int.toint(num2)
+        outnum=math.sub(outnum,num2)
+    end while
+    return outnum
+end function
+
+math.exp=function(num1,num2)
+    if typeof(num1) != "BigInt" then
+        num1=int.fromint(num1)
+        if num1 == 0 then return 0
+    end if
+    if typeof(num2) != "BigInt" then
+        num2=int.fromint(num2)
+        if num2 == 0 then return 0
+    end if
+
+    if num2.neg then
+        num2.neg=0
+        return math.exp(math.div(1,num1),num2)
+    end if
+
+    c=1
+    outnum=int.copy(num1)
+
+    while c != int.toint(num2)
+        c=c+1
+        outnum=math.mul(outnum,num1)
+    end while
+    return outnum
+end function
+
+math.equalto=function(num1,num2)
+    if typeof(num1) != "BigInt" then
+        num1=int.fromint(num1)
+        if num1 == 0 then return 0
+    end if
+    if typeof(num2) != "BigInt" then
+        num2=int.fromint(num2)
+        if num2 == 0 then return 0
+    end if
+    num1=num1.trim
+    num2=num2.trim
+
+    if num1.int.len != num2.int.len then return 0
+    c=0
+
+    num1.int.reverse
+    num2.int.reverse
+    while c < num1.int.len
+        if num1.int[c] != num2.int[c] then return 0
+        c=c+1
+    end while
+    num1.int.reverse
+    num2.int.reverse
+    return 1
+end function
+
+math.greater=function(num1,num2)
+    if typeof(num1) != "BigInt" then
+        num1=int.fromint(num1)
+        if num1 == 0 then return 0
+    end if
+    if typeof(num2) != "BigInt" then
+        num2=int.fromint(num2)
+        if num2 == 0 then return 0
+    end if
+    num1=num1.trim
+    num2=num2.trim
+
+    if num1.int.len > num2.int.len then return 1
+    if num1.int.len < num2.int.len then return 0
+    c=0
+
+    while c < num1.int.len
+        if num1.int[c] > num2.int[c] then return 1
+        c=c+1
+    end while
+    return 0
+end function
+
+math.less=function(num1,num2)
+    return math.greater(num2,num1)
+end function
+
+math.greatere=function(num1,num2)
+    if typeof(num1) != "BigInt" then
+        num1=int.fromint(num1)
+        if num1 == 0 then return 0
+    end if
+    if typeof(num2) != "BigInt" then
+        num2=int.fromint(num2)
+        if num2 == 0 then return 0
+    end if
+    num1=num1.trim
+    num2=num2.trim
+
+    if num1.int.len < num2.int.len then return 0
+    c=0
+    num1.int.reverse
+    num2.int.reverse
+
+    while num2.int.len != num1.int.len
+        num2.int.push(0)
+    end while
+
+    safe=num2.trim.int.len-num1.trim.int.len
+    while c < num1.int.len
+        if num1.int[c] < num2.int[c] and c != safe then return 0
+        c=c+1
+    end while
+    num1.int.reverse
+    num2.int.reverse
+    return 1
+end function
+
+math.lesse=function(num1,num2)
+    return math.greatere(num2,num1)
+end function

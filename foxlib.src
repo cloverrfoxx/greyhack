@@ -1,0 +1,1025 @@
+FoxLib={}
+
+//                      GENERAL FUNCTIONS
+FoxLib.General={}
+General=FoxLib.General
+
+FoxLib.General.LibFinder=function(folder="/")
+    out={}
+    out.apt=null
+    out.cpf=null
+    out.mxf=null
+    out.bcf=null
+    root=get_shell.host_computer.File(folder)
+    if not root then return
+    newFiles=root.get_folders+root.get_files
+    while newFiles.len
+        currFile=newFiles.pull
+        if currFile.is_folder then newFiles=currFile.get_folders+currFile.get_files+newFiles
+        test=include_lib(currFile.path)
+        if typeof(test) == "MetaxploitLib" then out.mxf=currFile.path
+        if typeof(test) == "cryptoLib" then out.cpf=currFile.path
+        if typeof(test) == "aptclientLib" then out.apt=currFile.path
+        if typeof(test) == "blockchainLib" then out.bcf=currFile.path
+    end while
+    return out
+end function
+
+FoxLib.General.Serialize=function(array=null,fancy=0)
+    if not str(array).len then return 0
+    if array == null or (str(array)[0] != "{" and str(array)[0] != "[") then return 0
+    type=null
+    if str(array)[0] == "{" then type="map"
+    if str(array)[0] == "[" then type="list"
+    //if type == "map" then
+    //    tmp={}
+    //    for i in array.indexes
+    //        tmp[@i] = array[@i]
+    //    end for
+    //    array=tmp
+    //else if type == "list" then
+    //    array=array[0:]
+    //end if
+    if not type then return 0
+
+    if type == "list" then
+        result="["
+        l=array
+    else
+        result="{"
+        l=array.indexes
+    end if
+    if fancy then
+        result=result+char(10)
+        if FoxLib.General.hasIndex("SERN") then FoxLib.General.SERN=FoxLib.General.SERN+1 else FoxLib.General.SERN=1
+        N=FoxLib.General.SERN
+    end if
+
+    for i in l.indexes
+        if type == "map" then v=@array[l[i]] else v=@array[i]
+        vt=typeof(@v)
+        if vt == "function" then
+            v="Err_Function"
+            vt="string"
+        end if
+        if str(v)[0] == "{" or str(v)[0] == "[" then v=FoxLib.General.Serialize(v,fancy)
+        
+        if type == "list" then
+            if vt == "string" then v=""""+v+""""
+            if fancy then
+                if __i_idx == l.indexes.len-1 then result=result+("	"*N)+v else result=result+("	"*N)+v+", "
+                result=result+char(10)
+            else
+                if __i_idx == l.indexes.len-1 then result=result+v else result=result+v+", "
+            end if
+        else
+            if l[i] isa string then lx=""""+l[i]+"""" else lx=l[i]
+            if vt == "string" then v=""""+v+""""
+            if fancy then
+                if __i_idx == l.indexes.len-1 then result=result+("	"*N)+lx+": "+v else result=result+("	"*N)+lx+": "+v+","
+                result=result+char(10)
+            else
+                if __i_idx == l.indexes.len-1 then result=result+lx+": "+v else result=result+lx+": "+v+", "
+            end if
+        end if
+    end for
+
+    if fancy then
+        if type == "map" then result=result+("	"*(N-1))+"}" else result=result+("	"*(N-1))+"]"
+    else
+        if type == "map" then result=result+"}" else result=result+"]"
+    end if
+    
+    if fancy and N == 1 then FoxLib.General.remove("SERN")
+    if fancy and N != 1 then FoxLib.General.SERN = N-1
+    return result
+end function
+
+FoxLib.General.Deserialize=function(array=null)
+    if not array or not array isa string then return 0
+    type=null
+    if array[0] == "[" then type="list"
+    if array[0] == "{" then type="map"
+    if not type then return 0
+
+    if type == "list" then
+        newArray=[]
+    else
+        newArray={}
+    end if
+
+    array=array.split(char(10)).join("")
+    array=array[1:-1]
+    if not array then return newArray
+    a=[]
+    b=[]
+    c=0
+    for v in array
+        i=__v_idx
+        if v == "{" or v == "[" then c=c+1
+        if v == "}" or v == "]" then c=c-1
+        if v == "," and c == 0 then
+            a.push(b.join(""))
+            b=[]
+            continue
+        end if
+        b.push(v)
+        if i == array.len-1 then
+            a.push(b.join(""))
+            b=[]
+            continue
+        end if
+    end for
+    array=a
+
+    for i in array
+        i=i.trim
+        if type == "list" then
+            if not i then continue
+            if i[0] == """" and i[-1] == """" then
+                i=i[1:-1]
+            else
+                if i == "null" then
+                    i=null
+                else if i == "true" then
+                    i=1
+                else if i == "false" then
+                    i=0
+                else if i[0] == "{" or i[0] == "[" then
+                    i=FoxLib.General.Deserialize(i)
+                else
+                    nv=""
+                    dc=0
+                    for l in i
+                        if l == "." then
+                            if dc == 1 then break
+                            nv=nv+"."
+                        end if
+                        if "0123456789E-".indexOf(l) != null then nv=nv+l
+                    end for
+                    if nv != "" then i=nv.val
+                end if
+            end if
+
+            newArray.push(i)
+        else
+            k=i[0:i.indexOf(":")]
+            if not k then continue
+            if k[0] == """" then k=k[1:-1]
+            v=i[i.indexOf(":")+1:]
+            if not v then continue
+            v=v.trim
+            if not v then continue
+            if v[0] == """" then
+                v=v[1:-1]
+            else
+                if v == "null" then
+                    v=null
+                else if v == "true" then
+                    v=1
+                else if v == "false" then
+                    v=0
+                else if v[0] == "{" or v[0] == "[" then
+                    v=FoxLib.General.Deserialize(v)
+                else
+                    nv=""
+                    dc=0
+                    for l in v
+                        if l == "." then
+                            if dc == 1 then break
+                            nv=nv+"."
+                        end if
+                        if "0123456789E-".indexOf(l) != null then nv=nv+l
+                    end for
+                    if nv != "" then v=nv.val
+                end if
+            end if
+
+            newArray[k]=v
+        end if
+    end for
+
+    return newArray
+end function
+
+FoxLib.General.rndstring=function(length=null)
+    if not length or not length isa number then return 0
+    newString=""
+    alpha="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890"
+    while newString.len < length
+        newString=newString+alpha[floor(rnd*alpha.len)]
+    end while
+    return newString
+end function
+
+FoxLib.General.RandArt=function(data=null)
+    if not data or not data isa string then return
+    if bitwise("&",data.len,1) then data=data+"0"
+    max=function(p1,p2)
+        if p1 > p2 then return p1 else return p2
+    end function
+    
+    min=function(p1,p2)
+        if p1 < p2 then return p1 else return p2
+    end function
+
+    move=function(position,mv,wid,high)
+        posx=floor(position%wid)
+        posy=floor(position/wid)
+    
+        newposx=posx
+        if mv == NW or mv == SW then newposx=newposx-1
+        if mv == NE or mv == SE then newposx=newposx+1
+    
+        newposy=posy
+        if mv == NW or mv == NE then newposy=newposy-1
+        if mv == SW or mv == SE then newposy=newposy+1
+    
+        newposx=max(0,min(wid-1,newposx))
+        newposy=max(0,min(high-1,newposy))
+    
+        return newposx+newposy*wid
+    end function
+
+    hex2dec=function(hex)
+        ints=[]
+    
+        for i in range(0,hex.len-1,2)
+            ints.push((FoxLib.General.ParseInt(hex[i:i+2],16)))
+        end for
+        return ints
+    end function
+
+    NW=0
+    NE=1
+    SW=2
+    SE=3
+
+    alt=" .o+=*B0X@%&#/^"
+    width=17
+    height=9
+    board=[]
+    while board.len != width*height
+        board.push(0)
+    end while
+    bytes=hex2dec(data)
+    pos=width*4+8;
+    start=pos
+    for i in range(0,bytes.len-1)
+        d=bytes[i]
+        for j in range(0,6,2)
+            v = bitwise("&", bitwise(">>", d, j), 3)
+            newpos=move(pos,v,width,height)
+            board[newpos]=board[newpos]+1
+            pos=newpos
+        end for
+    end for
+
+    art=""
+    for p in range(0,width*height-1)
+        m=board[p]
+        if m >= alt.len then m=alt.len-1
+
+        chr=alt[m]
+        if p == start then chr="S"
+        if p == pos then chr="E"
+
+        art=art+chr
+
+        if(p % width == width -1) then art=art+char(10)
+    end for
+    return art.split(char(10))[:-1].join(char(10))
+end function
+
+FoxLib.General.ParseInt=function(s,orad=0,irad=0)
+    if typeof(s) != "string" then return 0
+    if s[:2] == "0x" and not irad then irad=16
+    if irad == 16 and not orad then orad=10
+    if s[:2] == "0x" then s=s[2:]
+    if not irad then irad=10
+    if not orad then orad=16
+    alpha="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    if irad > alpha.len or irad < 2 then return 0
+    if orad > alpha.len or orad < 2 then return 0
+
+    out=[]
+    if irad == 10 then
+        o=s.val
+        while o
+            out.push(alpha[o % orad])
+            o=floor(o/orad)
+        end while
+        if orad == 16 then out.push("0x")
+        out.reverse
+        return out.join("")
+    end if
+    for c in s
+        out.push( (alpha.indexOf(c) * irad ^ ( (s.len-1) - out.len)) )
+    end for
+    out=out.sum
+    if orad == 10 then return out
+    o=out
+    out=[]
+    while o
+        out.push(alpha[floor(o%orad)])
+        o=floor(o/orad)
+    end while
+    if orad == 16 then out.push("0x")
+    out.reverse
+    return out.join("")
+end function
+
+FoxLib.General.Compression=function(st=null,type=null)
+    basedictcompress={}
+    basedictdecompress={}
+
+    for i in range(0,55295)
+        ic=char(i)
+        iic=char(i)+char(0)
+        basedictcompress[ic]=iic
+        basedictdecompress[iic]=ic
+    end for
+
+    dictAddA=function(str,dict,a,b)
+        if a >= 55296 then
+            a = 0
+            b=b+1
+            if b >= 55296 then
+                dict={}
+                b=1
+            end if
+        end if
+        dict[str]=char(a)+char(b)
+        a=a+1
+        return [dict,a,b]
+    end function
+
+    compress=function(input)
+        if not input isa string then return 0
+        length=input.len
+        if length <= 1 then return "u"+input
+
+        dict={}
+        a=0
+        b=1
+
+        result=["c"]
+        resultLen=result.len
+
+        word=""
+
+        for i in range(0,length-1)
+            c=input[i]
+            wc=word+c
+            if not (basedictcompress.hasIndex(wc) or dict.hasIndex(wc)) then
+                write=null
+                if basedictcompress.hasIndex(word) then
+                    write=basedictcompress[word]
+                else if dict.hasIndex(word) then
+                    write=dict[word]
+                end if
+                if not write then return 0
+                result.push(write)
+                resultLen=result.len
+                if length <= resultLen then return "u"+input
+                dict=dictAddA(wc,dict,a,b)
+                a=dict[1]
+                b=dict[2]
+                dict=dict[0]
+                word=c
+            else
+                word=wc
+            end if
+        end for
+        if basedictcompress.hasIndex(word) then result.push(basedictcompress[word]) else result.push(dict[word])
+        resultLen=result.len
+        if length <= resultLen then return "u"+input
+        return result.join("")
+    end function
+
+    dictAddB=function(str,dict,a,b)
+        if a >= 55296 then
+            a=0
+            b=b+1
+            if b >= 55296 then
+                dict={}
+                b=1
+            end if
+        end if
+        dict[char(a)+char(b)]=str
+        a=a+1
+        return [dict,a,b]
+    end function
+
+    decompress=function(input)
+        if not input isa string then return 0
+
+        if input.len < 1 then return 0
+
+        control=input[0]
+        if control == "u" then
+            return input[1:]
+        else if control != "c" then
+            return 0
+        end if
+        input=input[1:]
+        length=input.len
+
+        if length < 2 then return 0
+
+        dict={}
+        a=0
+        b=1
+
+        result=[]
+        last=input[0:2]
+
+        if basedictdecompress.hasIndex(last) then
+            result.push(basedictdecompress[last])
+        else if dict.hasIndex(last) then
+            result.push(dict[last])
+        end if
+
+        for i in range(2,length-1,2)
+            code=input[i:i+2]
+            lastStr=null
+            if basedictdecompress.hasIndex(last) then
+                lastStr=basedictdecompress[last]
+            else if dict.hasIndex(last) then
+                lastStr=dict[last]
+            end if
+            if lastStr == null then return 0
+
+            if basedictdecompress.hasIndex(code) then
+                toAdd=basedictdecompress[code]
+            else if dict.hasIndex(code) then
+                toAdd=dict[code]
+            else
+                toAdd=0
+            end if
+
+            if toAdd then
+                result.push(toAdd)
+                dict=dictAddB(lastStr+toAdd[0],dict,a,b)
+                a=dict[1]
+                b=dict[2]
+                dict=dict[0]
+            else
+                tmp=lastStr+lastStr[0]
+                result.push(tmp)
+                dict=dictAddB(tmp,dict,a,b)
+                a=dict[1]
+                b=dict[2]
+                dict=dict[0]
+            end if
+
+            last=code
+        end for
+
+        return result.join("")
+    end function
+
+    if type == "compress" then
+        return compress(st)
+    else if type == "decompress" then
+        return decompress(st)
+    else
+        return 0
+    end if
+end function
+
+//                      CRYPTOGRAPHY FUNCTIONS
+FoxLib.Crypto={}
+
+FoxLib.Crypto.Vigenere=function(s=null,key=null,type=null)
+    if not key or not key isa string then return 0
+    if not s or not s isa string then return 0
+    if not type or not type isa string or (type != "enc" and type != "dec") then return 0
+    keySize=key.len
+    result=""
+    counter=0
+    if type == "enc" then
+        for i in s
+            currKey=key[counter]
+            final = (i.code+currKey.code) % 55295
+            result=result+char(final)
+            counter=(counter+1) % keySize
+        end for
+    else if type == "dec" then
+        for i in s
+            currKey=key[counter]
+            final=(i.code-currKey.code)
+            if final < 0 then final = 0 - final
+            result=result+char(final)
+            counter=(counter+1) % keySize
+        end for
+    end if
+    return result
+end function
+
+FoxLib.Crypto.ROT=function(pos=null,s=null)
+    if not pos or not pos isa number then return 0
+    pos=abs(pos)
+    if not s or not s isa string then return 0
+    cases=[]
+    cases.push("abcdefghijklmnopqrstuvwxyz")
+    cases.push("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    ns=[]
+    for i in s
+        case=null
+        for c in cases
+            if c.indexOf(i) != null then case=c
+        end for
+        if not case then
+            ns.push(i)
+            continue
+        end if
+        ind=case.indexOf(i)
+        newPos=(ind+pos)%case.len
+        ns.push(case[newPos])
+    end for
+    return ns.join("")
+end function
+
+FoxLib.Crypto.Base64=function(s=null,type=null)
+    if not s or not s isa string then return 0
+    if not type or not type isa string or (type != "enc" and type != "dec") then return 0
+
+    alpha="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+    alphaLen=alpha.len-1
+    based=null
+
+    if type == "enc" then
+        grouped=[]
+        while s
+            ns=s[:3]
+            s=s[ns.len:]
+            bins=[]
+            for i in ns
+                b=FoxLib.General.ParseInt(str(i.code),2)
+                while b.len < 8
+                    b="0"+b
+                end while
+                bins=bins+b.values
+            end for
+            grouped.push(bins)
+        end while
+        
+        based=""
+        for g in grouped
+            block=[]
+            while g
+                s=g[:6]
+                g=g[s.len:]
+                while s.len < 6
+                    s.push("0")
+                end while
+                block.push(s)
+            end while
+            for i in block
+                based=based+alpha[FoxLib.General.ParseInt(i.join(""),10,2)%alphaLen]
+            end for
+            check=block.len
+            while check != 4
+                based=based+"="
+                check=check+1
+            end while
+        end for
+    else
+        grouped=[]
+        while s
+            block=[]
+            ns=s[:4]
+            s=s[ns.len:]
+            for i in ns
+                if i == "=" then break
+                a=FoxLib.General.ParseInt(str(alpha.indexOf(i)),2)
+                while a.len < 6
+                    a="0"+a
+                end while
+                block=block+a.values
+            end for
+            grouped.push(block)
+        end while
+
+        based=""
+        for g in grouped
+            block=[]
+            while g
+                s=g[:8]
+                g=g[s.len:]
+                check=s.len
+                if check < 8 then s.reverse
+                while s.len < 8
+                    s.push("0")
+                end while
+                if check < 8 then s.reverse
+                block.push(s)
+            end while
+            for i in block
+                based=based+char(FoxLib.General.ParseInt(i.join(""),10,2))
+            end for
+        end for
+    end if
+    return based
+end function
+
+FoxLib.Crypto.Sha256=function(st=null)
+    if not st or not st isa string then return
+    	
+	Blocks = [[0]]
+	i=0
+	e=0
+	while i < st.len
+		e=4
+		while e > 0 and st.hasIndex(i)
+			e=e-1
+			Blocks[-1][-1] = Blocks[-1][-1] + code(st[i])*256^e
+			i=i+1
+		end while
+		if e == 0 then
+			if Blocks[-1].len == 16 then Blocks = Blocks + [[0]] else Blocks[-1] = Blocks[-1] + [0]
+		end if
+	end while
+	
+	if e > 0 then
+		Blocks[-1][-1] = Blocks[-1][-1] + (2147483648/256^(4-e))
+	else
+		Blocks[-1][-1] = 2147483648
+	end if
+	
+	if Blocks[-1].len == 16 then Blocks = Blocks + [[0]]
+	while Blocks[-1].len != 15
+		Blocks[-1] = Blocks[-1] + [0]
+	end while
+	
+	Blocks[-1] = Blocks[-1] + [st.len*8]
+	
+	add = function(a, b)
+		return (a + b) % 4294967296
+	end function
+	
+	XOR = function(a, b)
+		return bitwise("^", floor(a/65536), floor(b/65536))*65536+bitwise("^", a%65536, b%65536)
+	end function
+	
+	AND = function(a, b)
+		return bitwise("&", floor(a/65536), floor(b/65536))*65536+bitwise("&", a%65536, b%65536)
+	end function
+	
+	OR = function(a, b)
+		return bitwise("|", floor(a/65536), floor(b/65536))*65536+bitwise("|", a%65536, b%65536)
+	end function
+	
+	NOT = function(n)
+		return 4294967295-n
+	end function
+	
+	Ch = function(x, y, z)
+		return OR(AND(x, y), AND(NOT(x), z))
+	end function
+	
+	Maj = function(x, y, z)
+		return OR(OR(AND(x, y), AND(x, z)), AND(y, z))
+	end function
+	
+	shr = function(n, shifts)
+		return floor(n/2^shifts)
+	end function
+	
+	rotr = function(n, rots)
+		rots = 2^rots
+		return (n % rots) * (4294967296/rots) + floor(n/rots)
+	end function
+	
+	sigma0 = function(n)
+		return XOR(XOR(rotr(n, 7), rotr(n, 18)), shr(n, 3))
+	end function
+	
+	sigma1 = function(n)
+		return XOR(XOR(rotr(n, 17), rotr(n, 19)), shr(n, 10))
+	end function
+	
+	SIGMA0 = function(n)
+		return XOR(XOR(rotr(n, 2), rotr(n, 13)), rotr(n, 22))
+	end function
+	
+	SIGMA1 = function(n)
+		return XOR(XOR(rotr(n, 6), rotr(n, 11)), rotr(n, 25))
+	end function
+	
+	K = []
+	K = K + [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221]
+	K = K + [3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580]
+	K = K + [3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986]
+	K = K + [2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895]
+	K = K + [666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037]
+	K = K + [2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344]
+	K = K + [430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779]
+	K = K + [1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298]
+	
+	H = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225]
+	
+	for Block in Blocks
+		W = Block[0:]
+		
+		for i in range(16, 63)
+			W = W + [add(add(add(sigma1(W[i-2]), W[i-7]), sigma0(W[i-15])), W[i-16])]
+		end for
+		
+		a = H[0]
+		b = H[1]
+		c = H[2]
+		d = H[3]
+		e = H[4]
+		f = H[5]
+		g = H[6]
+		h = H[7]
+		
+		for i in range(0, 63)
+			T1 = add(add(add(add(SIGMA1(e), Ch(e, f, g)), h), K[i]), W[i])
+			T2 = add(SIGMA0(a), Maj(a, b, c))
+			h = g
+			g = f
+			f = e
+			e = add(d, T1)
+			d = c
+			c = b
+			b = a
+			a = add(T1, T2)
+		end for
+		H[0] = add(a, H[0])
+		H[1] = add(b, H[1])
+		H[2] = add(c, H[2])
+		H[3] = add(d, H[3])
+		H[4] = add(e, H[4])
+		H[5] = add(f, H[5])
+		H[6] = add(g, H[6])
+		H[7] = add(h, H[7])
+	end for
+	
+	hexTable = "0123456789abcdef"
+	output = ""
+	for i in H.indexes
+		for j in range(7)
+			output = output + hexTable[floor(H[i]/16^j) % 16]
+		end for
+	end for
+	return output
+end function
+
+//                      BIGINT FUNCTIONS
+FoxLib.Int={}
+
+FoxLib.Int.base=function()
+    out={}
+    out.int=[]
+    out.dec=[]
+    out.neg=0
+    out.classID="BigInt"
+    out.string=function()
+        st=""
+        if self.neg then st="-"
+        for i in self.int
+            st=st+str(i)
+        end for
+        if self.dec.len > 0 then
+            st=st+"."
+            for i in self.dec
+                st=st+str(i)
+            end for
+        end if
+        return st
+    end function
+    out.trim=function()
+        num=self.int[0:]
+        dec=self.dec[0:]
+        i=0
+        while num[i] == 0 and num[i:].len != 1
+            i=i+1
+        end while
+        num=num[i:]
+        if dec.len > 0 then
+            i=0
+            dec.reverse
+            while dec[i] == 0 and dec.len < i
+                i=i+1
+            end while
+            if dec[i] == 0 then dec=[] else dec=dec[i:]
+            dec.reverse
+        end if
+        self.int=num[0:]
+        self.dec=dec[0:]
+    end function
+    out.to_int=function()
+        return val(self.string)
+    end function
+    return out
+end function
+
+FoxLib.Int.copy=function(num=0)
+    if typeof(num) != "BigInt" then return 0
+    out=FoxLib.Int.base
+    out.neg=num.neg
+    out.int=num.int[0:]
+    out.dec=num.dec[0:]
+    return out
+end function
+
+FoxLib.Int.zero=function(length=1)
+    newint=FoxLib.Int.base
+    while newint.int.len < length
+        newint.int.push(0)
+    end while
+    return newint
+end function
+
+FoxLib.Int.one=function(length=1)
+    newint=FoxLib.Int.base
+    while newint.int.len < length
+        if newint.int.len+1 == length then newint.int.push(1) else newint.int.push(0)
+    end while
+    return newint
+end function
+
+FoxLib.Int.rnd=function(length=1)
+    newint=FoxLib.Int.base
+    while newint.int.len < length
+        n=floor(rnd*10)
+        if n > 9 or n < 0 then continue
+        newint.int.push(n)
+    end while
+    return newint
+end function
+
+FoxLib.Int.fromint=function(num=0)
+    newint=FoxLib.Int.base
+    if not num isa string and not num isa number then return 0
+    if not num isa string then num=str(num)
+    if not val(num) isa number then return 0
+    if num[0] == "-" then
+        newint.neg=1
+        num=num[1:]
+    end if
+
+    for i in num
+        if "0123456789".indexOf(i) == null then break
+        newint.int.push(val(i))
+    end for
+    
+    if num.hasIndex(__i_idx) and num[__i_idx] == "." then
+        num=num[__i_idx+1]
+        for i in num
+            if "0123456789".indexOf(i) == null then break
+            newint.dec.push(val(i))
+        end for
+    end if
+
+    return newint
+end function
+
+
+FoxLib.Int.math={}
+
+FoxLib.Int.math.add=function(num1=1,num2=1)
+    if typeof(num1) != "BigInt" then
+        num1=FoxLib.Int.fromint(num1)
+        if not num1 then return 0
+    end if
+    if typeof(num2) != "BigInt" then
+        num2=FoxLib.Int.fromint(num2)
+        if not num2 then return 0
+    end if
+
+    negAdd=0
+    if num1.neg and num2.neg then negAdd=1
+    if not negAdd then
+        if num1.neg then
+            num1.neg=0
+            return FoxLib.Int.math.sub(num2,num1)
+        else if num2.neg then
+            num2.neg=0
+            return FoxLib.Int.math.sub(num1,num2)
+        end if
+    end if
+
+    A=num1.int[0:]+num1.dec[0:]
+    Aintlen=num1.int.len
+    Adeclen=num1.dec.len
+
+    B=num2.int[0:]+num2.dec[0:]
+    Bintlen=num2.int.len
+    Bdeclen=num2.dec.len
+
+    while Adeclen < Bdeclen
+        A.push(0)
+        Adeclen=Adeclen+1
+    end while
+
+    while Bdeclen < Adeclen
+        B.push(0)
+        Bdeclen=Bdeclen+1
+    end while
+
+    A.reverse
+    B.reverse
+
+    while Aintlen < Bintlen
+        A.push(0)
+        Aintlen=Aintlen+1
+    end while
+
+    while Bintlen < Aintlen
+        B.push(0)
+        Bintlen=Bintlen+1
+    end while
+
+    outnum=[]
+
+    i=0
+    while 1
+        n=[]
+        if not A.indexes.hasIndex(i) and not B.indexes.hasIndex(i) then break
+
+        calc=A[i]+B[i]
+
+        if calc > 9 then
+            c=i+1
+            added=0
+            while A.indexes.hasIndex(c)
+                if A[c] < 9 then
+                    A[c]=A[c]+1
+                    added=1
+                    break
+                end if
+                if A[c] == 9 then A[c]=0
+                c=c+1
+            end while
+            if not A.hasIndex(c) and not added then A.push(1)
+            calc=calc-10
+        end if
+
+        for c in str(calc)
+            n.push(c)
+        end for
+
+        n.reverse
+
+        for c in n
+            outnum.push(val(c))
+        end for
+
+        i=i+1
+    end while
+
+    out=FoxLib.Int.base
+    out.int=outnum[Adeclen:]
+    out.dec=outnum[:Adeclen]
+    out.neg=negAdd
+    out.int.reverse
+    out.dec.reverse
+    //if FoxLib.Int.math.equalto(FoxLib.Int.math.abs(out),0) then out.neg=0
+    return out
+end function
+
+
+//                      HACKING FUNCTIONS
+FoxLib.VulnV={}
+
+FoxLib.VulnV.Decipher=function(cp=null,hash=null)
+    if not (cp or hash) then return
+    if hash.len < 32 then return
+    hash=hash.split(":")[-1]
+    if hash.len < 32 then return
+    hash=hash[:32]
+    pass=cp.decipher(hash)
+    return pass
+end function
+
+FoxLib.VulnV.Exploit=function(mx=null,ml=null,args=null)
+    if not (mx or ml) then return
+    scan=mx.scan(ml)
+    out={}
+    out.db={}
+    out.db.name=ml.lib_name
+    out.db.ver=ml.version
+    out.db.exploits=[]
+    for mem in scan
+        ex={}
+        ex.mem=mem
+        ex.vulns=[]
+        mems=mx.scan_address(ml,mem).split("Unsafe check: ")
+        for ent in mems
+            if ent == mems[0] then continue
+            exp=ent[ent.indexOf("<b>")+3:ent.indexOf("</b>")]
+            if not args then result=ml.overflow(mem,exp) else result=ml.overflow(mem,exp,args)
+            v={}
+            v.vuln=exp
+            v.result=result
+            ex.vulns.push(v)
+        end for
+        out.db.exploits.push(ex)
+    end for
+    return out
+end function
+

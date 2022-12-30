@@ -1,0 +1,111 @@
+ips=get_shell.host_computer.File(current_path+"/players.enc")
+if not ips then get_shell.host_computer.touch(current_path,"players.enc")
+ips=get_shell.host_computer.File(current_path+"/players.enc")
+if ips.get_content.len == 0 and params.len != 1 then exit("No IPs found ("+program_path.split("/")[-1]+" [ip]")
+if params.len > 1 then exit("Invalid parameters")
+
+encrypt=function(pass,secret,type)
+
+	cryptChars=function(pass)
+		if typeof(pass) == "string" then
+		newList=[]
+		for chr in pass
+			newList.push(bitwise("^",chr.code,key))
+		end for
+		return newList.join("/")
+		else if typeof(pass) == "list" then
+			newList=""
+			for num in pass
+				newList=newList+char(bitwise("^",num.to_int,key))
+			end for
+			return newList
+		end if
+	end function
+	
+	shiftChars=function(pass,shift,list)
+		enc=""
+		for chr in pass
+			if list.indexOf(chr) == null then continue
+			newChar=shift[list.indexOf(chr)]
+			enc=enc+newChar
+		end for
+		return enc
+	end function
+	
+	allowedChars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789/_.@=!#$%^&*()-+|?<>"
+	shiftedChars="S+49K_7?^VL0s6yOe$b#A.X!T=EQP)H>imv@nZB8gw(tpaoM2<jYNC1l%GDF&JRzfr*/hc3|qdWk5xu-UI"
+	passLen=pass.len
+	key=0
+	for chr in secret
+		key=key+chr.code
+	end for
+	if type == "enc" then
+		enc1=cryptChars(pass)
+		crypt=shiftChars(enc1,shiftedChars,allowedChars)
+	else if type == "dec" then
+		dec=shiftChars(pass,allowedChars,shiftedChars)
+		dec=dec.split("/")
+		dec=cryptChars(dec)
+		crypt=dec
+	end if
+	return(crypt)
+end function
+
+if params.len == 1 then
+	ip=params[0]
+	router=get_router(ip)
+	if not router then exit("Invalid IP")
+	routerIP=router.local_ip.split(".")[:3].join(".")
+	lans=[]
+	for l in router.devices_lan_ip
+		if l.split(".")[:3].join(".") == routerIP then lans.push(l)
+	end for
+	
+	check=null
+	for l in ips.get_content.split("\n")
+		if encrypt(l.split(":")[0],"player","dec") == ip then check=l
+	end for
+	if check != null then
+		detected=0
+		if lans.len != l.split(":")[1].to_int then detected=1
+		nums=[]
+		for l in lans
+			nums.push(l.split(".")[-1].to_int)
+		end for
+		nums.sort
+		if nums.len != nums[-1] then detected=1
+		if detected then exit("<color=red><b>Network changed!</b></color>") else exit("No network changes")
+	end if
+	
+	cont=ips.get_content.split("\n").push(encrypt(ip,"player","enc")+":"+lans.len)
+	while cont.indexOf("") != null
+		cont.remove(cont.indexOf(""))
+	end while
+	ips.set_content(cont.join(char(10)))
+	exit
+end if
+
+for i in ips.get_content.split("\n")
+	if i == "" then continue
+	detected=0
+	ip=encrypt(i.split(":")[0],"player","dec")
+	num=i.split(":")[-1].to_int
+	nums=[]
+	
+	router=get_router(ip)
+	if not router then continue
+	routerIP=router.local_ip.split(".")[:3].join(".")
+	lans=[]
+	for l in router.devices_lan_ip
+		if l.split(".")[:3].join(".") == routerIP then lans.push(l)
+	end for
+	
+	if lans.len != num then detected=1
+	
+	for l in lans
+		nums.push(l.split(".")[-1].to_int)
+	end for
+	nums.sort
+	if nums.len != nums[-1] then detected=1
+	if detected then print("<color=red><b>"+ip+" network change!</b></color>") else print(ip+", no change")
+end for

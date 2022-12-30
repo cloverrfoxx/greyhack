@@ -1,0 +1,287 @@
+//import_code("/root/Bytes")
+apt=include_lib("/lib/aptclient.so")
+ver="1.1.1"
+GB=1000000000
+logo="-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"
+logo=logo+"   ______    __                      __   _____            ____      \n"
+logo=logo+"  / ____/   / /  ____   __  __  ____/ /  / ___/  ____ _   / __/  ___ \n"
+logo=logo+" / /       / /  / __ \ / / / / / __  /   \__ \  / __ `/  / /_   / _ \\n"
+logo=logo+"/ /___    / /  / /_/ // /_/ / / /_/ /   ___/ / / /_/ /  / __/  /  __/\n"
+logo=logo+"\____/   /_/   \____/ \__,_/  \__,_/   /____/  \__,_/  /_/     \___/ \n"
+logo=logo+"-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"
+logo=logo+"v. "+ver+"\n"
+logo=logo+"<color=#6A855E><i>Your one-stop file storage shop!</i></color>"
+print(logo)
+//if apt then
+//	sources=get_shell.host_computer.File("/etc/apt/sources.txt")
+//	if sources and sources.has_permission("r") then
+//		inSource=false
+//		sources=sources.get_content.split("\n")
+//		for source in sources
+//			source=source.split(":")
+//			if source[0] == "    ""93.43.53.184""" then inSource=true
+//		end for
+//		if not inSource then
+//			apt.add_repo("93.43.53.184",1542)
+//			apt.update
+//		end if
+//		out=apt.check_upgrade(program_path)
+//		if out then
+//			print("Update found!")
+//			apt.install("CloudSafe",parent_path(program_path))
+//			get_shell.launch(program_path)
+//			exit
+//		end if
+//	end if
+//end if
+
+print("Establishing connection to server. . .")
+server=get_shell.connect_service
+if typeof(server) != "shell" then exit("Could not connect.")
+if server.host_computer.File("/server/.CloudSafe/maintenance.cfg").get_content != "false" then exit(server.host_computer.File("/server/.CloudSafe/maintenance.cfg").get_content)
+print("Connected!")
+
+encrypt=function(password)
+	o=[]
+	for ch in password
+		k=ch.code*10
+		a=k*4
+		s=a+100*10
+		t=s+1000*10*2000+10000000000
+		o.push("ДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийл©"+"ДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийл©"+bitwise("^",t,7777)+"ДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийл©"+"ДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийл©")
+	end for
+	return o.join("ДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийлДЖЁЙЛбд¶жёийл©")
+end function
+
+login=function(fuser,fpass)
+	output={}
+	output.bool=1
+	output.stderr="Could not verify your identity. (Incorrect username or password.)"
+	output.stdout=0
+	userAcc=server.host_computer.File("/server/.CloudSafe/users/"+fuser+"/passwd.enc")
+	if not userAcc then
+		output.bool=0
+		return(output)
+	end if
+	userData=userAcc.get_content
+	if encrypt(fpass) == userData then
+		output.stdout=fuser+":"+fpass
+		return output
+	else
+		output.bool=0
+		return(output)
+	end if
+end function
+
+register=function()
+	output={}
+	output.bool=1
+	output.stdout=0
+	output.stderr=0
+	illegalChars=[":",",",".","/","\","[","{","(","]","}",")","-","_","="," ","|","<",">","~","`","*","&","^","%","$","#","@","!"]
+	user=user_input("[username]~$")
+	for ilchar in illegalChars
+		for chr in user
+			if chr==ilchar then exit("Illegal characters used in username!")
+		end for
+	end for
+	if server.host_computer.File("/server/.CloudSafe/users/"+user) then
+		output.bool=0
+		output.stderr="User exists!"
+		return output
+	end if
+	RPass=user_input("[password]~$")
+	CPass=user_input("[confirm]~$")
+	if CPass != RPass then
+		output.bool=0
+		output.stderr="Passwords do not match!"
+		return output
+	end if
+	print("Creating an account (10 BTC)")
+	opt=user_input("Continue? [Y/N]~$").lower
+	if opt != "y" then
+		output.bool=0
+		output.stderr="Purchase declined"
+		return output
+	end if
+	coins="10"
+	transf=BTC.transfer(owner,coins,0,0)
+	if transf.bool then
+		print(transf.stdout)
+	else
+		output.bool=0
+		output.stderr="Purchase failure"
+		return output
+	end if
+	print("[%]Creating account: "+user)
+	server.host_computer.create_folder("/server/.CloudSafe/users",user)
+	server.host_computer.create_folder("/server/.CloudSafe/users/"+user,"files")
+	path="/server/.CloudSafe/users/"+user
+	server.host_computer.touch(path,"passwd.enc")
+	server.host_computer.touch(path,"storage")
+	server.host_computer.File(path).chmod("o-wrx",1)
+	server.host_computer.File(path).chmod("u-wrx",1)
+	server.host_computer.File(path).chmod("g-wrx",1)
+	server.host_computer.File(path+"/passwd.enc").set_content(encrypt(CPass))
+	server.host_computer.File(path+"/storage").set_content(GB)
+	output.stdout=user+":"+CPass
+	return output
+end function
+
+opt=null
+while opt != "register" or opt != "login"
+	print("[Login]
+[Register]")
+	opt=user_input("~$").lower
+	if opt == "login" then
+		user=user_input("[username]~$")
+		pass=user_input("[password]~$",true)
+		output=login(user,pass)
+		if output.bool then
+			print("Successful login!")
+			creds=output.stdout.split(":")
+			break
+		end if
+		print(output.stderr)
+		continue
+	end if
+	if opt == "register" then
+		output=register()
+		if output.bool then
+			print("[+]User created!")
+			creds=output.stdout.split(":")
+			break
+		end if
+		print(output.stderr)
+		continue
+	end if
+end while
+
+ufiles=server.host_computer.File("/server/.CloudSafe/users/"+creds[0]+"/files")
+
+help=function()
+	print("[Files]
+[Upload]
+[Download]
+[Remove]
+[Account]
+[Help]
+[Exit]")
+end function
+help()
+while true
+	term=user_input("~$").lower
+	if term == "help" then help()
+	if term == "exit" then exit("Exiting!")
+	if term == "files" then
+		files=ufiles.get_files
+		output="Name / Size\n"
+		for file in files
+			name=file.name
+			size=file.size
+			output=output+name+" / "+size+"\n"
+		end for
+		print(format_columns(output))
+		continue
+	end if
+	if term == "upload" then
+		maxspace=server.host_computer.File("/server/.CloudSafe/users/"+creds[0]+"/storage").get_content.to_int
+		space=0
+		for file in ufiles.get_files
+			space=space+file.size.to_int
+		end for
+		path=user_input("[FULL File path]~$")
+		if not get_shell.host_computer.File(path) then
+			print("File does not exist")
+			continue
+		end if
+		if not get_shell.host_computer.File(path).has_permission("r") then
+			print("No permissions to file")
+			continue
+		end if
+		if get_shell.host_computer.File(path).is_folder then
+			print("Cannot upload a folder!")
+			continue
+		end if
+		if server.host_computer.File(ufiles.path+"/"+path.split("/")[-1]) then
+			print("File already exists")
+			continue
+		end if
+		if space+get_shell.host_computer.File(path).size > maxspace and server.host_computer.File("/server/.CloudSafe/users/"+creds[0]+"/storage").get_content != "inf" then
+			print("Exceeds maximum space!")
+			continue
+		end if
+		get_shell.scp(path,ufiles.path,server)
+		up=server.host_computer.File(ufiles.path+"/"+path.split("/")[-1])
+		up.chmod("o-wrx")
+		up.chmod("u-wrx")
+		up.chmod("g-wrx")
+		print("Uploaded "+path+"!")
+		continue
+	end if
+	if term == "download" then
+		file=user_input("[File]~$")
+		if not server.host_computer.File(ufiles.path+"/"+file) then
+			print("File does not exist")
+			continue
+		end if
+		server.scp(ufiles.path+"/"+file,current_path,get_shell)
+		print("Downloaded "+file+"!")
+		continue
+	end if
+	if term == "remove" then
+		file=user_input("[File]~$")
+		if not server.host_computer.File(ufiles.path+"/"+file) then
+			print("File does not exist, lucky you!")
+			continue
+		end if
+		server.host_computer.File(ufiles.path+"/"+file).delete
+		print("Deleted "+file+"!")
+	end if
+	if term == "account" then
+		print("Hello "+creds[0]+"!")
+		print("Current maximum space: "+server.host_computer.File("/server/.CloudSafe/users/"+creds[0]+"/storage").get_content)
+		space=0
+		for file in ufiles.get_files
+			space=space+file.size.to_int
+		end for
+		print("Current used space: "+space+"/"+server.host_computer.File("/server/.CloudSafe/users/"+creds[0]+"/storage").get_content)
+		print("[Upgrade]
+[Delete]
+[Return]")
+		while true
+			opt=user_input("~$").lower
+			if opt == "upgrade" and server.host_computer.File("/server/.CloudSafe/users/"+creds[0]+"/storage").get_content != "inf" then
+				if server.host_computer.File("/server/.CloudSafe/users/"+creds[0]+"/storage").get_content=="inf" then continue
+				print("Purchasing +1 GB Storage Space (10 BTC)")
+				opt=user_input("<color=red>Continue? [Y/N]~$").lower
+				if opt == "y" then
+					coins="10"
+					output=BTC.transfer(owner,coins,0,0)
+					if output.bool then
+						print(output.stdout)
+					else
+						print("Purchase failure")
+						continue
+					end if
+					space=server.host_computer.File("/server/.CloudSafe/users/"+creds[0]+"/storage").get_content.split.to_int
+					space=space+GB
+					server.host_computer.File("/server/.CloudSafe/users/"+creds[0]+"/storage").set_content(space)
+				end if
+			end if
+			if opt == "delete" then
+				print("This will irreversably delete all of your data!")
+				opt=user_input("<color=red>Continue? [Y/N]~$").lower
+				if opt == "y" then
+					print("[-]Removing user")
+					server.host_computer.File("/server/.CloudSafe/users/"+creds[0]).delete
+					exit("[%]User deleted")
+				end if
+			end if
+			if opt == "return" then break
+		end while
+	end if
+end while
+
+
+

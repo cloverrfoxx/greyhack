@@ -1,0 +1,28 @@
+print("<b>Hide & Seek</b>")
+file=get_shell.host_computer.File(current_path+"/websites")
+mailfile=get_shell.host_computer.File(current_path+"/email")
+if not file then get_shell.host_computer.touch(current_path,"websites")
+file=get_shell.host_computer.File(current_path+"/websites")
+if file.get_content.len<1 then exit("No email websites found in "+current_path+"/websites")
+if mailfile then
+	umail=mailfile.get_content.split(":")[0]
+	umaill=mailfile.get_content.split(":")[1]
+else
+	umail=user_input("Finder email: ")
+	umaill=user_input("Finder email pass: ")
+end if
+mail=mail_login(umail,umaill)
+if not mailfile then
+	get_shell.host_computer.touch(current_path,"email")
+	get_shell.host_computer.File(current_path+"/email").set_content(umail+":"+umaill)
+end if
+if typeof(mail) == "string" then exit(mail)
+username=user_input("User: ")
+print("Finding <b>"+username+"</b>'s email in database. . .")
+for line in file.get_content.split(char(10))
+	if not line.len then continue
+	print("Trying "+username+"@"+line+" "+(__line_idx+1)+"/"+file.get_content.split(char(10)).len)
+	email=mail.send(username+"@"+line,"null","<b><color=red>Found you.</color></b>")
+	if typeof(email) == "number" then exit("<b>FOUND "+username+"@"+line+"</b>")
+	wait(2)
+end for

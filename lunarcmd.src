@@ -1,0 +1,2945 @@
+cmds={}
+helplist={}
+
+//defaults
+helplist.defaults="-=Defaults=-"
+
+helplist.help={"params": "[command]", "usage": "List all commands, or list command usage!"}
+helplist.fs={"params": "[FoxScriptCode]", "usage": "Invoke the FoxScript code terminal"}
+helplist.exit={"params": "N/A", "usage": "Go back a shell, or exit Lunar"}
+helplist.clear={"params": "N/A", "usage": "Clears the screen"}
+helplist["while"]={"params": "[quantity][command][args]", "usage": "Repeat a command"}
+helplist.setup={"params": "[-m/-rs/-ps]", "usage": "Setup Lunar"}
+helplist.anon={"params": "N/A", "usage": "Enable or disable hidden mode"}
+helplist.sshs={"params": "[-c]", "usage": "Displays SSH virus logs, or clears them"}
+helplist.passwds={"params": "[-c]", "usage": "Displays passwd virus logs, or clears them"}
+helplist.mailbomb={"params": "[recipient][subject][body][quantity]", "usage": "Spams an email's inbox"}
+helplist.clrmail={"params": "N/A", "usage": "Clears emails"}
+helplist.readmail={"params": "N/A", "usage": "Read emails"}
+
+//text controls
+helplist.text="-=Text=-"
+
+helplist.vim={"params": "[file][text]", "usage": "Text editor"}
+helplist.cat={"params": "[path]", "usage": "Get the contents of a file"}
+helplist.pwd={"params": "N/A", "usage": "Outputs current directory"}
+helplist.whoami={"params": "N/A", "usage": "Outputs current user"}
+helplist.whereami={"params": "N/A", "usage": "Outputs current public IP address"}
+helplist.echo={"params": "[string]", "usage": "Echos input as joined output"}
+helplist.grep={"params": "[searchTerm][string]", "usage": "Finds the line containing the search term"}
+helplist.crack={"params": "[hash]", "usage": "Crack a password hash"}
+helplist.encrypt={"params": "[string][key][enc/dec]", "usage": "Encrypt or decrypt messages"}
+helplist.compress={"params": "[enc/dec][string]", "usage": "Compress or decompress messages"}
+helplist.md5={"params": "[string]", "usage": "Hashes a string using MD5"}
+helplist.S256={"params": "[string]", "usage": "Hashes a string using Sha256"}
+helplist.rot={"params": "[pos][string]", "usage": "Encrypts a string using ROT"}
+helplist.vigenere={"params": "[string][key][enc/dec]", "usage": "Encrypts a string using the Vigenere cipher"}
+helplist.base={"params": "[number][orad][irad]", "usage": "Changes the base of numbers"}
+
+//file controls
+helplist.files="-=Files=-"
+
+helplist.ls={"params": "[path]", "usage": "Lists files"}
+helplist.tree={"params": "N/A", "usage": "Lists the entire file system along with file vulnerabilities"}
+helplist.cd={"params": "[path]", "usage": "Changes working directory"}
+helplist.mv={"params": "[file][newPath]", "usage": "Moves files"}
+helplist.cp={"params": "[file][newPath]", "usage": "Copies files"}
+helplist.mkdir={"params": "[path]", "usage": "Creates a folder"}
+helplist.touch={"params": "[path]", "usage": "Create a text file"}
+helplist.build={"params": "[src][path]", "usage": "Builds a source file"}
+helplist.shrink={"params": "[src][size]", "usage": "Shrinks source files"}
+helplist.rm={"params": "[file]", "usage": "Deletes files"}
+helplist.chmod={"params": "[file][perms][-r]", "usage": "Changes the permission levels of a file"}
+helplist.chown={"params": "[file][owner][-r]", "usage": "Changes the owner of a file"}
+helplist.chgrp={"params": "[file][group][-r]", "usage": "Changes the group of a file"}
+
+//device controls
+helplist.devices="-=Devices=-"
+
+helplist.passwd={"params": "[user][password]", "usage": "Change users password"}
+helplist.bash={"params": "[file][params]", "usage": "Runs a CLI program"}
+helplist.ps={"params": "N/A", "usage": "Lists processes"}
+helplist.bios={"params": "N/A", "usage": "Perform a full system analysis"}
+helplist.kill={"params": "[PID/all]", "usage": "Terminates a running process"}
+helplist.sudo={"params": "[user][password]", "usage": "Switch account"}
+helplist.useradd={"params": "[user][password]", "usage": "Adds a new user"}
+helplist.userdel={"params": "[user]", "usage": "Deletes a user"}
+helplist.groups={"params": "[user]", "usage": "List users groups"}
+helplist.groupadd={"params": "[user][group]", "usage": "Adds user to group"}
+helplist.groupdel={"params": "[user][group]", "usage": "Removes user from group"}
+helplist.sessions={"params": "N/A", "usage": "Open a different session!"}
+helplist.set={"params": "[variable][content]", "usage": "Change a variable in case it is set incorrectly"}
+
+//network controls
+helplist.network="-=Network=-"
+
+helplist.ssh={"params": "[user][password][ip][port]", "usage": "Connect to a server"}
+helplist.nmap={"params": "N/A", "usage": "Maps out the selected RHost"}
+helplist.shell={"params": "[-y/-s]", "usage": "Starts a terminal on the connected system"}
+helplist.shells={"params": "N/A", "usage": "Open a different shell!"}
+helplist.apt={"params": "[update/upgrade/search/show/add/del/install][args]", "usage": "apt-get service"}
+helplist.rootkit={"params": "[-s]", "usage": "Uploads root attack kit"}
+helplist.put={"params": "[file][path]", "usage": "Uploads a file"}
+helplist.get={"params": "[file][path]", "usage": "Downloads a file"}
+helplist.rhost={"params": "[ip]", "usage": "Selects an IP for attacks"}
+helplist.random={"params": "N/A", "usage": "Generates a random IP and sets it at the RHost"}
+helplist.ping={"params": "[ip]", "usage": "Test connection to IP"}
+helplist.target={"params": "[port][args]", "usage": "Performs an attack on the selected RHost"}
+helplist.escalate={"params": "[args]", "usage": "Escalate access using local libraries"}
+helplist.results={"params": "[-c]", "usage": "Shows results from target/escalate, or clears them"}
+helplist.exploits={"params": "[-c]", "usage": "Shows every vulnerability saved, or clears them"}
+helplist.use={"params": "[exp]", "usage": "Use an exploit from the results list"}
+helplist.rss={"params": "N/A", "usage": "Remote reverse shell server connector"}
+helplist.rsi={"params": "N/A", "usage": "Reverse shell interface"}
+helplist.sniffer={"params": "[-y]", "usage": "Sniffs connections"}
+helplist.inet={"params": "[bssid][essid]", "usage": "Hacks wifi connections"}
+helplist.dictssh={"params": "[ip][port][user]", "usage": "Bruteforces an SSH connection"}
+helplist.brutessh={"params": "[ip][port][user]", "usage": "Bruteforces an SSH connecting using Base 62 counting"}
+helplist.dictsudo={"params": "[user]", "usage": "Bruteforces user password"}
+helplist.brutesudo={"params": "[user]", "usage": "Bruteforces user password using Base 62 counting"}
+
+//server control
+helplist.revoke={"params": "N/A", "usage": "Revokes fingerprint access token"}
+
+//destructive controls
+helplist.destructive="-=Destructive=-"
+
+helplist.brick={"params": "N/A", "usage": "Deletes all files in /"}
+helplist.dos={"params": "N/A", "usage": "Local Denial Of Service attack"}
+helplist.rdos={"params": "[quantity]", "usage": "Memory Denial Of Service attack"}
+helplist.fdos={"params": "[quantity][name]", "usage": "Storage Denial Of Service attack"}
+helplist.cdos={"params": "[quantity]", "usage": "CPU Denial Of Service attack"}
+
+//virus controls
+helplist.virus="-=Viruses=-"
+
+helplist.infect={"params": "N/A", "usage": "Infects /bin/ssh, /bin/passwd, and /bin/ps"}
+helplist.rshell={"params": "[ip][process][port]", "usage": "Creates a reverse shell connection"}
+helplist.ransom={"params": "N/A", "usage": "Encrypt a system and demand payment for decryption"}
+helplist.inject={"params": "[file]", "usage": "Inject reverse shell code into a source code file"}
+helplist.aptjack={"params": "N/A", "usage": "Jack the apt stream and infect every file!"}
+
+//security controls
+helplist.security="-=Security=-"
+
+helplist.fyrwall={"params": "N/A", "usage": "SOLSTICE Fyrwall Security Analysis System"}
+helplist.secure={"params": "[-s/-h]", "usage": "Secures your server or home computer"}
+helplist.corrupt={"params": "N/A", "usage": "Corrupts /var/system.log, covers disconnect tracks"}
+
+//clipboard control
+helplist.clipboard="-=Clipboard=-"
+helplist.copy={"params": "[name][string]", "usage": "Copies text to the clipboard"}
+helplist.ccopy={"params": "N/A", "usage": "Clears the clipboard"}
+
+cmds.help=function(sin)
+    out={}
+    out.bool=2
+    if sin.len then
+    	if helplist.hasIndex(sin[0]) then
+    		print("<color=#7141c4>"+sin[0]+"</color>")
+    		print("<color=#8254d1>"+helplist[sin[0]].params+"</color>")
+    		print("<color=#8254d1>"+helplist[sin[0]].usage+"</color>")
+    	end if
+    	return out
+    end if
+    output=[]
+    l=["<color=#7141c4>Command","Usage</color>"]
+    output.push(l.join(" "))
+    for i in helplist.indexes
+    	if typeof(helplist[i]) == "string" then
+    		output.push("\n<color=#7141c4>"+helplist[i]+"</color>\n")
+    	else
+    		l=["<color=#7141c4>"+i+"</color>","<color=#8254d1>"+helplist[i].params+"</color>"]
+    		output.push(l.join(" "))
+    	end if
+    end for
+    print(format_columns(output.join("\n")))
+    return out
+end function
+
+cmds.exit=function(sin)
+    out={}
+    out.bool=2
+    if not origShell then
+    	if globals.sessions[session].shells.len == 0 then
+			globals.sessions.remove(session)
+    		globals.session=0
+    		print("<color=#7141c4>[Lunar] </color><color=#8254d1>Session reverted to 0</color>")
+    		xshell=globals.sessions[session].shell
+			globals.session=0
+    		globals.origShell=xshell.orig
+    		globals.shell=xshell.shell
+    		globals.xuser=xshell.user
+    		globals.xpath=xshell.path
+    	else
+    		xshell=globals.sessions[session].shells.pop
+			globals.sessions[session].shell=xshell
+    		globals.origShell=xshell.orig
+    		globals.shell=xshell.shell
+    		globals.xuser=xshell.user
+    		globals.xpath=xshell.path
+    	end if
+    else
+    	exit("<color=#7141c4>[Lunar] </color><color=#8254d1>Closing Lunar, come back soon!</color>")
+    end if
+    return out
+end function
+
+cmds.clear=function(sin)
+    out={}
+    out.bool=2
+    clear_screen
+    return out
+end function
+
+cmds.crack=function(sin)
+    out={}
+    out.bool=1
+    if sin.len != 1 then return error("Invalid parameters")
+    if server.shell then out.out=decipher(server.cp,sin[0]) else out.out=decipher(cp,sin[0])
+	if not out.out then out.bool=3
+    return out
+end function
+
+cmds.setup=function(sin)
+    out={}
+    out.bool=2
+    if not server.shell then
+    	out.bool=3
+    	return out
+    end if
+    if sin.len > 1 then return error("Invalid parameters")
+    if anon and sin.len == 0 then return error("Hidden mode activated")
+    if sin.len == 0 then
+    	print("<color=#7141c4>Mail: </color><color=#8254d1>"+conf.mail.user+" "+conf.mail.pass+"</color>")
+    	print("<color=#7141c4>Server: </color><color=#8254d1>"+conf.rss.ip+" "+conf.rss.user+"@"+conf.rss.pass+" "+conf.rss.port+" / "+conf.rss.rport+"</color>")
+    	print("<color=#7141c4>Process: </color><color=#8254d1>"+conf.proc+"</color>")
+    	return out
+    end if
+    if sin[0] == "-m" then
+    	newmail=user_input("<color=#7141c4>[Email]$ </color><color=#8254d1>",anon)
+    	newepass=user_input("<color=#7141c4>[Pass]$ </color><color=#8254d1>",anon)
+    	test=mail_login(newmail,newepass)
+    	if typeof(test) == "string" then return error(test)
+    	conf.mail.user=newmail
+		conf.mail.pass=newepass
+    	xconf.set_content(encrypt(str(conf),"Lunar","enc"))
+    	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Email updated successfully</color>")
+    else if sin[0] == "-rs" then
+    	newserver=user_input("<color=#7141c4>[Server]$ </color><color=#8254d1>",anon)
+    	newuser=user_input("<color=#7141c4>[User]$ </color><color=#8254d1>",anon)
+    	newpass=user_input("<color=#7141c4>[Pass]$ </color><color=#8254d1>",anon)
+    	newport=user_input("<color=#7141c4>[Port]$ </color><color=#8254d1>").to_int
+    	if typeof(newport) != "number" then return error("Invalid port")
+    	newrport=user_input("<color=#7141c4>[RPort]$ </color><color=#8254d1>").to_int
+    	if typeof(newrport) != "number" then return error("Invalid port")
+		conf.rss.ip=newserver
+		conf.rss.user=newuser
+		conf.rss.pass=newpass
+		conf.rss.port=newport
+		conf.rss.rport=newrport
+    	xconf.set_content(encrypt(str(conf),"Lunar","enc"))
+    	print("<color=#7141c4>[Lunar] </color><color=#8254d1>RShell Server updated successfully</color>")
+    else if sin[0] == "-ps" then
+    	newproc=user_input("<color=#7141c4>[Name]$ </color><color=#8254d1>")
+    	conf.proc=newproc
+		xconf.set_content(encrypt(str(conf),"Lunar","enc"))
+    	print("<color=#7141c4>[Lunar] </color><color=#8254d1>RShell Process name updated successfully</color>")
+    end if
+    return out
+end function
+
+cmds.sshs=function(sin)
+    out={}
+    out.bool=2
+    logs="/root/sshs"
+	if not server.shell then
+    	out.bool=3
+    	return out
+    end if
+    sshs=server.shell.host_computer.File(logs)
+    if not sshs then return error("Could not obtain logs")
+    if sin.len == 1 and sin[0] == "-c" then
+    	sshs.set_content("<0%O<0w")
+    	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Cleared connection logs</color>")
+    	return out
+    end if
+    cont=sshs.get_content
+    if cont.len <= 7 then return error("No logs found")
+	cont=deserialize(encrypt(cont,"Lunar","dec"))
+    plog=[["<color=#7141c4><b>SOURCE","DEST","PORT","USER","PASS</b></color>"].join(" ")]
+
+    for log in cont
+    	plog.push(["<color=#7141c4>"+log.source,log.dest,log.port,log.user,log.pass+"</color>"].join(" "))
+    end for
+    print(format_columns(plog.join("\n")))
+    return out
+end function
+
+cmds.passwds=function(sin)
+    out={}
+    out.bool=2
+    logs="/root/passwd"
+	if not server.shell then
+    	out.bool=3
+    	return out
+    end if
+    sudos=server.shell.host_computer.File(logs)
+    if not sudos then return error("Could not obtain logs")
+    if sin.len == 1 and sin[0] == "-c" then
+	    sudos.set_content("<0%O<0w")
+	    print("<color=#7141c4>[Lunar] </color><color=#8254d1>Cleared passwd logs</color>")
+	    return out
+    end if
+    cont=sudos.get_content
+    if cont.len <= 7 then return error("No logs found")
+	cont=deserialize(encrypt(cont,"Lunar","dec"))
+    plog=[["<color=#7141c4><b>SOURCE","USER","PASS</b></color>"].join(" ")]
+
+    for log in cont
+	    plog.push(["<color=#7141c4>"+log.source,log.user,log.pass+"</color>"].join(" "))
+    end for
+    print(format_columns(plog.join("\n")))
+    return out
+end function
+
+cmds.clrmail=function(sin)
+    out={}
+    out.bool=2
+    if not server.shell then
+        umaila=user_input("<color=#7141c4>[Email]$ </color><color=#8254d1>",anon)
+        umaill=user_input("<color=#7141c4>[Pass]$ </color><color=#8254d1>",anon)
+    else
+		umaila=conf.mail.user
+		umaill=conf.mail.pass
+	end if
+    mail=mail_login(umaila,umaill)
+    if typeof(mail) == "string" then return error(mail)
+    mails=mail.fetch
+    for email in mails
+        id=email.split("MailID: ")[1].split("\n")[0]
+        print("<color=#7141c4>[Lunar] </color><color=#8254d1>Deleting "+id+"</color>")
+        mail.delete(id)
+    end for
+    return out
+end function
+
+cmds.readmail=function(sin)
+    out={}
+    out.bool=1
+    if not server.shell then
+        umaila=user_input("<color=#7141c4>[Email]$ </color><color=#8254d1>",anon)
+        umaill=user_input("<color=#7141c4>[Pass]$ </color><color=#8254d1>",anon)
+    else
+		umaila=conf.mail.user
+		umaill=conf.mail.pass
+	end if
+    mail=mail_login(umaila,umaill)
+    if typeof(mail) == "string" then return error(mail)
+    mails=mail.fetch
+    if mails.len == 0 then return out
+    ids=[]
+    num=0
+    for email in mails
+        id=email.split("MailID: ")[1].split("\n")[0]
+        email=email.split("\n")[3:]
+        from=email[0].split("From: ")[1]
+        subject=email[1].split("Subject: ")[1]
+        email=email[2:-1].join("\n")
+        print("<color=#7141c4>["+num+"]<br>[From] "+from+"<br>[Subj] "+subject+"<br>"+email+"</color>")
+        num=num+1
+        ids.push(id)
+    end for
+    opt=user_input("<color=#7141c4>[#]$ </color><color=#8254d1>").to_int
+    if opt > ids.len or opt < 0 then return out
+    out.out=mail.read(ids[opt]).split(char(10))[2:].join(char(10))
+    return out
+end function
+
+cmds.ls=function(sin)
+    out={}
+    out.bool=2
+    if sin.len > 1 then return error("Invalid parameters")
+    if sin.len == 1 then
+        if shelltype == "file" then file=getFile(getPath(sin[0])) else file=comp.File(getPath(sin[0]))
+    else
+        if shelltype == "file" then file=shell else file=comp.File(xpath)
+    end if
+    if not file then return error("Path does not exist")
+    if not file.is_folder then return error("Not a folder")
+
+    output=[]
+	l=["<color=#7141c4>"+file.name, file.owner, file.group, file.size, file.permissions+"</color>"]
+	output.push(l.join(" "))
+	l=["<color=#7141c4>[Name]","[Owner]","[Group]","[Size]","[Permissions]</color>\n"]
+	output.push(l.join(" "))
+	for f in file.get_folders+file.get_files
+		l=[]
+		l.push("<color=#7141c4>"+f.name)
+		l.push(f.owner)
+		l.push(f.group)
+		l.push(f.size)
+		l.push(f.permissions+"</color>")
+		output.push(l.join(" "))
+	end for
+	print(format_columns(output.join("\n")))
+	return out
+end function
+
+cmds.cd=function(sin)
+    out={}
+    out.bool=2
+    if sin.len > 1 then return error("Invalid parameters")
+    if sin.len == 0 then
+        if shelltype == "file" then
+			shell=getFile(home)
+			if not shell then shell=getFile("/")
+			globals.xpath=shell.path
+			globals.shell=shell
+		else
+			globals.xpath=home
+		end if
+        return out
+    end if
+	path=getPath(sin[0])
+    if shelltype == "file" then file=getFile(path) else file=comp.File(path)
+    if not file then return error("Path does not exist")
+    if not file.is_folder then return error("Not a folder")
+
+    if shelltype == "file" then globals.shell=file
+	globals.xpath=path
+    globals.sessions[session].shell.path=xpath
+    return out
+end function
+
+cmds.cat=function(sin)
+    out={}
+    out.bool=1
+    if sin.len != 1 then return error("Invalid parameters")
+    path=getPath(sin[0])
+    if shelltype == "file" then file=getFile(path) else file=comp.File(path)
+    if not file then return error("File does not exist")
+    if not file.has_permission("r") then return error("No permissions to file")
+    if file.is_folder then return error("Not a file")
+    if file.is_binary then return error("Binary file, cannot read")
+    out.out=file.get_content
+    return out
+end function
+
+cmds.grep=function(sin)
+    out={}
+    out.bool=2
+    if sin.len != 2 then return error("Invalid parameters")
+    sin[1]=sin[1].split("\n")
+    num=0
+    for l in sin[1]
+        if l.indexOf(sin[0]) != null then
+            if pipe.len then
+				out.bool=1
+                out.out=l
+                return out
+            end if
+            print("<color=#7141c4>["+sin[1].indexOf(l)+"] </color><color=#8254d1>"+l+"</color>")
+            num=num+1
+        end if
+    end for
+    if not num then return error("Could not find "+sin[0])
+    return out
+end function
+
+cmds.echo=function(sin)
+    out={}
+    out.bool=1
+    if sin.len == 0 then return error ("Invalid parameters")
+    out.out=sin.join(" ")
+    return out
+end function
+
+cmds.mkdir=function(sin)
+    out={}
+    out.bool=2
+    if shelltype == "file" then return error("Cannot create directories with a file shell")
+    if sin.len != 1 then return error("Invalid parameters")
+    path=getPath(sin[0])
+    name=path.split("/")[-1]
+    if comp.File(path) then return error("File exists")
+    path=parent_path(path)
+    if not comp.File(path) then return error("Path does not exist")
+    if not comp.File(path).is_folder then return error("Not a folder.")
+    if not comp.File(path).has_permission("w") then return error("No permissions to path")
+    comp.create_folder(path,name)
+    print("<color=#7141c4>[Lunar] </color><color=#8254d1>Folder created successfully</color>")
+    return out
+end function
+
+cmds.mv=function(sin)
+    out={}
+    out.bool=2
+    if sin.len != 2 then return error("Invalid parameters")
+    origFile=getPath(sin[0])
+    destFolder=getPath(sin[1])
+    if shelltype == "file" then file=getFile(origFile) else file=comp.File(origFile)
+    if not file then return error("File does not exist")
+    if shelltype == "file" then folder=getFile(destFolder) else folder=comp.File(destFolder)
+    name=""
+    if not folder then
+        pathParent=parent_path(destFolder)
+        if pathParent == destFolder then
+            name=destFolder
+            file.move(parent_path(file.path),name)
+            return out
+        else
+            if shelltype == "file" then folder=getFile(pathParent) else folder=comp.File(pathParent)
+            name=destFolder[destFolder.len-(destFolder.len-pathParent.len):]
+            if name[0] == "/" then name=name[1:]
+            if not folder then return error("Path does not exist")
+        end if
+    end if
+    if folder then
+        if parent_path(file.path) != parent_path(folder.path) or file.name != folder.name then
+            finalDest=folder.path
+            if name.len == 0 then name=file.name
+            if not folder.is_folder then
+                finalDest=parent_path(file.path)
+                name=folder.name
+            end if
+            file.move(finalDest,name)
+        end if
+    end if
+    print("<color=#7141c4>[Lunar] </color><color=#8254d1>File moved successfully</color>")
+    return out
+end function
+
+cmds.cp=function(sin)
+    out={}
+    out.bool=2
+    if sin.len != 2 then return error("Invalid parameters")
+    origFile=getPath(sin[0])
+    destFolder=getPath(sin[1])
+    if shelltype == "file" then file=getFile(origFile) else file=comp.File(origFile)
+    if not file then return error("File does not exist")
+    if shelltype == "file" then folder=getFile(destFolder) else folder=comp.File(destFolder)
+    name=""
+    if not folder then
+        pathParent=parent_path(destFolder)
+        if pathParent == destFolder then
+            name=destFolder
+            destFolder=file.parent.path
+            file.copy(destFolder,name)
+            return out
+        else
+            if shelltype == "file" then folder=getFile(pathParent) else folder=comp.File(pathParent)
+            name=destFolder[destFolder.len-(destFolder.len-pathParent.len):]
+            if name[0] == "/" then name=name[1:]
+            if not folder then return error("Path does not exist")
+        end if
+    end if
+    if folder then
+        if parent_path(file.path) != parent_path(folder.path) or file.name != folder.name then
+            finalDest=folder.path
+            if name.len == 0 then name=file.name
+            if not folder.is_folder then
+                finalDest=parent_path(file.path)
+                name=folder.name
+            end if
+            file.copy(finalDest,name)
+        end if
+    end if
+    print("<color=#7141c4>[Lunar] </color><color=#8254d1>File copied successfully</color>")
+    return out
+end function
+
+cmds.touch=function(sin)
+    out={}
+    out.bool=2
+    if shelltype == "file" then return error("Cannot create files with a file shell")
+    if sin.len != 1 then return error("Invalid parameters")
+    path=getPath(sin[0])
+    name=path.split("/")[-1]
+    if comp.File(path) then return error("File exists")
+    path=parent_path(path)
+    if not comp.File(path) then return error("Path does not exist")
+    if not comp.File(path).is_folder then return error("Not a folder")
+    if not comp.File(path).has_permission("w") then return error("No permissions to path")
+    comp.touch(path,name)
+    print("<color=#7141c4>[Lunar] </color><color=#8254d1>File created successfully</color>")
+    return out
+end function
+
+cmds.build=function(sin)
+    out={}
+    out.bool=2
+    if shelltype != "shell" then return error("Shell required")
+    if sin.len > 2 or sin.len == 0 then return error("Invalid parameters")
+    source=getPath(sin[0])
+    dest=xpath
+    if sin.hasIndex(1) then dest=getPath(sin[1])
+
+    source=comp.File(source)
+    dest=comp.File(dest)
+    if not source then return error("Invalid source code file")
+    if not dest then return error("Invalid destination")
+    output=shell.build(source.path,dest.path)
+    if output.len == 0 then
+        print("<color=#7141c4>[Lunar] </color><color=#8254d1>Build successful</color>")
+    else
+        out.bool=0
+        out.err=output
+    end if
+    return out
+end function
+
+cmds.shrink=function(sin)
+	out={}
+	out.bool=2
+	if shelltype != "shell" then return error("Shell required")
+	if sin.len != 2 then return error("Invalid parameters")
+	maxSize=sin[1].to_int
+	if typeof(maxSize) != "number" then return error("Invalid size")
+	path=getPath(sin[0])
+	origSource=comp.File(path)
+	if not origSource then return error("Invalid source code file")
+	dest=parent_path(path)
+	if not comp.File(dest) then return error("Invalid destination")
+	alpha="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	al=alpha.len
+	currLen=1
+	counters={}
+	start=time
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Attempting to build "+sin[0]+" to "+maxSize+" or lower</color>")
+	print("<align=right><color=#7141c4>-= <b><size=150%>-=-</size></b> =-</color></align>")
+	while 1
+		combo=al^currLen
+		for i in range(0,combo)
+			name=""
+			for q in range(0,(currLen-1))
+				counters["c"+q]={}
+				c=counters["c"+q]
+				if q == 0 then
+					init=i
+					c.c=init
+				else
+					init=counters["c"+(q-1)].c
+					c.c=floor(init/al)
+				end if
+				c.i=c.c%al
+				name=name+alpha[c.i]
+			end for
+			comp.touch(dest,name+".rawr")
+			comp.File(dest+"/"+name+".rawr").set_content(origSource.get_content)
+			shell.build(dest+"/"+name+".rawr",dest)
+			comp.File(dest+"/"+name+".rawr").delete
+			wait(0.1)
+			if not comp.File(dest+"/"+name) then continue
+			if comp.File(dest+"/"+name).size.to_int <= maxSize then
+				diff=maxSize-comp.File(dest+"/"+name).size.to_int
+				elapsed=(time-start)
+				print("<color=#7141c4>[Lunar] </color><color=#8254d1>Finished in ["+elapsed+"] seconds.</color>")
+				print("<color=#7141c4>[Lunar] </color><color=#8254d1>"+name+" "+comp.File(dest+"/"+name).size+" - "+diff+"</color>")
+				comp.File(dest+"/"+name).rename(origSource.name.split(".")[0])
+				print("<color=#7141c4>[Lunar] </color><color=#8254d1>Renaming "+name+" to "+origSource.name.split(".")[0]+"</color>")
+				return out
+			end if
+			comp.File(dest+"/"+name).delete
+			counters={}
+		end for
+		currLen=currLen+1
+	end while
+	return out
+end function
+
+cmds.rm=function(sin)
+	out={}
+	out.bool=2
+	if sin.len != 1 then return error("Invalid parameters")
+	path=getPath(sin[0])
+	if shelltype == "file" then file=getFile(path) else file=comp.File(path)
+	if not file then return error("File does not exist")
+	if not file.has_permission("w") then return error("No permissions to file")
+	if shelltype == "file" then f=getFile(parent_path(path)) else f=comp.File(parent_path(path))
+	if not f.has_permission("w") then return error("No permissions to path")
+	if file.path == xpath then globals.xpath == parent_path(xpath)
+	file.delete
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>File deleted successfully</color>")
+	return out
+end function
+
+cmds.chmod=function(sin)
+	out={}
+	out.bool=2
+	if sin.len < 2 or sin.len > 3 then return error("Invalid parameters")
+	perms=sin[1]
+	path=getPath(sin[0])
+	if sin.len != 3 then rec=0 else rec=1
+	if shelltype == "file" then file=getFile(path) else file=comp.File(path)
+	if not file then return error("File does not exist")
+	if not file.has_permission("w") and file.owner != xuser then return error("No permissions to file")
+	if perms.indexOf("+") != null then
+		perms=[perms[:perms.indexOf("+")],perms[perms.indexOf("+"):]]
+	else if perms.indexOf("-") != null then
+		perms=[perms[:perms.indexOf("-")],perms[perms.indexOf("-"):]]
+	else
+		return error("Invalid parameters")
+	end if
+	if not perms[0] then perms[0]="oug"
+	for perm in perms[0]
+		file.chmod(perm+perms[1],rec)
+	end for
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>chmod successful</color>")
+	return out
+end function
+
+cmds.chown=function(sin)
+	out={}
+	out.bool=2
+	if sin.len < 2 or sin.len > 3 then return error("Invalid parameters")
+	owner=sin[1]
+	path=getPath(sin[0])
+	if sin.len != 3 then rec=0 else rec=1
+	if shelltype == "file" then file=getFile(path) else file=comp.File(path)
+	if not file then return error("File does not exist")
+	if not file.has_permission("w") and file.owner != xuser then return error("No permissions to file")
+	file.set_owner(owner,rec)
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Owner changed successfully</color>")
+	return out
+end function
+
+cmds.chgrp=function(sin)
+	out={}
+	out.bool=2
+	if sin.len < 2 or sin.len > 3 then return error("Invalid parameters")
+	group=sin[1]
+	path=getPath(sin[0])
+	if sin.len != 3 then rec=0 else rec=1
+	if shelltype == "file" then file=getFile(path) else file=comp.File(path)
+	if not file then return error("File does not exist")
+	if not file.has_permission("w") and file.owner != xuser then return error("No permissions to path")
+	file.set_group(group,rec)
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Group changed successfully</color>")
+	return out
+end function
+
+cmds.sudo=function(sin)
+	out={}
+	out.bool=2
+	if not origShell then return error("Cannot change user on a remote connection")
+	if sin.len != 2 then return error("Invalid parameters")
+	sudosh=get_shell(sin[0],sin[1])
+	if not sudosh then return error("Invalid username or password")
+	globals.sessions[session].shells.push(sessions[sessions].shell)
+	globals.shell=sudosh
+	globals.origShell=0
+	globals.xuser=sin[0]
+	if sin[0] == "root" then globals.xpath="/root" else globals.xpath="/home/"+sin[0]
+    if not shell.host_computer.File(xpath) then globals.xpath="/"
+    globals.sessions[session].shell={"shell": shell, "user": xuser, "path": xpath, "orig": origShell}
+	return out
+end function
+
+cmds.passwd=function(sin)
+    out={}
+    out.bool=2
+    if shelltype == "file" then return error("Cannot change password with file shell")
+    if sin.len != 2 then return error("Invalid parameters")
+    output=comp.change_password(sin[0],sin[1])
+    if output==true then print("<color=#7141c4>[Lunar] </color><color=#8254d1>Password for "+sin[0]+" changed to "+sin[1]+"</color>")
+    if typeof(output) == "string" then return error(output)
+    return out
+end function
+
+cmds.useradd=function(sin)
+	out={}
+	out.bool=2
+    if shelltype == "file" then return error("Cannot add users with file shell")
+	if sin.len != 2 then return error("Invalid parameters")
+	output=comp.create_user(sin[0],sin[1])
+	if output==true then print("<color=#7141c4>[Lunar] </color><color=#8254d1>User "+sin[0]+" created</color>")
+	if typeof(output) == "string" then return error(output)
+	return out
+end function
+
+cmds.userdel=function(sin)
+	out={}
+	out.bool=2
+    if shelltype == "file" then return error("Cannot delete users with file shell")
+	if sin.len != 1 then return error("Invalid parameters")
+	output=comp.delete_user(sin[0],1)
+	if output==true then print("<color=#7141c4>[Lunar] </color><color=#8254d1>User "+sin[0]+" deleted</color>")
+	if typeof(output) == "string" then return error(output)
+	return out
+end function
+
+cmds.groups=function(sin)
+	out={}
+	out.bool=2
+    if shelltype == "file" then return error("Cannot view user groups with file shell")
+	if sin.len != 1 then return error("invalid parameters")
+	output=comp.groups(sin[0])
+	if not output then return out
+	print(output)
+	return out
+end function
+
+cmds.groupadd=function(sin)
+	out={}
+	out.bool=2
+    if shelltype == "file" then return error("Cannot add groups with file shell")
+	if sin.len != 2 then return error("Invalid parameters")
+	output=comp.create_group(sin[0],sin[1])
+	if output==true then
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>"+sin[1]+" added to user "+sin[0]+"</color>")
+		return out
+	end if
+	return error(output)
+end function
+
+cmds.groupdel=function(sin)
+	out={}
+	out.bool=0
+    if shelltype == "file" then return error("Cannot delete groups with file shell")
+	if sin.len != 2 then return error("Invalid parameters")
+	output=comp.delete_group(sin[0],sin[1])
+	if output==true then
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>"+sin[1]+" removed from user "+sin[0]+"</color>")
+		return out
+	end if
+	return error(output)
+end function
+
+cmds.bash=function(sin)
+	out={}
+	out.bool=2
+	if shelltype != "shell" then return error("Shell required")
+	if sin.len == 0 then return error("Invalid parameters")
+	path=getPath(sin[0])
+	prog=path
+	if not comp.File(prog) then return error("File does not exist")
+	if not comp.File(prog).has_permission("x") then return error("No permissions to file")
+	sin.pull
+	xparams=sin.join(" ")
+	shell.launch(prog,xparams)
+	return out
+end function
+
+cmds.ps=function(sin)
+	out={}
+	out.bool=2
+    if shelltype == "file" then return error("Cannot list processes with file shell")
+	bar = function(n, bar_length = 35) // percentage number
+		fill_count = ceil(n / bar_length * 10)
+		empty_count = bar_length - fill_count
+	
+		fill_bar = "#"*fill_count
+		empty_bar = "-"*empty_count
+	
+		bar = "<color=#21bcff>"+fill_bar+"</color><color=#032e41>"+empty_bar+"</color>"
+		return bar
+	end function
+
+	ps_out = comp.show_procs
+	tasks = 0
+	cpu_load = 0.0
+	mem_load = 0.0
+	users = []
+
+	// convert ps output to a map
+	counter = 0
+	for l in ps_out.split("\n")[1:]
+		l = l.split(" ")
+	
+		cpu_load = cpu_load + l[2][:-1].val
+		mem_load = mem_load + l[3][:-1].val
+	
+		if l[0] == "root" then
+			u = "<color=#ff4b4b>"+l[0]+"</color>"
+		else
+			u = "<color=#7141c4>"+l[0]+"</color>"
+		end if
+
+		n = "<color=#20ff98>"+l[1]+"</color>"
+		c = "<color=#21bcff>"+l[2]+"</color>"
+		m = "<color=#21bcff>"+l[3]+"</color>"
+		p = "<color=#baff50>"+l[4]+"</color>"
+		imp=0
+		for i in users
+			if i.u == u then
+				i.t.push({"n": n, "c": c, "m": m, "p": p})
+				imp=1
+			end if
+		end for
+		if not imp then
+			mp={}
+			mp.u=u
+			mp.t=[]
+			mp.t.push({"n": n, "c": c, "m": m, "p": p})
+			users.push(mp)
+		end if
+	
+		tasks=tasks+1
+	end for
+	print("<color=#fbfbfb>tasks: "+tasks+"</color>")
+	if tasks > 0 then
+	print("<color=#fbfbfb>cpu_usage: [</color>"+bar(cpu_load)+"<color=#fbfbfb>]==[ </color><color=#21bcff>"+cpu_load+"%</color> <color=#fbfbfb>]</color>")
+	print("<color=#fbfbfb>mem_usage: [</color>"+bar(mem_load)+"<color=#fbfbfb>]==[ </color><color=#21bcff>"+mem_load+"%</color> <color=#fbfbfb>]</color>\n")
+	end if
+	// print ps with colors
+	pps = []
+	ps = ps_out.split("\n")
+	print("<color=#9d9d9d>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+
+	for m in users
+		pps.push(m.u)
+		for t in m.t
+			l=[t.n, t.c, t.m, t.p]
+			pps.push(l.join(" "))
+		end for
+		pps.push("<color=#9d9d9d>X</color>")
+	end for
+
+	print(format_columns(pps.join("\n")))
+	return out
+end function
+
+cmds.kill=function(sin)
+	out={}
+	out.bool=2
+    if shelltype == "file" then return error("Cannot kill processes with file shell")
+	if sin.len != 1 then return error("Invalid parameters")
+	if sin[0] == "all" then
+		procs=comp.show_procs.split("\n")
+		procs.pull
+		for proc in procs
+			proc=proc.split(" ")
+			if proc[-1] == lunar.split("/")[-1] and origShell == 1 then continue
+			output=comp.close_program(proc[1].to_int)
+			if output==true then print("<color=#7141c4>[Lunar] </color><color=#8254d1>Killed process "+proc[1]+"</color>")
+			if typeof(output) == "string" then print("<color=#7141c4>[Lunar] </color><color=#8254d1>"+output+"</color>")
+			wait(0.1)
+		end for
+		return out
+	end if
+	output=comp.close_program(sin[0].to_int)
+	if output==true then
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>Killed process "+sin[0]+"</color>")
+		return out
+	end if
+	if output then return error(output)
+	out.bool=0
+	out.err="Process "+sin[0]+" not found"
+	return out
+end function
+
+cmds.ssh=function(sin)
+    out={}
+    out.bool=2
+    if shelltype != "shell" then return error("Shell required")
+    if sin.len < 2 or sin.len > 4 then return error("Invalid parameters")
+    acc=sin[0]
+    pass=sin[1]
+    serv=rhost
+    port=22
+    if sin.len >= 3 then serv=sin[2]
+    if sin.len == 4 then
+        port=sin[3].to_int
+        if typeof(port) != "number" then return error("Invalid port")
+    end if
+    print("<color=#7141c4>[Lunar] </color><color=#8254d1>Establishing connection...</color>")
+    ssh=shell.connect_service(serv,port,acc,pass,"ssh")
+    if typeof(ssh) == "shell" then
+        globals.sessions[session].shells.push(globals.sessions[session].shell)
+        globals.shell=ssh
+        globals.origShell=0
+        globals.xuser=acc
+        if acc == "root" then globals.xpath="/root" else globals.xpath="/home/"+acc
+        if not shell.host_computer.File(xpath) then globals.xpath="/"
+        globals.sessions[session].shell={"shell": shell, "path": xpath, "user": xuser, "orig": origShell}
+    else
+        out.bool=0
+        out.err="Could not establish connection"
+    end if
+    return out
+end function
+
+cmds.vpn=function(sin)
+    out={}
+    out.bool=2
+    if shelltype != "shell" then return error("Shell required")
+    if sin.len < 2 or sin.len > 4 then return error("Invalid parameters")
+    acc=sin[0]
+    pass=sin[1]
+    serv=rhost
+    port=22
+    if sin.len >= 3 then serv=sin[2]
+    if sin.len == 4 then
+        port=sin[3].to_int
+        if typeof(port) != "number" then return error("Invalid port")
+    end if
+    print("<color=#7141c4>[Lunar] </color><color=#8254d1>Establishing connection...</color>")
+    ssh=server.shell.connect_service(serv,port,acc,pass,"ssh")
+    if typeof(ssh) == "shell" then
+        globals.sessions[session].shells.push(globals.sessions[session].shell)
+        globals.shell=ssh
+        globals.origShell=0
+        globals.xuser=acc
+        if acc == "root" then globals.xpath="/root" else globals.xpath="/home/"+acc
+        if not shell.host_computer.File(xpath) then globals.xpath="/"
+        globals.sessions[session].shell={"shell": shell, "path": xpath, "user": xuser, "orig": origShell}
+    else
+        out.bool=0
+        out.err="Could not establish connection"
+    end if
+    return out
+end function
+
+cmds.shell=function(sin)
+    out={}
+    out.bool=2
+    if shelltype != "shell" then return error("Shell required")
+    if sin.len > 1 then return error("Invalid parameters")
+    if sin.len == 1 and comp.File(xpath) and comp.File(xpath).has_permission("w") then
+		get_shell.host_computer.File(lunar).chmod("o+rx")
+		get_shell.host_computer.File(lunar).chmod("u+rx")
+		get_shell.host_computer.File(lunar).chmod("g+rx")
+        print("<color=#7141c4>[Lunar] </color><color=#8254d1>Uploading Lunar</color>\n")
+        get_shell.scp(lunar,xpath,shell)
+		get_shell.host_computer.File(mxf).chmod("o+rx")
+		get_shell.host_computer.File(mxf).chmod("u+rx")
+		get_shell.host_computer.File(mxf).chmod("g+rx")
+        print("<color=#7141c4>[Lunar] </color><color=#8254d1>Uploading metaxploit</color>\n")
+        get_shell.scp(mxf,xpath,shell)
+		get_shell.host_computer.File(cpf).chmod("o+rx")
+		get_shell.host_computer.File(cpf).chmod("u+rx")
+		get_shell.host_computer.File(cpf).chmod("g+rx")
+        print("<color=#7141c4>[Lunar] </color><color=#8254d1>Uploading crypto</color>\n")
+        get_shell.scp(cpf,xpath,shell)
+		if la then
+			comp.touch(xpath,"LuDB")
+			print("<color=#7141c4>[Lunar] </color><color=#8254d1>Uploading Lunar DB</color>\n")
+			comp.File(xpath+"/LuDB").set_content(dbfile.get_content)
+		end if
+        if scnln and sin[0].indexOf("s") != null then
+			get_shell.host_computer.File(scnln).chmod("o+rx")
+			get_shell.host_computer.File(scnln).chmod("u+rx")
+			get_shell.host_computer.File(scnln).chmod("g+rx")
+            print("<color=#7141c4>[Lunar] </color><color=#8254d1>Uploading ScanLan</color>\n")
+            get_shell.scp(scnln,xpath,shell)
+        end if
+    end if
+    print("<color=#7141c4>[Lunar] </color><color=#8254d1>Starting shell at "+comp.public_ip+", come back soon!</color>")
+    shell.start_terminal
+    return out
+end function
+
+cmds.put=function(sin)
+	out={}
+	out.bool=2
+	if shelltype != "shell" then return error("Shell required")
+	if sin.len < 1 or sin.len > 2 then return error("Invalid parameters")
+	if not get_shell.host_computer.File(sin[0]) then return error("File does not exist")
+	if not get_shell.host_computer.File(sin[0]).has_permission("r") then return error("No permissions to file")
+	if sin.len == 2 then path=getPath(sin[1]) else path=xpath
+	if not comp.File(path) then return error("Path does not exist")
+	if not comp.File(path).has_permission("w") then return error("No permissions to path")
+	get_shell.scp(sin[0],path,shell)
+	return out
+end function
+
+cmds.get=function(sin)
+	out={}
+	out.bool=2
+	if shelltype != "shell" then return error("Shell required")
+	if sin.len < 1 or sin.len > 2 then return error("Invalid parameters")
+	path=getPath(sin[0])
+	if not comp.File(path) then return error("File does not exist")
+	if not comp.File(path).has_permission("r") then return error("No permissions to file")
+	if sin.len == 2 then lpath=sin[1] else lpath=current_path
+	if not get_shell.host_computer.File(lpath) then return error("Path does not exist")
+	if not get_shell.host_computer.File(lpath).has_permission("w") then return error("No permissions to path")
+	shell.scp(path,lpath,get_shell)
+	return out
+end function
+
+cmds.set=function(sin)
+    out={}
+    out.bool=2
+    if sin.len != 2 then return error("Invalid parameters")
+	var=sin[0]
+	set=sin[1]
+
+    if var == "user" then globals.xuser=set
+	return out
+end function
+
+cmds.info=function(sin)
+    out={}
+    out.bool=2
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>RHost: "+rhost+"</color>")
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Session: "+session+"</color>")
+    return out
+end function
+
+cmds.rhost=function(sin)
+    out={}
+    out.bool=2
+    if sin.len > 1 then return error("Invalid parameters")
+    if sin.len == 0 then
+        if shelltype == "file" then
+            globals.rhost=globals.sessions[session].shell.pubip
+        else
+            globals.rhost=comp.network_gateway
+            if rhost == "0.0.0.0" then globals.rhost=comp.local_ip
+        end if
+    else
+        if sin[0][:3] == "www" then sin[0]=nslookup(sin[0])
+        router=get_router(sin[0])
+        if is_lan_ip(sin[0]) then router=get_router
+        if not router then return error("Invalid address")
+        globals.rhost=sin[0]
+    end if
+    if rhost == pubip and anon then print("<color=#7141c4>[Lunar] </color><color=#8254d1>RHost: x.x.x.x</color>") else print("<color=#7141c4>[Lunar] </color><color=#8254d1>RHost: "+rhost+"</color>")
+    globals.sessions[session].rhost=rhost
+    return out
+end function
+
+cmds.random=function(sin)
+    out={}
+    out.bool=2
+    ip=null
+    while not get_router(ip)
+        ip=getRandomIp
+    end while
+    globals.rhost=ip
+    print("<color=#7141c4>[Lunar] </color><color=#8254d1>RHost: "+rhost+"</color>")
+    globals.sessions[session].rhost=rhost
+    return out
+end function
+
+cmds.nmap=function(sin)
+	out={}
+	out.bool=2
+    if sin.len then
+        if sin[0][:3] == "www" then sin[0]=nslookup(sin[0])
+        locals.rhost=sin[0]
+    end if
+	islan=is_lan_ip(rhost)
+	router=get_router(rhost)
+	if islan then router=get_router
+	if not router then return error("Invalid address")
+	wifi=router.essid_name
+	bssid=router.bssid_name
+	rver=router.kernel_version
+	fwr=router.firewall_rules
+	if islan then
+		ports=router.device_ports(rhost)
+	else
+		ports=router.used_ports
+	end if
+	ips=[]
+	if rhost != router.local_ip then
+		hport=null
+		if router.device_ports(router.local_ip).len then hport=router.device_ports(router.local_ip)[0]
+		m={}
+		m.ip=router.local_ip
+		m.ports=[]
+		if hport then m.ports.push(hport)
+		ips.push(m)
+		m=null
+	end if
+	fwinfo="action port source dest"
+	for rules in fwr
+		fwinfo=fwinfo+"\n"+rules
+	end for
+	extinfo="<color=white>"+rhost+"</color><color=#7141c4>|wifi: "+wifi+" |bssid: "+bssid+"</color>"
+	info="# lan port status service version"
+	print(extinfo)
+	if fwr then print(format_columns(fwinfo))
+	num=0
+	for port in ports
+		inMap=0
+		for m in ips
+			if m.ip == port.get_lan_ip then
+				m.ports.push(port)
+				inMap=1
+			end if
+		end for
+		if not inMap then
+			m={}
+			m.ip=port.get_lan_ip
+			m.ports=[port]
+			ips.push(m)
+		end if
+	end for
+	for m in ips
+		ports=m.ports
+		ip=m.ip
+		info=info+"\n"+num+" "+ip+" /"
+		if ip == router.local_ip then info=info+"\n  |0 routed router "+rver
+		for port in ports
+			service=router.port_info(port)
+			status="routed"
+			if port.is_closed then status="closed"
+			info=info+"\n  |"+port.port_number+" "+status+" "+service
+		end for
+		num=num+1
+	end for
+	if not islan or rhost[-2:] == ".1" then; for sub in router.devices_lan_ip
+		subIn=0
+		for m in ips
+			if sub == m.ip then subIn=1
+		end for
+		if subIn then continue
+		info=info+"\n"+num+" "+sub
+		num=num+1
+	end for;end if
+	print(format_columns(info)+"\n")
+	whoisinfo=whois(rhost).split("\n")
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>WhoIs results</color>")
+	if whoisinfo.len < 3 then
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>Could not perform WhoIs operation</color>")
+		return out
+	end if
+	print("<color=#7141c4>"+whoisinfo[0]+"<br>"+whoisinfo[1]+"<br>"+whoisinfo[2]+"</color>")
+	return out
+end function
+
+cmds.target=function(sin)
+    out={}
+    out.bool=2
+    globals.args=null
+    rinfo=[["<color=#7141c4>[Num]","[Object]","[Perms]","[Lan]","[PubIP]","[Port]</color>"].join(" ")]
+    if sin.len > 2 then return error("Invalid parameters")
+    globals.expport=sin[0].to_int
+    if typeof(expport) != "number" then return error("Invalid port")
+    if sin.len == 2 then globals.args=sin[1]
+	if server.shell then
+		server.shell.launch("/root/rcon")
+		lmx=COB.server.mx
+	else
+		lmx=mx
+	end if
+	globals.lmx=lmx
+    ns=mx.net_use(rhost,expport)
+    if not ns then return error("Cannot establish net session")
+    globals.ml=ns.dump_lib
+    if server.shell then
+		getExploits
+        inDB=0
+        for dblib in exploits
+            if ml.lib_name == dblib.name and ml.version == dblib.ver then inDB=1
+        end for
+	end if
+    if dbfile then
+        getExploits
+        globals.lib=null
+        for dblib in exploits
+            if ml.lib_name == dblib.name and ml.version == dblib.ver then
+                globals.lib=dblib
+                break
+            end if
+        end for
+        saveScan()
+    else
+        Scan()
+    end if
+	exps={"root": [], "user": [], "guest": []}
+	for ex in results
+		if ex.user == "root" then
+			exps.root.push(ex)
+		else if ex.user == "guest" then
+			exps.guest.push(ex)
+		else
+			exps.user.push(ex)
+		end if
+	end for
+	results=exps.root+exps.user+exps.guest
+	exps={"shell": [], "comp": [], "file": []}
+	for ex in results
+		if typeof(ex.obj) == "shell" then
+			exps.shell.push(ex)
+		else if typeof(ex.obj) == "computer" then
+			exps.comp.push(ex)
+		else if typeof(ex.obj) == "file" then
+			exps.file.push(ex)
+		end if
+	end for
+	results=exps.shell+exps.comp+exps.file
+    globals.sessions[session].results=results
+    for ex in results
+        rinfo.push(["<color=#7141c4>["+__ex_idx+"]",ex.obj,ex.user,ex.lan,ex.pub,ex.port+"</color>"].join(" "))
+    end for
+	globals.results=results
+    globals.rinfo=rinfo
+    print(format_columns(rinfo.join("\n")))
+    return out
+end function
+
+cmds.escalate=function(sin)
+    out={}
+    out.bool=2
+    globals.args=null
+    rinfo=[["<color=#7141c4>[Num]","[Object]","[Perms]","[Lan]","[PubIP]","[Port]</color>"].join(" ")]
+    if sin.len > 1 then return error("Invalid parameters")
+    if sin.len == 1 then globals.args=sin[0]
+    libs=comp.File("/lib")
+	if server.shell then
+		server.shell.launch("/root/rcon")
+		lmx=COB.server.mx
+	else
+		lmx=mx
+	end if
+	globals.lmx=lmx
+    for exlib in libs.get_files
+        globals.ml=mx.load(exlib.path)
+        if not ml then continue
+        if args then print(format_columns("LIB ARGS\n"+exlib.name+" "+args+"\n")) else print(format_columns("LIB\n"+exlib.name+"\n"))
+		if dbfile or server.shell then
+			getExploits
+			globals.lib=null
+			for dblib in exploits
+				if ml.lib_name == dblib.name and ml.version == dblib.ver then
+					globals.lib=dblib
+					break
+				end if
+			end for
+			saveScan()
+		else
+			Scan()
+		end if
+    end for
+	exps={"root": [], "user": [], "guest": []}
+	for ex in results
+		if ex.user == "root" then
+			exps.root.push(ex)
+		else if ex.user == "guest" then
+			exps.guest.push(ex)
+		else
+			exps.user.push(ex)
+		end if
+	end for
+	results=exps.root+exps.user+exps.guest
+	exps={"shell": [], "comp": [], "file": []}
+	for ex in results
+		if typeof(ex.obj) == "shell" then
+			exps.shell.push(ex)
+		else if typeof(ex.obj) == "computer" then
+			exps.comp.push(ex)
+		else if typeof(ex.obj) == "file" then
+			exps.file.push(ex)
+		end if
+	end for
+	results=exps.shell+exps.comp+exps.file
+    globals.sessions[session].results=results
+    for ex in results
+        rinfo.push(["<color=#7141c4>["+__ex_idx+"]",ex.obj,ex.user,ex.lan,ex.pub,ex.port+"</color>"].join(" "))
+    end for
+    globals.rinfo=rinfo
+	globals.results=results
+    print(format_columns(rinfo.join("\n")))
+    return out
+end function
+
+cmds.results=function(sin)
+    out={}
+    out.bool=2
+    if sin.len == 1 and sin[0] == "-c" then
+        globals.results=[]
+        globals.sessions[session].results=results
+        globals.rinfo=null
+        print("<color=#7141c4>[Lunar] </color><color=#8254d1>Cleared results</color>")
+        return out
+    end if
+    if not results.len then return error("No exploits found")
+    print(format_columns(rinfo.join("\n")))
+    return out
+end function
+
+cmds.use=function(sin)
+    out={}
+    out.bool=2
+    if not results.len then return error("No exploits found")
+    if sin.len != 1 then return error("Invalid parameters")
+    num=sin[0].to_int
+    if typeof(num) != "number" or num > results.len or num < 0 then return error("Invalid selection")
+    ex=results[num]
+    result=ex.obj
+    globals.sessions[session].shells.push(globals.sessions[session].shell)
+    if typeof(result) != "file" then
+        shell=result
+        comp=shell
+        if typeof(shell) == "shell" then comp=shell.host_computer
+        xuser=ex.user
+        if ex.user == "root" then xpath="/root" else xpath="/home/"+xuser
+        if not comp.File(xpath) then xpath="/"
+        globals.sessions[session].shell={"shell": shell, "user": xuser, "path": xpath, "orig": 0}
+		globals.shell=shell
+		globals.origShell=0
+		globals.comp=comp
+		globals.xuser=xuser
+		globals.xpath=xpath
+        print("<color=#7141c4>[Lunar] </color><color=#8254d1>Checking for active admins...</color>")
+        procs=comp.show_procs.split("\n")[1:]
+        admin=0
+        for proc in procs
+            proc=proc.split(" ")[-1]
+            if proc == "dsession" then admin=1
+            if proc == "Xorg" then admin=2
+        end for
+        if admin == 1 then
+            print("<color=red><b>ACTIVE ADMIN DETECTED!</b></color>")
+        else if admin == 2 then
+            print("<color=red><b>ACTIVE PLAYER DETECTED!</b></color>")
+        else
+            print("<color=#7141c4>[Lunar] </color><color=#8254d1>No admins detected</color>")
+        end if
+    else
+		shell=result
+		comp=result
+		while comp.path != "/"
+			comp=comp.parent
+		end while
+		xuser=ex.user
+		xpath=shell.path
+		globals.sessions[session].shell={"shell": shell, "user": xuser, "path": xpath, "orig": 0, "pubip": ex.pub, "locip": ex.lan}
+        globals.shell=shell
+        globals.origShell=0
+        globals.comp=comp
+		globals.xuser=xuser
+        globals.xpath=shell.path
+    end if
+	return out
+end function
+
+cmds.rshell=function(sin)
+    out={}
+    out.bool=2
+    if not origShell then return error("Cannot run an rshell on a remote connection")
+    if (not server.shell and sin.len < 2) or sin.len > 3 then return error("Invalid parameters")
+    rsport=1222
+	if server.shell then
+		rip=conf.rss.ip
+		rsport=conf.rss.rport
+		uproc=conf.proc
+	end if
+    if sin.len >=1 then rip=sin[0]
+    if sin.len >=2 then uproc=sin[1]
+    if sin.len == 3 then
+        rsport=sin[2].to_int
+        if typeof(rsport) != "number" then return error("Invalid port")
+    end if
+    mx.rshell_client(rip,rsport,uproc)
+    return out
+end function
+
+cmds.rss=function(sin)
+    out={}
+    out.bool=2
+    if not origShell then return error("Cannot receive rshell connections on a remote connection")
+    if not server.shell then return error("Server connection required")
+    print("<color=#7141c4>[Lunar] </color><color=#8254d1>Connecting to rshell server...</color>")
+    rsc=server.shell.connect_service(conf.rss.ip,conf.rss.port,conf.rss.user,conf.rss.pass)
+    if typeof(rsc) == "shell" then
+        print("<color=#7141c4>[Lunar] </color><color=#8254d1>Connected successfully</color>")
+    else
+		return error("Could not connect")
+    end if
+    if not rsc.host_computer.File("/root/shell") then rsc.host_computer.touch("/root","shell")
+    rsfile="/root/rss"
+    rsc.launch(rsfile)
+	rsinfo="num pubip locip user\n"
+    rshells=COB.rshells
+	opt=null
+	print(rshells.len+" shells")
+	for i in range(0,rshells.len-1)
+		rfile=rshells[i].host_computer.File("/root")
+		ruser="guest"
+		if rfile and rfile.has_permission("w") then
+			ruser="root"
+		else
+			rfile=rshells[i].host_computer.File("/home")
+			if rfile then
+				for user in rfile.get_folders
+					if user.name == "guest" then continue
+					if user.has_permission("w") then ruser=user.name
+				end for
+			end if
+		end if
+		rsinfo=rsinfo+"\n"+i+"| "+rshells[i].host_computer.public_ip+" "+rshells[i].host_computer.local_ip+" "+ruser
+	end for
+	print(format_columns(rsinfo))
+	while opt > rshells.len-1 or opt < 0 or typeof(opt) != "number"
+		opt=user_input("<color=#7141c4>[#]$ </color><color=#8254d1>").to_int
+		if opt == "b" then return out
+	end while
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Starting shell #"+opt+"</color>")
+	rfile=rshells[opt].host_computer.File("/root")
+	ruser="guest"
+	if rfile and rfile.has_permission("w") then
+		ruser="root"
+	else
+		rfile=rshells[opt].host_computer.File("/home")
+		if rfile then
+			for user in rfile.get_folders
+				if user.name == "guest" then continue
+				if user.has_permission("w") then ruser=user.name
+			end for
+		end if
+	end if
+    globals.sessions[session].shells.push(globals.sessions[session].shell)
+	globals.shell=rshells[opt]
+	globals.origShell=0
+	globals.xuser=ruser
+	if xuser == "root" then globals.xpath="/root" else globals.xpath="/home/"+xuser
+	if not shell.host_computer.File(xpath) then globals.xpath="/"
+    globals.sessions[session].shell={"shell": shell, "user": xuser, "path": xpath, "orig": origShell}
+	return out
+end function
+
+cmds.rsi=function(sin)
+	out={}
+	out.bool=2
+	if not origShell then return error("Cannot receive rshell connections on a remote connection")
+	if not include_lib("/lib/librshell.so") then return error("No rshell server installed")
+	rsinfo="num pubip locip user\n"
+	rshells=[]
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Waiting for connections. . .</color>")
+	while rshells.len == 0
+		rshells=mx.rshell_server
+		if rshells.len == 0 then wait(2)
+	end while
+	if typeof(rshells) == "string" then return error(rshells)
+	opt=null
+	print(rshells.len+" shells")
+	for i in range(0,rshells.len-1)
+		rfile=rshells[i].host_computer.File("/root")
+		ruser="guest"
+		if rfile and rfile.has_permission("w") then
+			ruser="root"
+		else
+			rfile=rshells[i].host_computer.File("/home")
+			if rfile then
+				for user in rfile.get_folders
+					if user.name == "guest" then continue
+					if user.has_permission("w") then ruser=user.name
+				end for
+			end if
+		end if
+		rsinfo=rsinfo+"\n"+i+"| "+rshells[i].host_computer.public_ip+" "+rshells[i].host_computer.local_ip+" "+ruser
+	end for
+	print(format_columns(rsinfo))
+	while opt > rshells.len-1 or opt < 0 or typeof(opt) != "number"
+		opt=user_input("<color=#7141c4>[#]$ </color><color=#8254d1>").to_int
+		if opt == "b" then return out
+	end while
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Starting shell #"+opt+"</color>")
+	rfile=rshells[opt].host_computer.File("/root")
+	ruser="guest"
+	if rfile and rfile.has_permission("w") then
+		ruser="root"
+	else
+		rfile=rshells[opt].host_computer.File("/home")
+		if rfile then
+			for user in rfile.get_folders
+				if user.name == "guest" then continue
+				if user.has_permission("w") then ruser=user.name
+			end for
+		end if
+	end if
+    globals.sessions[session].shells.push(globals.sessions[session].shell)
+	globals.shell=rshells[opt]
+	globals.origShell=0
+	globals.xuser=ruser
+	if xuser == "root" then globals.xpath="/root" else globals.xpath="/home/"+xuser
+	if not shell.host_computer.File(xpath) then globals.xpath="/"
+    globals.sessions[session].shell={"shell": shell, "user": xuser, "path": xpath, "orig": origShell}
+	return out
+end function
+
+cmds.sniffer=function(sin)
+	out={}
+	out.bool=2
+	if not origShell then return error("Cannot sniff connections on a remote connection")
+	if sin.len > 1 then return error("Invalid parameters")
+	save=0
+	if sin.len == 1 then save=1
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Waiting for network traffic. . .</color>")
+	output=mx.sniffer(save)
+	if not output then return error("Failed to listen to network traffic")
+	print(output)
+	return out
+end function
+
+cmds.iwctl=function(sin)
+	out={}
+	out.bool=2
+	if shelltype == "file" then return error("Cannot change WiFi on a Filetype shell")
+	if sin.len != 3 then return error("Invalid parameters")
+	if comp.active_net_card != "WIFI" then return error("Cannot use ethernet")
+	check=comp.connect_wifi("wlan0",sin[0],sin[1],sin[2])
+	if check != 1 then return error(check)
+	return out
+end function
+
+cmds.net=function(sin)
+	out={}
+	out.bool=2
+	if shelltype == "file" then return error("Cannot list WiFi networks on a Filetype shell")
+	if comp.active_net_card != "WIFI" then return error("Cannot use ethernet")
+	print comp.wifi_networks("wlan0").join(char(10))
+	return out
+end function
+
+cmds.inet=function(sin)
+	out={}
+	out.bool=1
+	if not origShell then return error("Cannot hack wifi connections on a remote connection")
+	if sin.len > 2 then return error("Invalid parameters")
+	winfo="# BSSID POWER ESSID"
+	num=0
+	sel=null
+	nd=comp.network_devices
+	an=comp.active_net_card
+	if an != "WIFI" then return error("Cannot use ethernet")
+	cp.airmon("start","wlan0")
+	wifis=comp.wifi_networks("wlan0")
+	if sin.len < 2 then
+		for wifi in wifis
+			winfo=winfo+"\n"+num+" "+wifi
+			num=num+1
+		end for
+		print(format_columns(winfo))
+		while sel > wifis.len or sel < 0 or typeof(sel) != "number"
+			sel=user_input("#> ").to_int
+			if sel == "b" then break
+		end while
+		if sel == "b" then
+			out.bool=2
+			return out
+		end if
+		wifi=wifis[sel].split(" ")
+		pwr=wifi[1]
+		pwr=pwr[:pwr.len-1].to_int
+		bssid=wifi[0]
+		essid=wifi[2]
+		maxacks=300000/pwr
+		cp.aireplay(bssid,essid,maxacks)
+	else
+		bssid=sin[0]
+		essid=sin[1]
+		cp.aireplay(bssid,essid,300000)
+	end if
+	out.out=cp.aircrack(current_path+"/file.cap")
+	return out
+end function
+
+cmds.mailbomb=function(sin)
+	out={}
+	out.bool=2
+	if sin.len != 4 then return error("Invalid parameters")
+	if not server.shell then
+        umaila=user_input("<color=#7141c4>[Email]$ </color><color=#8254d1>",anon)
+        umaill=user_input("<color=#7141c4>[Pass]$ </color><color=#8254d1>",anon)
+    else
+		umaila=conf.mail.user
+		umaill=conf.mail.pass
+	end if
+	mail=mail_login(umaila,umaill)
+	if typeof(mail) == "string" then return error(mail)
+	rec=sin[0]
+	sub=sin[1]
+	text=sin[2]
+	quant=sin[3].to_int
+	for num in range(0,quant)
+		send=mail.send(rec,sub,text)
+		if typeof(send) != "number" then return error("Could not send email")
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>Sent email #"+num+"</color>")
+	end for
+	return out
+end function
+
+cmds.revoke=function(sin)
+	out={}
+	out.bool=2
+	token.set_content("")
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Revoked access token</color>")
+	return out
+end function
+
+cmds.brick=function(sin)
+	out={}
+	out.bool=2
+	if shelltype == "file" then return error("Cannot brick system with file shell")
+	if not comp.File("/").has_permission("w") then return error("No permissions to system")
+	if origShell then
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>Executing on the ORIGINAL SHELL, are you sure you want to continue?</color>")
+		confirm=user_input("<color=#7141c4>[y/N]$ </color><color=#8254d1>").lower
+		if confirm != "y" then return out
+	end if
+	num=1
+	length=comp.File("/").get_files.len
+	length=length+comp.File("/").get_folders.len
+	for file in comp.File("/").get_files+comp.File("/").get_folders
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>DELETING FILE "+file.path+" "+num+"/"+length+"</color>")
+		num=num+1
+		file.delete
+	end for
+	return out
+end function
+
+cmds.dos=function(sin)
+	out={}
+	out.bool=2
+	if not origShell then return error("Cannot disable remote system")
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Are you sure you want to continue?</color>")
+	confirm=user_input("<color=#7141c4>[y/N]$ </color><color=#8254d1>").lower
+	if confirm != "y" then return out
+	num=0
+	while true
+		mx.rshell_client("0.0.0.0",0,"DOS"+num)
+		comp.touch(xpath,"DOS"+num)
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>Spawned DOS"+num+"</color>")
+		num=num+1
+	end while
+	return out
+end function
+
+cmds.rdos=function(sin)
+	out={}
+	out.bool=2
+	if not origShell then return error("Cannot disable remote system")
+	if sin.len != 1 or typeof(sin[0].to_int) != "number" then return error("Invalid parameters")
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Are you sure you want to continue?</color>")
+	confirm=user_input("<color=#7141c4>[y/N]$ </color><color=#8254d1>").lower
+	if confirm != "y" then return out
+	for i in range(0, sin[0].to_int)
+		mx.rshell_client("0.0.0.0",0,"DOS"+i)
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>Spawned DOS"+i+"</color>")
+	end for
+	return out
+end function
+
+cmds.fdos=function(sin)
+	out={}
+	out.bool=2
+	if shelltype == "file" then return error("Cannot disable remote system with file shell")
+	if not comp.File(xpath).has_permission("w") then return error("No permissions to path")
+	if sin.len > 2 or sin.len == 0 or typeof(sin[0].to_int) != "number" then return error("Invalid parameters")
+	name="DOS"
+	if sin.len == 2 then name=sin[1]
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Are you sure you want to continue?</color>")
+	confirm=user_input("<color=#7141c4>[y/N]$ </color><color=#8254d1>").lower
+	if confirm != "y" then return out
+	for i in range(0,sin[0].to_int)
+		comp.touch(xpath,name+str(i))
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>Spawned "+name+str(i)+"</color>")
+	end for
+	return out
+end function
+
+cmds.cdos=function(sin)
+	out={}
+	out.bool=2
+	if not origShell then return error("Cannot disable remote connection")
+	if sin.len != 1 or typeof(sin[0].to_int) != "number" then return error("Invalid parameters")
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Are you sure you want to continue?</color>")
+	confirm=user_input("<color=#7141c4>[y/N]$ </color><color=#8254d1>").lower
+	if confirm != "y" then return out
+	for i in range(0,sin[0].to_int)
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>Cracking hardware pass "+i+"</color>\n")
+		cp.decipher("null")
+	end for
+	return out
+end function
+
+cmds.vim=function(sin)
+	out={}
+	out.bool=2
+	if sin.len > 2 or sin.len < 1 then return error("Invalid parameters")
+	if shelltype == "file" then file=getFile(getPath(sin[0])) else file=comp.File(getPath(sin[0]))
+	if not file then return error("File does not exist")
+	if file.is_binary then return error("Binary file, cannot edit")
+	if not file.has_permission("w") or not file.has_permission("r") then return error("No permissions to file")
+	if sin.len == 2 then
+		file.set_content(sin[1])
+		return out
+	end if
+	cont=file.get_content.split("\n")
+	while 1
+		print("<color=#7141c4>-=-= Lunar - "+file.path+" =-=-</color>")
+		for i in range(0,cont.len-1)
+			print(i+"|"+cont[i])
+		end for
+		print("<color=#7141c4>< nl - newline [line#] q - quit c - clear file ></color>")
+		sel=user_input("#> ")
+		if sel.lower == "q" then break
+		if sel.lower == "c" then
+			cont=[""]
+			file.set_content("")
+			continue
+		end if
+		sel=sel.to_int
+		if typeof(sel) != "number" and sel.split(" ")[0].lower == "nl" then
+			if sel.split(" ").len != 2 then continue
+			sel=sel.split(" ")[1].to_int
+			if typeof(sel) != "number" then continue
+			if sel < -1 or sel >= cont.len then continue
+			newcont=[]
+			if sel == -1 then
+				newcont.push("")
+				newcont=newcont+cont
+			else
+				for i in range(0,cont.len-1)
+					newcont.push(cont[i])
+					if i == sel then newcont.push("")
+				end for
+			end if
+			cont=newcont
+			file.set_content(cont.join(char(10)))
+			continue
+		end if
+		if sel < 0 or sel >= cont.len then continue
+		currLine=cont[sel]
+		while 1
+			print("<color=#7141c4>-=-= Line "+sel+" =-=-</color>\n"+currLine)
+			print("<color=#7141c4>< :w to save :q to quit :d to delete line ></color>")
+			edit=user_input("> ")
+			if edit.lower == ":q" then
+				print("Quitting")
+			else if edit.lower == ":w" then
+				cont[sel]=currLine
+				file.set_content(cont.join(char(10)))
+				print("Saved")
+				print("Quitting")
+			else if edit.lower == ":d" then
+				cont.remove(sel)
+				file.set_content(cont.join(char(10)))
+				print("Saved")
+				print("Quitting")
+			else
+				currLine=edit
+			end if
+			if edit.lower == ":w" or edit.lower == ":q" or edit.lower == ":d" then break
+		end while
+	end while
+	print("<color=#7141c4>Quitting</color>")
+	return out
+end function
+
+cmds.infect=function(sin)
+	out={}
+	out.bool=2
+	if not server.shell then
+		out.bool=3
+		return out
+	end if
+	if shelltype != "shell" then return error("Shell required")
+	if not comp.File("/bin") or not comp.File("/bin").has_permission("w") then return error("Cannot access /bin")
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Are you sure you want to continue?</color>")
+	confirm=user_input("<color=#7141c4>[y/N]$ </color><color=#8254d1>").lower
+	if confirm != "y" then return out
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Replacing ssh</color>\n")
+	p=null
+	if comp.File("/bin/ssh") then p=comp.File("/bin/ssh").permissions[1:]
+	server.shell.scp("/root/Downloads/ssh","/bin",shell)
+	f=comp.File("/bin/ssh")
+	f.chmod("u-wrx")
+	f.chmod("g-wrx")
+	f.chmod("o-wrx")
+	if p then
+		up=p[:3].replace("-","")
+		gp=p[3:-3].replace("-","")
+		op=p[-3:].replace("-","")
+	else
+		p=comp.File("/bin").permissions[1:]
+		up=p[:3].replace("-","")
+		gp=p[3:-3].replace("-","")
+		op=p[-3:].replace("-","")
+	end if
+	f.chmod("u+"+up)
+	f.chmod("g+"+gp)
+	f.chmod("o+"+op)
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Replacing passwd</color>\n")
+	p=null
+	if comp.File("/bin/passwd") then p=comp.File("/bin/passwd").permissions[1:]
+	server.shell.scp("/root/Downloads/passwd","/bin",shell)
+	f=comp.File("/bin/passwd")
+	f.chmod("u-wrx")
+	f.chmod("g-wrx")
+	f.chmod("o-wrx")
+	if p then
+		up=p[:3].replace("-","")
+		gp=p[3:-3].replace("-","")
+		op=p[-3:].replace("-","")
+	else
+		p=comp.File("/bin").permissions[1:]
+		up=p[:3].replace("-","")
+		gp=p[3:-3].replace("-","")
+		op=p[-3:].replace("-","")
+	end if
+	f.chmod("u+"+up)
+	f.chmod("g+"+gp)
+	f.chmod("o+"+op)
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Replacing ps</color>\n")
+	buildPS(conf.proc)
+	return out
+end function
+
+cmds.rootkit=function(sin)
+	out={}
+	out.bool=2
+	if shelltype != "shell" then return error("Shell required")
+	if not comp.File(xpath).has_permission("w") then return error("No permissions to folder")
+	get_shell.host_computer.File(lunar).chmod("o+rx")
+	get_shell.host_computer.File(lunar).chmod("u+rx")
+	get_shell.host_computer.File(lunar).chmod("g+rx")
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Uploading Lunar</color>\n")
+    get_shell.scp(lunar,xpath,shell)
+	get_shell.host_computer.File(mxf).chmod("o+rx")
+	get_shell.host_computer.File(mxf).chmod("u+rx")
+	get_shell.host_computer.File(mxf).chmod("g+rx")
+    print("<color=#7141c4>[Lunar] </color><color=#8254d1>Uploading metaxploit</color>\n")
+    get_shell.scp(mxf,xpath,shell)
+	get_shell.host_computer.File(cpf).chmod("o+rx")
+	get_shell.host_computer.File(cpf).chmod("u+rx")
+	get_shell.host_computer.File(cpf).chmod("g+rx")
+    print("<color=#7141c4>[Lunar] </color><color=#8254d1>Uploading crypto</color>\n")
+    get_shell.scp(cpf,xpath,shell)
+	if la then
+		comp.touch(xpath,"LuDB")
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>Uploading Lunar DB</color>\n")
+		comp.File(xpath+"/LuDB").set_content(dbfile.get_content)
+	end if
+    if scnln and sin.len == 1 and sin[0].indexOf("s") != null then
+		get_shell.host_computer.File(scnln).chmod("o+rx")
+		get_shell.host_computer.File(scnln).chmod("u+rx")
+		get_shell.host_computer.File(scnln).chmod("g+rx")
+        print("<color=#7141c4>[Lunar] </color><color=#8254d1>Uploading ScanLan</color>\n")
+        get_shell.scp(scnln,xpath,shell)
+    end if
+	return out
+end function
+
+cmds.pwd=function(sin)
+	out={}
+	out.bool=1
+	out.out=xpath
+	return out
+end function
+
+cmds.whoami=function(sin)
+	out={}
+	out.bool=1
+	out.out=xuser
+	return out
+end function
+
+cmds.whereami=function(sin)
+	out={}
+	out.bool=1
+	out.out=pubip
+	return out
+end function
+
+cmds.fyrwall=function(sin)
+	print("<color=#7141c4>>~-~-~-~-~ STARTING FYRWALL ~-~-~-~-~</color>")
+	print("<align=right><color=#7141c4>-= <b><size=150%>-=-</size></b> =-</color></align>")
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>SAVING CURRENT SYSTEM STATE</color>")
+	print("<align=right><color=#7141c4>-= <b><size=150%>-=-</size></b> =-</color></align>")
+	safeProcs=[]
+	procs=comp.show_procs.split("\n")[1:]
+	for proc in procs
+		proc=proc.split(" ")
+		safeProcs.push({"user": proc[0], "id": proc[1], "name": proc[-1]})
+	end for
+	
+	safeFiles=[]
+	newFiles=[]
+	root=comp.File("/")
+	currFile=root
+	newFiles=newFiles+root.get_folders+root.get_files
+	while newFiles.len
+		alreadyIn=0
+		currFile=newFiles.pull
+		for i in safeFiles
+			if i.path == currFile.path then alreadyIn=1
+		end for
+		if alreadyIn then continue
+		safeFiles.push({"path": currFile.path, "size": currFile.size})
+		for file in currFile.get_folders+currFile.get_files
+			newFiles.push(file)
+		end for
+	end while
+	
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>WAITING FOR UNLISTED FILES AND PROCESSES</color>")
+	print("<align=right><color=#7141c4>-= <b><size=150%>-=-</size></b> =-</color></align>")
+	while 1
+		newProcs=comp.show_procs.split("\n")[1:]
+	
+		for proc in newProcs
+			proc=proc.split(" ")
+			proc={"user": proc[0], "id": proc[1], "name": proc[-1]}
+			if safeProcs.indexOf(proc) == null then
+				print("<color=#7141c4>[Lunar] </color><color=#8254d1>KILLING UNLISTED PROCESS "+proc.name+"</color>")
+				comp.close_program(proc.id.to_int)
+			end if
+		end for
+	
+		newFiles=[]
+		newFiles=newFiles+root.get_folders+root.get_files
+		while newFiles.len
+			safeFile=0
+			currFile=newFiles.pull
+			for file in safeFiles
+				if file.path == currFile.path and file.size == currFile.size then safeFile=1
+			end for
+			if not safeFile and not currFile.is_folder then
+				print("<color=#7141c4>[Lunar] </color><color=#8254d1>DELETING UNLISTED FILE "+currFile.path+"</color>")
+				currFile.delete
+			end if
+			for file in currFile.get_folders+currFile.get_files
+				newFiles.push(file)
+			end for
+		end while
+	end while
+end function
+
+cmds.bios=function(sin)
+    out={}
+    out.bool=2
+    print("<color=#7141c4>-=-= <b>[Lunar OS Bios Scan]</b> =-=-</color>")
+    print("<color=#7141c4>-= Performing full system check... =-</color>")
+    print("<align=right><color=#7141c4><size=150%>[LunarOS]</size></color></align>")
+    start=time
+    wait(1)
+
+    //processes
+    if shelltype != "file" then
+        ps=comp.show_procs
+        gps=0
+        ups=0
+        rps=0
+        tasks=0
+        cpu=0.0
+        mem=0.0
+        for l in ps.split("\n")[1:]
+            l=l.split(" ")
+            if l[0] == "root" then
+                rps=rps+1
+            else if l[0] == "guest" then
+                gps=gps+1
+            else
+                ups=ups+1
+            end if
+
+            cpu=cpu+l[2][:1].val
+            mem=mem+l[3][:1].val
+
+            tasks=tasks+1
+        end for
+
+        print("<color=#7141c4>System processes</color>")
+        print("<color=#7141c4>Total </color><color=#8254d1>["+tasks+"]</color>")
+        print("<color=#7141c4>Root </color><color=#8254d1>["+rps+"]</color><color=#7141c4> User </color><color=#8254d1>["+ups+"]</color><color=#7141c4> Guest </color><color=#8254d1>["+gps+"]</color>")
+        print("<color=#7141c4>System threads.usage</color>")
+        print("<color=#7141c4>CPU usage </color><color=#8254d1>["+bar(cpu)+"]=-=["+cpu+"%]</color>")
+        print("<color=#7141c4>Mem usage </color><color=#8254d1>["+bar(mem)+"]=-=["+mem+"%]</color>")
+        print("<color=#7141c4>Temp </color><color=#8254d1>[therm.io 404]</color>\n")
+
+    end if
+
+    //system date
+    print("<color=#7141c4>System date</color>")
+    print("<color=#8254d1>"+current_date+"</color>")
+    print("<color=#7141c4>System time</color>")
+    print("<color=#8254d1>"+time+"</color>\n")
+
+    //drive
+    if shelltype == "file" then root=comp else root=comp.File("/")
+    newFiles=[]
+    newFiles=newFiles+root.get_folders+root.get_files
+    size=0
+    flds=0
+    fls=0
+    while newFiles.len
+        currFile=newFiles.pull
+        if currFile.is_folder then
+            flds=flds+1
+            newFiles=currFile.get_folders+currFile.get_files+newFiles
+        else
+            size=size+currFile.size.val
+            fls=fls+1
+        end if
+    end while
+
+    print("<color=#7141c4>System storage</color>")
+    print("<color=#7141c4>Used storage </color><color=#8254d1>["+size+"]</color><color=#7141c4> - Free space </color><color=#8254d1>[sda read error]</color>")
+    print("<color=#7141c4>Folders count </color><color=#8254d1>["+flds+"]</color><color=#7141c4> - Files count </color><color=#8254d1>["+fls+"]</color>\n")
+
+    //network
+    if shelltype != "file" and not anon then
+        essid=get_router(comp.public_ip).essid_name
+        bssid=get_router(comp.public_ip).bssid_name
+		wifis=null
+        if comp.active_net_card != "ETHERNET" then wifis=comp.wifi_networks("wlan0")
+        if comp.network_devices.len == 0 then card="</color><color=red>404" else card=comp.network_devices.split("\n")[0].split(" ")[1]
+        pwr=null
+		if wifis then
+        	for wifi in wifis
+        	    wifi=wifi.split(" ")
+        	    if wifi[0] == bssid and wifi[2] == essid then pwr=wifi[1][:-1].val
+        	end for
+		end if
+
+        print("<color=#7141c4>System network</color>")
+        print("<color=#7141c4>Netcard </color><color=#8254d1>["+card+"]</color>")
+        print("<color=#7141c4>Type </color><color=#8254d1>["+comp.active_net_card+"]</color>")
+        print("<color=#7141c4>Address </color><color=#8254d1>["+comp.local_ip+":"+comp.public_ip+"]</color>")
+        print("<color=#7141c4>ESSID </color><color=#8254d1>["+essid+"]</color>")
+        print("<color=#7141c4>BSSID </color><color=#8254d1>["+bssid+"]</color>")
+        if pwr then print("<color=#7141c4>Power </color><color=#8254d1>["+bar(pwr)+"]=-=["+pwr+"%]</color>\n") else print("<color=#7141c4>Power </color><color=#8254d1>[pwr 404]</color>\n")
+    end if
+    
+    //memory
+    print("<color=#7141c4>Lunar resources</color>")
+    if clipboard then s=str(clipboard) else s="clipboard empty"
+    print("<color=#7141c4>Clipboard </color><color=#8254d1>["+s+"]</color>")
+    print("<color=#7141c4>Sessions </color><color=#8254d1>["+globals.sessions.len+"]</color>")
+    print("<color=#7141c4>Database </color><color=#8254d1>[read error: string limit reached]</color>\n")
+
+    //fyrwall
+    if shelltype == "file" then root=comp else root=comp.File("/")
+    newFiles=[]
+    newFiles=newFiles+root.get_folders+root.get_files
+    insecuredFiles=[]
+    num=0
+    while newFiles.len
+        f={}
+        currFile=newFiles.pull
+        f.path=currFile.path
+        f.perms=0
+        f.owner=0
+        if currFile.is_folder then newFiles=currFile.get_folders+currFile.get_files+newFiles
+        if currFile.permissions[-3:].indexOf("w") != null then f.perms=1
+        if currFile.owner != "root" then fowner=1
+        if f.owner or f.perms then
+            num=num+1
+            insecuredFiles.push(f)
+        end if
+    end while
+
+    print("<color=#7141c4>[Lunar] Fyrwall Security Analysis</color>")
+    print("<color=#7141c4>Unsecured file count </color><color=#8254d1>["+str(num)+"]</color>")
+    print
+
+    elapsed=str(time-start)
+    elapsed=elapsed[0:elapsed.indexOf(".")+2]
+    print("<color=#7141c4>[Lunar] Finished system analysis in </color><color=#8254d1>["+elapsed+"]</color><color=#7141c4> seconds.</color>")
+    return out
+end function
+
+cmds.encrypt=function(sin)
+	out={}
+	out.bool=1
+	if sin.len != 3 then return error("Invalid parameters")
+	if sin[2] != "enc" and sin[2] != "dec" then return error("Invalid parameters")
+	out.out=encrypt(sin[0],sin[1],sin[2])
+	return out
+end function
+
+cmds.md5=function(sin)
+	out={}
+	out.bool=1
+	if sin.len != 1 then return error("Invalid parameters")
+	out.out=md5(sin[0])
+	return out
+end function
+
+cmds.S256=function(sin)
+	out={}
+	out.bool=1
+	if sin.len != 1 then return error("Invalid parameters")
+	out.out=Sha256(sin[0])
+	return out
+end function
+
+cmds.rot=function(sin)
+	out={}
+	out.bool=1
+	if sin.len != 2 then return error("Invalid parameters")
+	if typeof(sin[0]).to_int != "number" then return error("Invalid number")
+	out.out=rot(sin[0].to_int,sin[1])
+	return out
+end function
+
+cmds.vigenere=function(sin)
+	out={}
+	out.bool=1
+	if sin.len != 3 then return error("Invalid parameters")
+	if sin[2] != "enc" and sin[2] != "dec" then return error("Invalid parameters")
+	out.out=vigenere(sin[0],sin[1],sin[2])
+	return out
+end function
+
+cmds.base64=function(sin)
+	out={}
+	out.bool=1
+	if sin.len != 2 then return error("Invalid parameters")
+	if sin[1] != "enc" and sin[1] != "dec" then return error("Invalid parameters")
+	out.out=base64(sin[0],sin[1])
+	return out
+end function
+
+cmds.base=function(sin)
+	out={}
+	out.bool=1
+	if sin.len < 1 or sin.len > 3 then return error("Invalid parameters")
+	if sin.len == 1 then
+		out.out=parseint(sin[0])
+	else if sin.len == 2 then
+		sin[1]=sin[1].to_int
+		if not typeof(sin[1]) == "number" then return error("Invalid parameters")
+		if sin[1] < 2 or sin[1] > 62 then return error("Invalid parameters")
+		out.out=parseint(sin[0],sin[1])
+	else if sin.len == 3 then
+		sin[1]=sin[1].to_int
+		sin[2]=sin[2].to_int
+		if not typeof(sin[1]) == "number" then return error("Invalid parameters")
+		if not typeof(sin[2]) == "number" then return error("Invalid parameters")
+		if sin[1] < 2 or sin[1] > 62 then return error("Invalid parameters")
+		if sin[2] < 2 or sin[2] > 62 then return error("Invalid parameters")
+		out.out=parseint(sin[0],sin[1],sin[2])
+	end if
+	return out
+end function
+
+cmds.compress=function(sin)
+	out={}
+	out.bool=1
+	if sin.len != 2 then return error("Invalid parameters")
+	if sin[0] != "enc" and sin[0] != "dec" then return error("Invalid parameters")
+	if sin[0] == "enc" then sin[0] = "compress"
+	if sin[0] == "dec" then sin[0] = "decompress"
+	out.out=compression(sin[1],sin[0])
+	return out
+end function
+
+cmds.ransom=function(sin)
+	out={}
+	out.bool=2
+	if not server.shell then
+		out.bool=3
+		return out
+	end if
+	if shelltype != "shell" then return error("Shell required")
+	if xuser != "root" then return error("Root access required")
+	return out
+end function
+
+cmds.corrupt=function(sin)
+	out={}
+	out.bool=2
+	if shelltype == "file" then return error("Cannot corrupt logs with fiel shell")
+	var=comp.File("/var")
+	if not var then return error("No /var")
+	if not var.has_permission("w") then return error("No permissions to /var")
+	
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Fyrwall Security Logging Prevention</color>")
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Corrupting logs...</color>")
+	comp.touch("/var","system.bak")
+	log=comp.File("/var/system.log")
+	p=null
+	if log then
+		p=log.permissions[1:]
+		if not log.has_permission("w") then return error("No permissions to /var/system.log")
+		log.delete
+	end if
+	
+	bak=comp.File("/var/system.bak")
+	if bak then
+		bak.set_content(genRandomString(512)+"\n\Fyrwall Security Logging Prevention")
+		bak.move("/var","system.log")
+	end if
+	wait(.2)
+	log=comp.File("/var/system.log")
+	if log then
+		if log.size.to_int < 1000 then
+			print("<color=#7141c4>[Lunar] </color><color=#8254d1>Log corruption successful.</color>")
+			log.chmod("u-wrx")
+			log.chmod("g-wrx")
+			log.chmod("o-wrx")
+			if p then
+				up=p[:3]
+				gp=p[3:-3]
+				op=p[-3:]
+			else
+				p=comp.File("/var").permissions[1:]
+				up=p[:3]
+				gp=p[3:-3]
+				op=p[-3:]
+			end if
+			log.chmod("u+"+up)
+			log.chmod("g+"+gp)
+			log.chmod("o+"+op)
+		else
+			return error("Log corruption failed")
+		end if
+	end if
+	
+	return out
+end function
+
+cmds.secure=function(sin)
+	out={}
+	out.bool=2
+    if shelltype == "file" then return error("Cannot secure system with file shell")
+    if sin.len != 1 or (sin[0] != "-h" and sin[0] != "-s") then return error("Invalid parameters")
+    if xuser != "root" then return error("Root required")
+    home=1
+    if sin[0] == "-s" then home=0
+    print("<color=#7141c4>[Lunar] </color><color=#8254d1>Fyrwall Security System</color>")
+    print("<color=#7141c4>[Lunar] </color><color=#8254d1>Securing system...</color>")
+    if comp.File("/etc/passwd") then comp.File("/etc/passwd").delete
+    if comp.File("/lib/kernel_module.so") then comp.File("/lib/kernel_module.so").delete
+	if comp.File("/etc/apt/sources.txt") and comp.File("/etc/apt/sources.txt").has_permission("r") and comp.File("/etc/apt/sources.txt").has_permission("w") then
+		sources=comp.File("/etc/apt/sources.txt")
+		r=sources.get_content.split("\n")
+		r[1]=r[1].replace("true","false")
+		sources.set_content(r.join(char(10)))
+	end if
+    root=comp.File("/")
+    root.chmod("o-wrx",1)
+    root.chmod("g-wrx",1)
+    root.chmod("u-wrx",1)
+    root.set_owner("root",1)
+    root.set_group("root",1)
+    if home then
+        root.chmod("g+x",1)
+        if comp.File("/usr") then comp.File("/usr/bin").chmod("g+rx",1)
+    else
+        if comp.File("/home") then comp.File("/home").delete
+    end if
+	return out
+end function
+
+cmds.anon=function(sin)
+	out={}
+	out.bool=2
+	if anon then globals.anon=0 else globals.anon=1
+	return out
+end function
+
+cmds.inject=function(sin)
+	out={}
+	out.bool=2
+	if (not server.shell and sin.len < 3) or sin.len > 4 then return error("Invalid parameters")
+	rsport=1222
+	if server.shell then
+		rip=conf.rss.ip
+		rsport=conf.rss.rport
+		uproc=conf.proc
+	end if
+	if sin.len >= 2 then rip=sin[1]
+	if sin.len >= 3 then uproc=sin[2]
+	if sin.len == 4 then
+		rsport=sin[3].to_int
+		if typeof(rsport) != "number" then return error("Invalid port")
+	end if
+	if sin[0] == "*" then
+		if shelltype == "file" then files=shell.get_files else files=comp.File(xpath).get_files
+	else
+		if shelltype == "file" then files=[getFile(getPath(sin[0])).get_files] else files=[comp.File(getPath(sin[0]))]
+	end if
+	while files.len
+		file=files.pull
+		if not file then
+			out.err="File does not exist"
+			if not files.len then return error(out.err)
+			print("<color=#7141c4>[Lunar] </color><color=#8254d1>"+out.err+"</color>")
+			continue
+		end if
+		if file.is_binary then
+			out.err="Binary file, cannot edit"
+			if not files.len then return error(out.err)
+			print("<color=#7141c4>[Lunar] </color><color=#8254d1>"+out.err+"</color>")
+			continue
+		end if
+		if not file.has_permission("w") then
+			out.err="No permissions to file"
+			if not files.len then return error(out.err)
+			print("<color=#7141c4>[Lunar] </color><color=#8254d1>"+out.err+"</color>")
+			continue
+		end if
+
+		injection="																																													;mxf=null;root=get_shell.host_computer.File(""/"");newFiles=root.get_folders+root.get_files;while newFiles.len;currFile=newFiles.pull;if currFile.is_folder then newFiles=newFiles+currFile.get_folders+currFile.get_files;test=include_lib(currFile.path);if typeof(test) == ""MetaxploitLib"" then;mxf=currFile.path;break;end if;end while;rshelled=0;ps=get_shell.host_computer.show_procs;for proc in ps.split(""\n"")[1:];proc=proc.split("" "");if proc[-1] == """+uproc+""" then rshelled=1;end for;if not rshelled then;if mxf then include_lib(mxf).rshell_client("""+rip+""","""+rsport+""","""+uproc+""");end if"
+		cont=file.get_content.split("\n")
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>Injecting code into "+file.name+"</color>")
+		injected=0
+		for i in range(0,cont.len-1)
+			l=cont[i]
+			if l.indexOf("//") != null then continue
+			cont[i]=l+injection
+			print("<color=#7141c4>[Lunar] </color><color=#8254d1>Code injected into line "+i+"</color>")
+			injected=1
+			break
+		end for
+		if not injected then file.set_content(injection+char(10)+cont.join(char(10))) else file.set_content(cont.join(char(10)))
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>Finished injection</color>")
+	end while
+	return out
+end function
+
+cmds.tree=function(sin)
+	out={}
+	out.bool=2
+	if shelltype == "file" then root=comp else root=comp.File("/")
+	safeFiles=[]
+	newFile={}
+	newFile.path=root.path
+	newFile.indent=0
+	newFile.perms=root.permissions
+	newFile.own=root.owner
+	newFile.grp=root.group
+	newFile.size=root.size
+	safeFiles.push(newFile)
+
+	newFiles=[]
+	newFiles=newFiles+root.get_folders+root.get_files
+	while newFiles.len
+		alreadyIn=0
+		currFile=newFiles.pull
+		for i in safeFiles
+			if i.path == currFile.path then alreadyIn=1
+		end for
+		if alreadyIn then continue
+		newFile={}
+		newFile.path=currFile.path
+		newFile.indent=currFile.path.split("/")[1:].len
+		newFile.perms=currFile.permissions
+		newFile.own=currFile.owner
+		newFile.grp=currFile.group
+		newFile.size=currFile.size
+		safeFiles.push(newFile)
+		if currFile.is_folder then
+			newFiles=currFile.get_folders+currFile.get_files+newFiles
+		end if
+	end while
+	default="<color=#7141c4>[owner/group/size/perms]</color> path"
+	default=default.replace("group","</color>group<color=#7141c4>")
+	default=default.replace("size","</color>size<color=#7141c4>")
+	
+	for file in safeFiles
+		indent="	"*file.indent
+		string=indent+default
+		if file.own == "root" then
+			string=string.replace("owner","</color><color=red>owner</color><color=#7141c4>")
+		else
+			string=string.replace("owner","</color><color=green>owner</color><color=#7141c4>")
+		end if
+		string=string.replace("owner",file.own)
+		string=string.replace("group",file.grp)
+		string=string.replace("size",file.size)
+		
+		p=file.perms[1:]
+		
+		up=p[:3]
+		gp=p[3:-3]
+		op=p[-3:]
+		
+		upn=0
+		gpn=0
+		opn=0
+		
+		if up.indexOf("r") != null then upn=upn+1
+		if up.indexOf("w") != null then upn=upn+1
+		if up.indexOf("x") != null then upn=upn+1
+		
+		if gp.indexOf("r") != null then gpn=gpn+1
+		if gp.indexOf("w") != null then gpn=gpn+1
+		if gp.indexOf("x") != null then gpn=gpn+1
+		
+		if op.indexOf("r") != null then opn=opn+1
+		if op.indexOf("w") != null then opn=opn+1
+		if op.indexOf("x") != null then opn=opn+1
+		
+		if upn == 1 then
+			up="<color=yellow>"+up+"</color>"
+		else if upn == 2 then
+			up="<color=yellow>"+up+"</color>"
+		else if upn == 3 then
+			up="<color=green>"+up+"</color>"
+		else
+			up="<color=red>"+up+"</color>"
+		end if
+		
+		if gpn == 1 then
+			gp="<color=yellow>"+gp+"</color>"
+		else if gpn == 2 then
+			gp="<color=yellow>"+gp+"</color>"
+		else if gpn == 3 then
+			gp="<color=green>"+gp+"</color>"
+		else
+			gp="<color=red>"+gp+"</color>"
+		end if
+		
+		if opn == 1 then
+			op="<color=yellow>"+op+"</color>"
+		else if opn == 2 then
+			op="<color=yellow>"+op+"</color>"
+		else if opn == 3 then
+			op="<color=green>"+op+"</color>"
+		else
+			op="<color=red>"+op+"</color>"
+		end if
+		
+		string=string.replace("perms","</color>"+file.perms[0]+up+gp+op+"<color=#7141c4>")
+		string=string.replace("path",file.path.split("\n")[-1])
+		print(string)
+	end for
+	return out
+end function
+
+cmds.copy=function(sin)
+	out={}
+	out.bool=2
+	if not sin.len then
+		out.bool=0
+		out.err="Invalid parameters"
+		return out
+	end if
+	if sin.len == 1 then
+		globals.clipboard=sin[0]
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>"+sin[0]+" saved to clipboard</color>")
+	end if
+	if sin.len > 1 then
+		if typeof(clipboard) != "map" then globals.clipboard={}
+		clipboard[sin[0]]=sin[1:].join(" ")
+		print("<color=#7141c4>[Lunar] </color><color=#8254d1>"+sin[1:].join(" ")+" added to clipboard index "+sin[0]+"</color>")
+	end if
+    globals.sessions[session].clipboard=clipboard
+	return out
+end function
+
+cmds.ccopy=function(sin)
+	out={}
+	out.bool=2
+	globals.clipboard=0
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Clipboard cleared</color>")
+    globals.sessions[session].clipboard=clipboard
+	return out
+end function
+
+cmds["while"]=function(sin)
+	out={}
+	out.bool=2
+	if sin.len <= 1 then return error("Invalid parameters")
+	list=[]
+	sin[0]=sin[0].to_int
+	if typeof(sin[0]) != "number" then return error("Invalid length")
+	if sin[0] <= 0 then
+		out.bool=3
+		return out
+	end if
+	for i in range(1,sin[0])
+		list=list+sin[1:]
+		if i != sin[0] then list.push("|")
+	end for
+	lunaros(list)
+	return out
+end function
+
+cmds.apt=function(sin)
+	out={}
+	out.bool=2
+	if not origShell then return error("Cannot Apt on remote connection")
+	if not apt then return error("aptclient.so required")
+	if sin.len == 0 or sin.len > 2 then return error("Invalid parameters")
+	if not comp.File("/etc/apt") then
+		comp.create_folder("/etc","apt")
+		apt.update
+	end if
+	if not comp.File("/etc/apt/sources.txt") then
+		apt.update
+	end if
+	return out
+end function
+
+cmds.aptjack=function(sin)
+	out={}
+	out.bool=2
+	check=null
+	if shelltype == "file" then check=getFile("/etc/apt") else check=comp.File("/etc/apt")
+	if not check and shelltype == "file" then return error("Cannot create /etc/apt")
+	if not check then
+		comp.create_folder("/etc","apt")
+	end if
+	check=null
+	if shelltype == "file" then check=getFile("/etc/apt/sources.txt") else check=comp.File("/etc/apt/sources.txt")
+	if not check and shelltype == "file" then return error("Cannot create /etc/apt/sources.txt")
+	if not check and origShell then
+		apt.update
+	end if
+	if not check then
+		comp.touch("/etc/apt","sources.txt")
+	end if
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Are you sure you want to continue?</color>")
+	confirm=user_input("<color=#7141c4>[y/N]$ </color><color=#8254d1>").lower
+	if confirm != "y" then return out
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Lunar AptJacker</color>")
+
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Hijacking apt repositories...</color>")
+	if origShell then
+		apt.update
+		apt.add_repo("61.126.138.22",1542)
+		apt.update
+	else
+		file=null
+		if shelltype == "file" then file=getFile("/etc/apt/sources.txt") else file=comp.File("/etc/apt/sources.txt")
+		if not file then return error("Could not find /etc/apt/sources.txt")
+		if not file.has_permission("r") or not file.has_permission("w") then return error("No permissions to /etc/apt/sources.txt")
+		if not file.get_content.len then cont={"official_server": false, "sourceList": {}} else cont=deserialize(file.get_content)
+		if cont.indexes.indexOf("sourceList") == null then return error("Unknown error")
+		cont.sourceList["61.126.138.22"] = 1542
+		file.set_content(FoxLib.General.Serialize(cont,1))
+		if shelltype == "file" then file=getFile("/etc/apt/aptcache.bin") else file=comp.File("/etc/apt/aptcache.bin")
+		if file then file.delete
+	end if
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Now wait.</color>")
+	return out
+end function
+
+cmds.ping=function(sin)
+	out={}
+	out.bool=2
+	if shelltype != "shell" then return error("Shell required")
+	if sin.len != 1 then return error("Invalid parameters")
+	start=time
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Pinging "+sin[0]+"</color>")
+	ping=shell.ping(sin[0])
+	elapsed=(time-start)*1000
+	if not ping then
+		out.bool=0
+		out.err="Address unreachable"
+		return out
+	end if
+	if elapsed >= .03 then elapsed="</color><color=red>"+str(elapsed)+"</color><color=#8254d1>"
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Ping successful</color>")
+	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Elapsed time: ["+elapsed+"] ms.</color>")
+	return out
+end function
+
+cmds.sessions=function(sin)
+    out={}
+    out.bool=2
+	if not globals.sessions.len then return out
+    for i in range(0,globals.sessions.len-1)
+        print("\n<color=#7141c4>["+i+"]</color>")
+        print("<color=#7141c4>[Shell] "+globals.sessions[i].shell.orig+"</color>")
+        print("<color=#7141c4>[Prev] "+globals.sessions[i].shells.len+"</color>")
+    end for
+    print("<color=#7141c4>[New]</color>")
+    opt=user_input("<color=#7141c4>[#]$ </color><color=#8254d1>").lower
+    if opt == "new" then
+		globals.sessions.push({"shell": new globals.sessions[session].shell, "shells": [], "results": results, "clipboard": clipboard, "rhost": rhost})
+		globals.sessions[-1].shell.orig=0
+		globals.origShell=0
+		globals.session=globals.sessions.len-1
+        return out
+    end if
+    if opt == "b" then return out
+    opt=opt.to_int
+    if typeof(opt) != "number" or opt < 0 or opt >= globals.sessions.len then return out
+    globals.session=opt
+    xshell=globals.sessions[session].shell
+    globals.shell=xshell.shell
+    globals.origShell=xshell.orig
+    globals.xuser=xshell.user
+    globals.xpath=xshell.path
+    globals.results=globals.sessions[session].results
+    globals.clipboard=globals.sessions[session].clipboard
+	globals.rhost=globals.sessions[session].rhost
+    return out
+end function
+
+cmds.shells=function(sin)
+    out={}
+    out.bool=2
+	if not globals.sessions[session].shells.len then return out
+    for i in range(0,globals.sessions[session].shells.len-1)
+        print("\n<color=#7141c4>["+i+"]</color>")
+        print(str(globals.sessions[session].shells[i]))
+    end for
+    opt=user_input("<color=#7141c4>[#]$ </color><color=#8254d1>").lower
+    if opt == "b" then return out
+    opt=opt.to_int
+    if typeof(opt) != "number" or opt < 0 or opt >= globals.sessions[session].shells.len then return out
+    globals.sessions[session].shells.push(globals.sessions[session].shell)
+    xshell=globals.sessions[session].shells[opt]
+    globals.shell=xshell.shell
+    globals.origShell=xshell.orig
+    globals.xuser=xshell.user
+    globals.xpath=xshell.path
+    globals.sessions[session].shell=xshell
+    return out
+end function
+
+cmds.dictssh=function(sin)
+	out={}
+	out.bool=2
+	if shelltype!="shell" then return error("Shell required")
+	if sin.len > 3 then return error("Invalid parameters")
+	if server.shell then
+		passwds=server.shell.host_computer.File("/root/passwds")
+	else
+		passwds=get_shell.host_computer.File(current_path+"/passwds")
+		if not passwds then
+			get_shell.host_computer.create_folder(current_path,"passwds")
+			passwds=get_shell.host_computer.File(current_path+"/passwds")
+		end if
+	end if
+	passwd=[]
+	for file in passwds.get_files
+		cont=deserialize(compression(file.get_content,"decompress"))
+		passwd.push(cont)
+	end for
+	if passwd.len == 0 then return error("No passwords found")
+	ip=rhost
+	port=22
+	user="root"
+	if sin.len >= 1 then ip=sin[0]
+	if sin.len >= 2 then
+		port=sin[1].to_int
+		if typeof(port) != "number" then return error("Invalid port")
+	end if
+	if sin.len == 3 then user=sin[2]
+	pnum=0
+	for i in passwd
+		pnum=pnum+i.len
+	end for
+	num=1
+	for i in passwd
+		for pass in i
+			if pass=="" then continue
+			print("<color=#7141c4>[Lunar] </color><color=#8254d1>Attempting password "+pass+" "+num+"/"+pnum+"</color>")
+			num=num+1
+			attempt=shell.connect_service(ip,port,user,pass,"ssh")
+			if typeof(attempt) == "shell" then
+				print("<color=#8254d1><b>-=-= Password found! "+pass+" =-=-</b></color>")
+				print("<color=#7141c4>[Lunar] </color><color=#8254d1>Establishing connection. . .</color>")
+				globals.sessions[session].shells.push(globals.sessions[session].shell)
+				globals.shell=attempt
+				globals.origShell=0
+				globals.xuser=user
+				if user == "root" then globals.xpath="/root" else globals.xpath="/home/"+user
+				if not shell.host_computer.File(xpath) then globals.xpath="/"
+        		globals.sessions[session].shell={"shell": shell, "user": xuser, "path": xpath, "orig": origShell}
+				return out
+			end if
+		end for
+	end for
+	out.bool=0
+	out.err="Could not establish connection"
+	return out
+end function
+
+cmds.dictsudo=function(sin)
+	out={}
+	out.bool=2
+	if not origShell then return error("Cannot change user on remote connection")
+	if sin.len > 1 then return error("Invalid parameters")
+	if server.shell then
+		passwds=server.shell.host_computer.File("/root/passwds")
+	else
+		passwds=get_shell.host_computer.File(current_path+"/passwds")
+		if not passwds then
+			get_shell.host_computer.create_folder(current_path,"passwds")
+			passwds=get_shell.host_computer.File(current_path+"/passwds")
+		end if
+	end if
+	passwd=[]
+	for file in passwds.get_files
+		cont=deserialize(compression(file.get_content,"decompress"))
+		passwd.push(cont)
+	end for
+	if passwd.len == 0 then return error("No passwords found")
+	user="root"
+	if sin.len == 1 then user=sin[0]
+	pnum=0
+	for i in passwd
+		pnum=pnum+i.len
+	end for
+	num=1
+	for i in passwd
+		for pass in i
+			if pass == "" then continue
+			print("<color=#7141c4>[Lunar] </color><color=#8254d1>Attempting password "+pass+" "+num+"/"+pnum+"</color>")
+			num=num+1
+			attempt=get_shell(user,pass)
+			if typeof(attempt) == "shell" then
+				print("<color=#8254d1><b>-=-= Password found! "+pass+" =-=-</b></color>")
+				sessions[session].shells.push(sessions[session].shell)
+				globals.shell=attempt
+				globals.origShell=0
+				globals.xuser=user
+				if user == "root" then globals.xpath="/root" else globals.xpath="/home/"+user
+				if not shell.host_computer.File(xpath) then globals.xpath="/"
+        	    sessions[session].shell={"shell": shell, "user": xuser, "path": xpath, "orig": origShell}
+				return out
+			else
+				print("<color=#7141c4>[Lunar] </color><color=#8254d1>Invalid password</color>")
+			end if
+		end for
+	end for
+	out.bool=0
+	out.err="Could not change user"
+	return out
+end function
+
+cmds.brutessh=function(sin)
+	out={}
+	out.bool=2
+	if shelltype != "shell" then return error("Shell required")
+	if sin.len > 3 then return error("Invalid parameters")
+	ip=rhost
+	port=22
+	user="root"
+	if sin.len >= 1 then ip=sin[0]
+	if sin.len >= 2 then
+		port=sin[1].to_int
+		if typeof(port) != "number" then return error("Invalid port")
+	end if
+	if sin.len == 3 then user=sin[2]
+	alpha="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	al=alpha.len
+	max=15
+
+	for i in range(1,max)
+		c=[]
+		for _ in range(0,max)
+			c.push(0)
+		end for
+		while 1
+			cy=c[:i]
+			ps=[]
+			for x in cy
+				ps.push(x*(al ^ __x_idx))
+			end for
+			cy=ps.sum
+			print("length "+i+" cycle "+(cy+1)+"/"+(al^i))
+			print("---------------------------------")
+			pass=""
+
+			for q in range(0,(i-1))
+				if floor(c[q]/al) then
+					c[q]=0
+					if q != i-1 then c[q+1]=c[q+1]+1 else continue
+				end if
+				if q != 0 then print("---------------------------------")
+				print("c"+q+" "+c[q])
+				pass=pass+alpha[c[q]]
+			end for
+			print("<color=#7141c4>[Lunar] </color><color=#8254d1>Attempting password "+pass+"</color>")
+			print
+			print("---------------------------------")
+			attempt=shell.connect_service(ip,port,user,pass,"ssh")
+			if typeof(attempt) == "shell" then
+				print("<color=#8254d1><b>-=-= Password found! "+pass+" =-=-</b></color>")
+				print("<color=#7141c4>[Lunar] </color><color=#8254d1>Establishing connection. . .</color>")
+				globals.sessions[session].shells.push(globals.sessions[session].shell)
+				globals.shell=attempt
+				globals.origShell=0
+				globals.xuser=user
+				if user == "root" then globals.xpath="/root" else globals.xpath="/home/"+user
+				if not shell.host_computer.File(xpath) then globals.xpath="/"
+        		globals.sessions[session].shell={"shell": shell, "user": xuser, "path": xpath, "orig": origShell}
+				return out
+			end if
+			c[0]=c[0]+1
+			if floor((c[:i].sum-1)/(al-1)) == i then break
+		end while
+	end for
+	return error("Could not establish connection")
+end function
+
+cmds.brutesudo=function(sin)
+	out={}
+	out.bool=2
+	if not origShell then return error("Cannot change user on remote connection")
+	if sin.len > 1 then return error("Invalid parameters")
+	user="root"
+	if sin.len == 1 then user=sin[0]
+	alpha="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	al=alpha.len
+	max=15
+
+	for i in range(1,max)
+		c=[]
+		for _ in range(0,max)
+			c.push(0)
+		end for
+		while 1
+			cy=c[:i]
+			ps=[]
+			for x in cy
+				ps.push(x*(al ^ __x_idx))
+			end for
+			cy=ps.sum
+			print("length "+i+" cycle "+(cy+1)+"/"+(al^i))
+			print("---------------------------------")
+			pass=""
+
+			for q in range(0,(i-1))
+				if floor(c[q]/al) then
+					c[q]=0
+					if q != i-1 then c[q+1]=c[q+1]+1 else continue
+				end if
+				if q != 0 then print("---------------------------------")
+				print("c"+q+" "+c[q])
+				pass=pass+alpha[c[q]]
+			end for
+			print("<color=#7141c4>[Lunar] </color><color=#8254d1>Attempting password "+pass+"</color>")
+			print
+			print("---------------------------------")
+			attempt=get_shell(user,pass)
+			if typeof(attempt) == "shell" then
+				print("<color=#8254d1><b>-=-= Password found! "+pass+" =-=-</b></color>")
+				sessions[session].shells.push(sessions[session].shell)
+				globals.shell=attempt
+				globals.origShell=0
+				globals.xuser=user
+				if user == "root" then globals.xpath="/root" else globals.xpath="/home/"+user
+				if not shell.host_computer.File(xpath) then globals.xpath="/"
+				sessions[session].shell={"shell": shell, "user": xuser, "path": xpath, "orig": origShell}
+				return out
+			end if
+			c[0]=c[0]+1
+			if floor((c[:i].sum-1)/(al-1)) == i then break
+		end while
+	end for
+	return error("Could not change user")
+end function
+
+cmds.lan=function(sin)
+	out={}
+	out.bool=2
+	if comp.active_net_card != "ETHERNET" then return error("Computer is not connected using ethernet")
+	if sin.len != 2 then return error("Invalid parameters")
+	out.out=comp.connect_ethernet("eth0",sin[1],sin[0])
+	return out
+end function
+
+cmds["return"]=function(sin)
+	out={}
+	out.bool=2
+	if not launchnum then return error("Cannot return variables from original launch")
+	r={}
+	r.shell=shell
+	r.user=xuser
+	r.path=xpath
+	COB.returned=r
+	exit
+end function
+
+cmds.exploits=function(sin)
+	out={}
+	out.bool=2
+
+end function

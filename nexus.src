@@ -1,0 +1,228 @@
+//nexus nexus
+//N.E.X.I.
+//N-exus
+//E-thical
+//E-xperimental
+//I-nterpreter
+//asimov:
+//1) A robot may not injure a human being or, through inaction, allow a human being to come to harm.
+//2) A robot must obey the orders given it by human beings except where such orders would conflict with the First Law.
+//3) A robot must protect its own existence as long as such protection does not conflict with the First or Second Law.
+
+import_code("/root/Fox.so")
+//import_code("/root/BytesDev")
+
+logo=function()
+    print("<color=#7141c4><u><s><size=200%><pos=0%>‎</pos><pos=100%>‎</pos></size></s></u></color>")
+    print("<color=#7141c4><size=1000%><align=center><rotate=-49deg>z</rotate></align></size></color>")
+    print("<color=#7141c4><size=200%><align=center><cspace=-0.1em>The Nexus</cspace></align></size></color>")
+    print("<color=#7141c4><align=center><cspace=-0.1em>NHub Version [0.0.0dev - CN/WellRooted]</cspace></align></color>")
+    print
+end function
+
+clear=function()
+    clear_screen
+    logo
+end function
+
+
+encrypt=function()
+	pass=user_input("string> ")
+	secret=user_input("key> ")
+	type=user_input("enc/dec> ")
+
+	cryptChars=function(pass)
+		if typeof(pass) == "string" then
+		newList=[]
+		for chr in pass
+			newList.push(bitwise("^",chr.code,key))
+		end for
+		return newList.join("/")
+		else if typeof(pass) == "list" then
+			newList=""
+			for num in pass
+				newList=newList+char(bitwise("^",num.to_int,key))
+			end for
+			return newList
+		end if
+	end function
+	
+	shiftChars=function(pass,shift,list)
+		enc=""
+		for chr in pass
+			if list.indexOf(chr) == null then continue
+			newChar=shift[list.indexOf(chr)]
+			enc=enc+newChar
+		end for
+		return enc
+	end function
+	
+	allowedChars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789/_.@=!#$%^&*()-+|?<>"
+	shiftedChars="Cy|=a+!@z^M7rmg*BUh(Ne-5tV8dTq?$u4vo1>kWxJpARLcKSb320%EQH6<w_nOG#.&/ZsXI)PjfiFYDl9"
+	passLen=pass.len
+	key=0
+	for chr in secret
+		key=key+chr.code
+	end for
+	if type == "enc" then
+		enc1=cryptChars(pass)
+		crypt=shiftChars(enc1,shiftedChars,allowedChars)
+	else if type == "dec" then
+		dec=shiftChars(pass,allowedChars,shiftedChars)
+		dec=dec.split("/")
+		dec=cryptChars(dec)
+		crypt=dec
+	end if
+	return(crypt)
+end function
+
+genRandomString=@FoxLib.General.rndstring
+
+S256=@FoxLib.Crypto.Sha256
+
+B64=@FoxLib.Crypto.Base64
+
+ROT=@FoxLib.Crypto.ROT
+
+Compress=@FoxLib.General.Compression
+
+Shade=@FoxLib.Crypto.Shade
+
+ParseInt=@FoxLib.General.ParseInt
+
+callServers=function()
+    globals.web=get_shell.connect_service
+    if typeof(web) != "shell" then exit("<color=#7141c4><b>N.E.X.I.> Unexpected Error! Could not connect to nexus.servers.node1</b></color>")
+
+    globals.cdn=web.connect_service
+    if typeof(cdn) != "shell" then exit("<color=#7141c4><b>N.E.X.I.> Unexpected Error! Could not connect to nexus.servers.cdn1</b></color>")
+end function
+
+login=function(user=null,pass=null)
+    out={}
+    out.bool=0
+    return out
+end function
+
+register=function()
+    out={}
+    out.bool=1
+    clear
+    print("<color=#7141c4>N.E.X.I.> Welcome to the account setup screen!</color>")
+    print("<color=#7141c4>N.E.X.I.> I'll walk you through the steps, first, please select a username!</color>")
+    allowedchars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-"
+    user=""
+    i=0
+    while user.len < 4 or user.len > 20 or i
+        i=0
+        user=user_input("<color=#7141c4>Username:> ")
+        if user.len > 20 then
+            print("<color=#7141c4>N.E.X.I.> Your username is too long! It must be between 4 and 20 characters!</color>")
+            continue
+        end if
+        if user.len < 4 then
+            print("<color=#7141c4>N.E.X.I.> Your username is too short! It must be between 4 and 20 characters!</color>")
+            continue
+        end if
+        for chr in user
+            if allowedchars.indexOf(chr) == null then
+                print("<color=#7141c4>N.E.X.I.> Your username contains invalid characters (A-Z, a-z, 0-9, _- ONLY)</color>")
+                i=1
+                break
+            end if
+        end for
+        if i then continue
+    end while
+    if not cdn.host_computer.File("/Nexus/users/"+user) then cdn.host_computer.create_folder("/Nexus/users",user)
+    usrf=cdn.host_computer.File("/Nexus/users/"+user)
+    Rpass=""
+    Cpass=""
+    print("<color=#7141c4>N.E.X.I.> Good news! That username was accepted by the System!</color>")
+    print("<color=#7141c4>N.E.X.I.> Next, you'll need to create a password!</color>")
+    while Cpass != Rpass or Cpass.len < 1 or Rpass.len < 1
+        Rpass=user_input("<color=#7141c4>Password:> ",1)
+        Cpass=user_input("<color=#7141c4>Confirm:> ",1)
+        if Rpass != Cpass then
+            print("<color=#7141c4>N.E.X.I.> Your passwords don't match</color>")
+            continue
+        end if
+        if Rpass.len < 1 or Cpass.len < 1 then
+            print("<color=#7141c4>N.E.X.I.> Your passwords are too short! They must be at least 1 character long (I don't even know how you messed this up)</color>")
+            continue
+        end if
+    end while
+    print("<color=#7141c4>N.E.X.I.> Perfect! I've just sent the rest of your information over to the System, wait just a second while he sets up your account!</color>")
+    count=cdn.host_computer.File("/Nexus/users.count")
+    count.set_content(count.get_content.val+1)
+    count=count.get_content.val
+    cdn.host_computer.create_folder(usrf.path,str(count))
+    usrf=cdn.host_computer.File(usrf.path+"/"+str(count))
+    cdn.host_computer.touch(usrf.path,"passwd")
+    cdn.host_computer.File("/Nexus/users").chmod("o-wrx",1)
+    cdn.host_computer.File("/Nexus/users").chmod("g-wrx",1)
+    cdn.host_computer.File("/Nexus/users").chmod("u-wrx",1)
+    salt=Cpass+user+"#"+str(count)
+    cdn.host_computer.File(usrf.path+"/passwd").set_content(S256(salt))
+    //temp=web.host_computer.File("/Public/htdocs/template.html").get_content
+    //newUsers=temp.replace("%Users%",str(count))
+    //web.host_computer.File("/Public/htdocs/website.html").set_content(newUsers)
+    out.out={"name": user, "pass": Cpass, "num": count}
+    wait(1)
+    print
+    print("<color=#7141c4>N.E.X.I.> I've just been informed that the System has finished setting up your account!</color>")
+    print("<color=#7141c4>N.E.X.I.> To keep everyone happy, our username system allows everyone to use the same username!</color>")
+    print("<color=#7141c4>N.E.X.I.> Unfortunately, this means everyones username will have an ID attached, but don't worry! This makes it easier for the friend system to find your friends!</color>")
+    print("<color=#7141c4>N.E.X.I.> Just make sure you login with "+user+"#"+str(count)+", okay?</color>")
+    user_input("<color=#7141c4>N.E.X.I.> Press any key to confirm!</color>",0,1)
+    return out
+end function
+
+delete=function()
+    out={}
+    out.bool=1
+end function
+
+
+user=0
+callServers
+if get_shell.host_computer.File(home_dir+"/Config/nexi.cfg") and get_shell.host_computer.File(home_dir+"/Config/nexi.cfg").has_permission("r") then
+    cont=get_shell.host_computer.File(home_dir+"/Config/nexi.cfg").get_content
+    cont=FoxLib.General.Deserialize(encrypt(cont,"Nexi","dec"))
+    out=login(cont.user,cont.pass)
+    if out.bool then user=out.out
+end if
+
+while 1
+    if not user then
+        clear
+        print("<color=#7141c4>N.E.X.I.> Hello there and welcome to the Nexus! I'll be your personal assistant, N.E.X.I.</color>")
+        print("<color=#7141c4>N.E.X.I.> If you'd like to get started, type ""Register"" to make an account, or if you already have an account, input ""Login""</color>")
+        print("<color=#7141c4>N.E.X.I.> Available actions are [""Register"", ""Login"", ""Credits"", ""Exit""]</color>")
+        print
+        opt=user_input("<color=#7141c4>anon:> ").lower
+
+        if opt == "exit" then exit("<color=#7141c4>N.E.X.I.> Come back soon! (I'll miss you..)</color>")
+
+        if opt == "register" then
+            out=register
+            if out.bool then
+                user=out.out
+            end if
+        end if
+
+        if opt == "login" then
+            out=login
+            if out.bool then
+                user=out.out
+            end if
+        end if
+
+        if opt == "credits" then
+            clear
+            print("<color=#7141c4><align=center>by Clover</align></color>")
+            print("<color=#7141c4><align=center>UI design inspired by PsyBorg</align></color>")
+            //print("<color=#7141c4><align=center>N.exus E.thical e.X.perimental I.terpreter chatbot by Clover, code provided by SoosPasta (if he does)</align></color>")
+            user_input("<color=#7141c4>Press any key to continue.</color>",0,1)
+        end if
+    end if
+end while

@@ -1,0 +1,73 @@
+comp=get_shell.host_computer
+bar = function(n, bar_length = 30) // percentage number
+	fill_count = ceil(n / bar_length * 10)
+	empty_count = bar_length - fill_count
+	
+	fill_bar = "#"*fill_count
+	empty_bar = "-"*empty_count
+	
+	bar = "<color=#21bcff>"+fill_bar+"</color><color=#032e41>"+empty_bar+"</color>"
+	return bar
+end function
+
+ps_out = comp.show_procs
+tasks = 0
+cpu_load = 0.0
+mem_load = 0.0
+users=[]
+
+// convert ps output to a map
+for l in ps_out.split("\n")[1:]
+	l = l.split(" ")
+	
+	cpu_load = cpu_load + l[2][:-1].val
+	mem_load = mem_load + l[3][:-1].val
+	
+	if l[0] == "root" then
+		u = "<color=#ff4b4b>"+l[0]+"</color>"
+	else
+		u = "<color=#fbfbfb>"+l[0]+"</color>"
+	end if
+
+	n = "<color=#20ff98>"+l[1]+"</color>"
+	c = "<color=#21bcff>"+l[2]+"</color>"
+	m = "<color=#21bcff>"+l[3]+"</color>"
+	p = "<color=#baff50>"+l[4]+"</color>"
+	im=0
+	for i in users
+		if i.u == u then
+			i.t.push({"n": n, "c": c, "m": m, "p": p})
+			im=1
+		end if
+	end for
+	if not im then
+		map={}
+		map.u=u
+		map.t=[]
+		map.t.push({"n": n, "c": c, "m": m, "p": p})
+		users.push(map)
+	end if
+	
+	tasks=tasks+1
+end for
+
+
+print("<color=#fbfbfb>tasks: "+tasks+"</color>")
+print("<color=#fbfbfb>cpu_usage: [</color>"+bar(cpu_load)+"<color=#fbfbfb>]==[ </color><color=#21bcff>"+cpu_load+"%</color> <color=#fbfbfb>]</color>")
+print("<color=#fbfbfb>mem_usage: [</color>"+bar(mem_load)+"<color=#fbfbfb>]==[ </color><color=#21bcff>"+mem_load+"%</color> <color=#fbfbfb>]</color>\n")
+
+// print ps with colors
+pps = []
+ps = ps_out.split("\n")
+print("<color=#9d9d9d>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+
+for m in users
+	pps.push(m.u)
+	for t in m.t
+		l=[t.n, t.c, t.m, t.p]
+		pps.push(l.join(" "))
+	end for
+	pps.push("<color=#9d9d9d>X</color>")
+end for
+
+print(format_columns(pps.join("\n")))

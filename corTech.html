@@ -1,0 +1,816 @@
+<html>
+<style>
+  body { font: 10px Times, serif; color: #707070; text-align: center; }
+  html{
+    background-color:#0E0E0E;
+  }
+  div{
+    text-align: center;
+    font-size: 14px;
+  }
+  h1 {
+    color: #cc0099;
+    text-shadow: 4px 4px 0px #cc0090;
+  }
+  h2 {
+    color: #303030;
+  }
+  p {
+    color: white;
+    font-size: 14px;
+  }
+  .color-white{
+    color: white;
+  }
+  .div-primary{
+    position: top;
+  }
+  .btn {
+    cursor: pointer;
+  }
+  .btn-primary{
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+    border: none;
+    margin-left: 4px;
+    margin-right: 4px;
+    background-color: #080808;
+  }
+  .btn-primary:hover{
+    background: #cc0099;
+    color: black;
+  }
+  .btn-secondary{
+    border-radius: 8px;
+    color: white;
+    border: none;
+    margin:-4px;
+    background-color: #080808;
+  }
+  .btn-secondary:hover{
+    background: #cc0099;
+    color: black;
+  }
+  .btn-text{
+    color: white;
+  }
+  .body{
+    height: 100%;
+    margin-top: 120px;
+  }
+  .scroll-window{
+    height:600px;
+    overflow-y: auto;
+    margin-bottom: 120px;
+  }
+  .header{
+    position: fixed;
+    top: -10px;
+    background-color: #0E0E0E;
+  }
+  .div-main{
+    margin-top:-24px;
+  }
+  .footer{
+    position: fixed;
+    bottom: 0px;
+    background-color: #0E0E0E;
+  }
+  .tutorials-table {
+    position: fixed;
+    height: 600px;
+  }
+  .tutorials-menu {
+    background-color: #080808;
+    position: fixed;
+    text-align: left;
+    width: 175px;
+    height: 600px;
+  }
+  .tutorial-main {
+    background-color: #181818;
+    text-align: left;
+    width: auto;
+    height: 100%;
+    margin-left: 90px;
+  }
+  .text-header {
+    font-size:20px;
+    color:white;
+  }
+  .text-body-header {
+    text-align: left;
+    font-size:14px;
+    padding-left: 8px;
+    color:white;
+  }
+  .text-body {
+    text-align: left;
+    font-size:14px;
+    padding-left: 24px;
+    color:gray;
+  }
+  .text-note {
+    text-align: left;
+    font-size:12px;
+    padding-left: 48px;
+    color:#505050;
+  }
+  .text-note-center{
+    font-size:12px;
+    color:#505050;
+  }
+  .text-scroll {
+    overflow-y:auto;
+    height:575px
+  }
+  .rotate {
+    transform: rotate(18deg);
+  }
+  .vr {
+    transform: rotate(90deg);
+    padding-top: 40px;
+  }
+  .term-green {
+    background:black;
+    color:green;
+    margin-left:5px;
+  }
+  #div-main {
+  display: block;
+  margin-bottom: 800px;
+  }
+  #div-downloads {
+  display: none;
+  margin-bottom: 500px;
+  }
+  #div-players {
+  display: none;
+  }
+  #div-tutorials {
+  display: none;
+  }
+  #tutorials-main {
+  display: block;
+  }
+  #div-start {
+  display: none;
+  }
+  #div-mission {
+  display: none;
+  }
+  #div-hacktools {
+  display: none;
+  }
+  #div-hackmissions {
+  display: none;
+  }
+  #div-libraries {
+  display: none;
+  }
+  #div-networks {
+  display: none;
+  }
+  #div-securehome {
+  display: none;
+  }
+  #div-secureserver {
+  display: none;
+  }
+  #div-hackwebsites {
+  display: none;
+  }
+  #div-findplayers {
+  display: none;
+  }
+  #div-hackplayers {
+  display: none;
+  }
+</style>
+
+<table class="header">
+  <tr>
+    <td>
+        <br><center><div class="rotate"><h1 style="font-size:26px;">corTechs</h1></div></center>
+        <p>source tools and information<br></p>
+        <hr><div style="margin-right:37px">
+        <button class="btn btn-primary" onclick="mainFunc()"> home </button>
+        <button class="btn btn-primary" onclick="downloadsFunc()"> downloads </button>
+        <button class="btn btn-primary" onclick="playersFunc()"> players </button>
+        <button class="btn btn-primary" onclick="tutorialsFunc()"> tutorials </button>
+      </div><hr>
+    </td>
+  </tr>
+</table>
+
+
+<table class="body">
+  <tr>
+    <td>
+<div id="div-main">
+  <table class="scroll-window">
+
+    <tr><th><br><div><h2><u> -welcome to corTechs- </u></h2></div></th></tr>
+    <tr>
+      <td>
+          <center>
+            <table style="text-align:left;width:700px;"><tr><td>
+              <b class="text-body"><br>
+                <i class="text-note">[5.1.04]</i> <b style="color:white;">300 accounts added to banks.txt<br>
+                <i class="text-note">[4.30.04]</i> <b style="color:white;">secure libs added (ssh/http/router)<br>
+                <i class="text-note">[4.29.04]</i> <b style="color:white;">[hack attempt] added to player list<br>
+                <i class="text-note">[4.22.04]</i> <b style="color:white;">450 accounts added to banks.txt<br>
+                <i class="text-note">[4.20.04]</i> <b style="color:white;">website relaunched<br>
+
+              </b>
+            </td></tr></table>
+          </center>
+
+        <center class="text-note;">
+          <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+          <b style="color:white;"><h2>4 unique visits</h2></b><br><br>
+          <b style="color:white;">***spoiler alert***</b><br>
+          <i style="margin-left:-20px"><b class="text-note">some content may ruin the adventure<br>
+          <i style="margin-left:-20px">use as refernce and make something better<br></b></i>
+          <br><br><br><b>
+
+        </center>
+      </td>
+    </tr>
+  </table>
+</div>
+<div id="div-downloads">
+<table class="scroll-window">
+  <tr>
+    <th><div><br><h2>-downloads-</h2><br><br><button class="btn btn-primary" style="width:100px;" id="HackShopTools" value="get files"></div></th>
+  </tr>
+  <tr>
+    <th><center><b style="color:white;"><u>Get Shell</u></b><br>(source)</center></th>
+    <th><center><b style="color:white;"><u>LAN Map</u></b></center><center>(source)</center></th>
+  </tr>
+  <tr>
+    <td>
+      <p>*basic library attack - returns shell*<br>
+        *works on all devices, remote and local*<br>
+        -exploits all vulnerabilties of target port library<br>
+        -'launch terminal' option when shell found<br>
+        -optional password or lan ip parameter
+      </p>
+    </td>
+    <td>
+      <p>
+      *scans lan network and prints map to console*<br>
+      *maps all connections to open/closed ports<br>
+      *full hierarchy with ip/port/device/type/status</p>
+      <center>
+        -labels router/switch/firewall<br>
+        -lists all ports and current status
+      </center>
+    </td>
+  </tr>
+  <tr>
+    <th><center><b style="color:white;"><u>Corrupt Logs</u></b></center><center>(source)</center></th>
+    <th><center><b style="color:white;"><u>Secure PC</u></b></center><center>(source)</center></th>
+  </tr>
+  <tr>
+    <td>
+      <p>
+        *corrupt local system.log file*<br>
+        -removes all log entries<br>
+        -leaves optional message in system.log<br>
+        -no disconnection log on exit<br>
+        -use: sec [home/server/remote] or [h/s/r]
+      </p>
+      <br><br>
+    </td>
+    <td>
+      <p>
+        *Secures local pc*<br>
+        -home/server/remote settings<br>
+        -ONLY run 'home' on home pc<br>
+        -removes all password files<br>
+        -removes guest folder<br>
+        -resets all permissions<br>
+        -<i>(remote: full perms to all users)</i>
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <th ><center><b style="color:white;"><u>File Management List</u></b></center><center>(fml)</center></th>
+    <th><center style="margin-top:20px;"><b style="color:white;"><u>File Handler</u></b></center><center>(template)</center><br></th>
+  </tr>
+  <tr>
+    <td>
+      <p>
+      *file and folder management*<br>
+      *keypad or path navigation*<br>
+      *full permissions control*</p>
+      <center><u>edit files and folders:</u><br>
+        -add files and folders<br>
+        -view/add/clear txt/src<br>
+        -move/copy/delete<br>
+        -build .src<br>
+        -launch scripts<br>
+        -empty folders<br>
+        -h for help
+      </center>
+    </td>
+    <td>
+      <p>
+        *creates fake computer object from remote file object*
+      </p>
+        <br><br><br><br><br><br><br><br><br><br><br>
+    </td>
+  </tr>
+  <tr style="margin-top:12px;">
+    <th><center><b style="color:white;"><u>Get Remote User</u></b></center><center>(template)</center></th>
+    <th><center><b style="color:white;"><u>Connect Wifi</u></b></center><center>(source)</center></th>
+  </tr>
+  <tr>
+    <td>
+      <p>
+      *finds user of remote object*<br>
+      *accepts shell/computer/file objects*<br>
+      *returns current user as string ("root/username/guest")*</p>
+      <center>
+        requires implementation into existing tool<br>
+        may not work with player edited permissions
+      </center>
+    </td>
+    <td>
+      <p>
+        *auto connect to selected wifi*<br>
+        <center>-automatically runs airplay/aircrack<br>
+          -displays password<br>
+          -automatically connects
+        </center>
+        <br><br>
+    </td>
+  </tr>
+  <tr>
+    <th><center style="margin-top:20px;"><b style="color:white;"><u>getRich</u></b></center><center>(source)</center></th>
+  </tr>
+  <tr>
+    <td>
+      <p>
+        - auto bank finder/decipherer<br>
+        - creates database of vulnerabilities<br>
+        - generates 100-300 deciphered accounts/hr
+      </p>
+      <br><br><br>
+    </td>
+
+  </tr>
+  <tr>
+    <td>
+        <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    </td>
+  </tr>
+</table>
+</div>
+
+<div id="div-players">
+<table class="scroll-window">
+  <tr><th><div><br><h2>-wall of shame-</h2></div></th></tr>
+  <tr><th><div size="5px">[notice: ip of hack attempts will be made public]</div></th></tr>
+  <tr>
+    <td><br>
+      <br><div><b style="color:#cc0099;">[85.1.223.93]<u></u></b></div>
+      <!-- <center style="color:white;">
+        85.1.223.93</b></center>
+      </center> -->
+      <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    </td>
+  </tr>
+</table>
+</div>
+
+<div id="div-tutorials">
+
+<table class="tutorials-table">
+    <td class="tutorials-menu">
+      <div>
+        <center><p><b><u style="font-size:16px">Tutorials</u><b></p></center>
+        <b style="color:#303030;font-size:10px;text-align:left;">Beginner:</b><br>
+        <button class="btn-secondary" id="start" onclick="startFunc()">Getting Started</button><br>
+        <button class="btn-secondary" id="mission" onclick="missionFunc()">First Mission</button><br>
+        <button class="btn-secondary" id="hacktools" onclick="hacktoolsFunc()">Hackshop Tools</button><br>
+        <button class="btn-secondary" id="hackmissions" onclick="hackmissionsFunc()"><s>Hackshop Jobs</s></button><br>
+        <button class="btn-secondary" id="hackmissions"><s>Reputation</s></button><br>
+        <b style="color:#303030;font-size:10px;">Intermediate:</b><br>
+        <button class="btn-secondary" id="libraries" onclick="librariesFunc()"><s>Networks</s></button><br>
+        <button class="btn-secondary" id="networks" onclick="networksFunc()"><s>Libraries</s></button><br>
+        <button class="btn-secondary" id="securehome" onclick="securehomeFunc()"><s>Security</s></button><br>
+        <button class="btn-secondary" id="secureserver" onclick="secureserverFunc()"><s>Advanced Tools</s></button><br>
+        <b style="color:#303030;font-size:10px;">Advanced:</b><br>
+        <button class="btn-secondary" id="hackwebsites" onclick="hackwebsitesFunc()"><s>Hacking Websites</s></button><br>
+        <button class="btn-secondary" id="findplayers" onclick="findplayersFunc()"><s>Finding Players</s></button><br>
+        <button class="btn-secondary" id="hackplayers" onclick="hackplayersFunc()"><s>Hacking Players</s></button><br>
+        <button class="btn-secondary" id="encryption" onclick="encryptionFunc()"><s>Encryption</s></button><br>
+        <b style="color:#303030;font-size:10px;">Scripting:</b><br>
+        <button class="btn-secondary" id="scripting" onclick="scriptingFunc()"><s>Scripting</s></button><br>
+      </div>
+    </td>
+    <td class="tutorial-main">
+
+        <div id="tutorials-main" class="text-scroll"><br><b><u class="text-header">Tutorials:</u></b><br><br>
+          <center><b style="color:white;">[Currently Available]<br>
+            <u>Getting Started:</u><br>
+            <i style="color:grey">Setting up your accounts.</i><br>
+            <u>First Mission:</u><br>
+              <i style="color:grey">Completing the first mission and obtaining your hackshop IP</i><br>
+            <u>Hackshop Tools:</u><br>
+              <i style="color:grey">Use and requirements of hackshop tools/exploits.</i><br><br>
+            <i style="font-size:10px">[more to come. no section is considered complete]<br>
+              if you have any questions or suggestions, feel free to contact me<br>
+              menu items will lose their strikeout as content becomes available</i></center>
+        </div>
+        <div id="div-start" class="text-scroll"><b><u class="text-header">[Getting Started]</u></b>
+          <p class="text-body-header">Opening accounts:</p>
+            <p class="text-body">&#8226; Open Browser.exe and search for 'mail'<br>
+              &#8226; Select a website and follow the prompts to create a new email account</p>
+                <p class="text-note">(account credentials are saved in Menu -> Preferences -> Accounts)</p>
+                <p class="text-note">(some credentials are also saved locally. see security tutorials)</p>
+            <p class="text-body">&#8226; Click the home icon to return to search and search for 'bank'<br>
+              &#8226; Select a website and follow the prompts to create a new bank account<br>
+              &#8226; Return home and search for 'shop'</p>
+                <p class="text-note">(think like a hacker and avoid places you might search for new players)</p>
+            <p class="text-body">&#8226; Select a website and navigate to the "shop"<br>
+              &#8226; Rent a Basic Server and download nmap
+                <p class="text-note">(you will return later for libraries and computer upgrades)</p>
+          <p class="text-body-header">Connecting to a proxy server:</p>
+            <p class="text-body">&#8226; Open Mail.exe<br>
+              &#8226; The first email will be the log in credentials for your new server<br>
+              &#8226; Open a new Terminal.exe and enter 'ssh root@[password] [ip]'</p>
+                <p class="text-note">(this is your proxy server. any action risking exposure should be completed here)<br>
+                  (it is advisable that home and servers be secured before exploring player content)</p>
+            <p class="text-body">&#8226; The second email is your first job. Continue to the next section for more information.<br>
+        </div>
+        <div id="div-mission" class="text-scroll"><b><u class="text-header">[Completing the First Mission]</u></b>
+            <p class="text-body-header">Gathering information:</p>
+              <p class="text-body">&#8226; The first step when starting any attack should be to 'nmap' your target</p>
+                <p class="text-note">(if you have not already installed nmap, you can download it from any regular shop)</p>
+              <p class="text-body">&#8226; Enter 'nmap [ip]' in the terminal for port and library details<br>
+                &#8226; You can see that an SSH port is open to outside connection
+                <p class="text-note">(connect to any open ssh port with 'ssh [user]@[password] [ip]')<br>
+                  (until you have tools or access to a hackshop, this is the only way to access this server.</p>
+              <p class="text-body">&#8226; Another way to gather information about a target IP is 'whois [ip]'<br>
+            <p class="text-body-header">Obtaining login credentials:</p>
+              <p class="text-body">&#8226; Social Engineering has many uses, including ways to obtain user credentials<br>
+                &#8226; Open Mail.exe and click the pencil to access email templates</p>
+            <p class="text-body-header">Finding and deciphering the data:</p>
+              <p class="text-body">&#8226; Once a password is obtained, use 'ssh' to connect to the user<br>
+                &#8226; Locate the users email file and use 'decipher /file/path' to crack the email password<br>
+                  <p class="text-note">(decipher is included as an attachment with the mission email)</p>
+              <p class="text-body">&#8226; Once the password has been deciphered, reply to the email with only the password<br>
+                &#8226; You will hear back shortly with the IP of a private hackshop</p>
+                  <p class="text-note">(hackshop IPs are private. sharing or using someone elses IP puts you at risk.)</p>
+              <p class="text-body">&#8226; Continue to the next section for information on hackshops</p>
+        </div>
+        <div id="div-hacktools" class="text-scroll"><b><u class="text-header">[Hackshop Tools]</u></b><br>
+          <p class="text-body-header">-Hack Shop Tools-</p>
+            <p class="text-note">(some tools and default programs can be compiled locally (and for free) by clicking 'view code' in Manual.exe)</p>
+            <p class="text-body">
+              &#8226;<b style="color:white;">AdminMonitor.exe:</b> Monitors for admin activity on hacked connections</p>
+                <p class="text-note">Keep this running on your home PC any time you are hacking npc networks<br>
+                  If an active trace begins, you need to remove your shell/deletion logs and exit the machine</p>
+            <p class="text-body">
+              &#8226;<b style="color:white;">crypto.so:</b> Required for cracking, hacking wifi and obtaining an smtp user list</p>
+                <p class="text-note">This should be kept in /lib on any computer you use to decipher passwords</p>
+            <p class="text-body">
+              &#8226;<b style="color:white;">metaxploit.so:</b> Required for most hacking. Used to attack libraries, create rshell/server and run sniffers.</p>
+                <p class="text-note">This should be kept in /lib for all default exploit tools.<br>
+                  (see advanced tools for more details)</p>
+            <p class="text-body">
+              &#8226;<b style="color:white;">decipher:</b> Password deciphering tool. Utilizes crypto.so library.</p>
+            <p class="text-body">
+              &#8226;<b style="color:white;">scanlib:</b> Library scanning tool. Utilizes metaxploit.so libray</p>
+                <p class="text-note">Scans local library and returns a list of exploitable memory values and their requirements</p>
+            <p class="text-body">
+              &#8226;<b style="color:white;">scanrouter:</b> Firewall detection tool. Returns firewall information for a router.</p>
+            <p class="text-body">
+              &#8226;<b style="color:white;">sniffer & rshell:</b> NPC/Player hacking tools.</p>
+                <p class="text-note">(see hackshop jobs and hacking players for more details)</p>
+
+
+        </div>
+        <div id="div-hackmissions"><b><u class="text-header">[Hackshop Jobs]</u></b>
+
+        </div>
+        <div id="div-libraries"><b><u class="text-header">[Understanding Libraries]</u></b>
+
+        </div>
+        <div id="div-networks"><b><u class="text-header">[Understanding Networks]</u></b>
+
+        </div>
+        <div id="div-securehome" class="text-scroll"><b><u class="text-header">[Securing Your Home and Servers]</u></b><br>
+
+          <div class="text-body-header">
+            <br>-Protect your information-<br><br>
+            <div class="text-body-header">
+              The obvious but not always easy way to ensure your security is to not let anyone obtain your IP address.<br>
+              Some of the common ways a hacker will attempt to locate your information are the following:<br><br>
+              <div class="text-body">
+                &#8226;Finding your ip in logs from websites, servers, shops, etc<br>
+                &#8226;Tricking you into running a malicious file or visiting a server<br>
+                &#8226;Using social engineering to obtain useful information<br>&nbsp;
+                &#8226;Keep all of this in mind when interacting with players, player content, and searching the web
+              </div>
+            </div>
+          </div><br>
+          <div class="text-body-header">
+            <br>-Fix your permissions-<br><br>
+            <div class="text-body-header">
+              When you load into a new system, all user permissions will be set to defaul configuration. Typically, this type of configuration can lead to vulnerabilities, allowing hackers to read, create and execute files with low level permissions.
+              In order to prevent this, you must constantly ensure that your system settings provide only the permissions necessary to remain functional.<br>
+              <div class="text-body"><br>
+                &#8226;To change system permissions, use the <b class="term-green">chmod</b> command
+
+                <p color=#505050>
+                  <b style="margin-left:36px">usage:</b><b class="term-green"> chmod <i>[opt:-R] [u,g,o+wrx] [path file/folder] </i></b><br>
+                  <b style="margin-left:48px">-R:</b><b style="color:#505050;"> applies permissions recursively</b><br>
+                  <b style="margin-left:48px">u,g,o:</b><b style="color:#505050;"> user = root; g = group(users); o = other(guest)</b><br>
+                  <i class="text-note" style="margin-left:48px">only one user type can be used at a time</i><br>
+                  <b style="margin-left:48px">rwx:</b><b style="color:#505050;"> r = read; w = write; x = execute</b><br>
+                  <i class="text-note" style="margin-left:48px">set multiple at once: <b class="term-green">u+rwx </b> <b class="term-green">o-w </b> <b class="term-green">g+rx </b></i><br>
+                </p>
+
+                &#8226;The entire file system can be changed with<br>
+                &#8226;Individual folders and files can be changed with<br>
+                &#8226;never remove group execute permissions from essential start up files on your home pc<br>
+                <i class="text-note">ie: Terminal.exe and sudo</i>
+                A server should have permissions removed for all users, on all files and folders
+
+              -Update your port forwarding-
+
+                Port forwarding allows you to open (or close) access to running services.
+                By default, your home computer will usually have at least one port forward
+                To an NPC service running in your network. Since you will never need to access
+                your home from an external source, and you should not host services from your
+                Home ip, the best practice is to simply remove all port access
+
+                To access port forwarding options, type in terminal: Browser.exe [gateway ip]:8080
+                If you do not know your gateway ip, use if config in terminal or launch ScanLan.exe
+                (Typically, the router IP will be: 192.168.1.1... but not always.
+                Eg: Browser.exe 192.168.1.1
+
+              -get secure libraries-
+
+                Libraries, or .so files, are internal files that are automatically generated
+                when a server is first generated into the world or when a service is started
+                Using the service start files (ie: http-server).
+
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+        <div id="div-secureserver"><b><u class="text-header">[Sniffers and Reverse Shells]</u></b>
+
+
+        </div>
+        <div id="div-hackwebsites"><b><u class="text-header">[Hacking Websites]</u></b>
+
+        </div>
+        <div id="div-findplayers"><b><u class="text-header">[How to Find Players]</u></b>
+
+        </div>
+        <div id="div-hackplayers"><b><u class="text-header">[Hacking Players]</u></b>
+
+        </div>
+
+    </td>
+  </tr>
+</table>
+</div>
+</td>
+</tr>
+</table>
+
+<table class="footer">
+  <tr>
+    <td>
+      <hr><center>| corTechs by Corvus@eastellwo.info | &#xa9;1997 |</center>
+    </td>
+  </tr>
+</table>
+</div>
+
+      <script>
+
+      var main = document.getElementById("div-main");
+      var downloads = document.getElementById("div-downloads");
+      var players = document.getElementById("div-players");
+      var tutorials = document.getElementById("div-tutorials");
+
+      var tutorialsMain = document.getElementById("tutorials-main")
+      var start = document.getElementById("div-start");
+      var mission = document.getElementById("div-mission");
+      var hacktools = document.getElementById("div-hacktools");
+      var hackmissions = document.getElementById("div-hackmissions");
+      var libraries = document.getElementById("div-libraries");
+      var networks = document.getElementById("div-networks");
+      var securehome = document.getElementById("div-securehome");
+      var secureserver = document.getElementById("div-secureserver");
+      var hackwebsites = document.getElementById("div-hackwebsites");
+      var findplayers = document.getElementById("div-findplayers");
+      var hackplayers = document.getElementById("div-hackplayers");
+
+      function mainFunc() {
+        if (main.style.display === "none") {
+          main.style.display = "block";
+          downloads.style.display = "none";
+          players.style.display = "none";
+          tutorials.style.display = "none";
+        } else {
+          main.style.display = "block";
+        }
+      }
+      function downloadsFunc() {
+        if (downloads.style.display === "none") {
+          downloads.style.display = "block";
+          main.style.display = "none";
+          players.style.display = "none";
+          tutorials.style.display = "none";
+        } else {
+          downloads.style.display = "block";
+        }
+      }
+      function playersFunc() {
+        if (players.style.display === "none") {
+          players.style.display = "block";
+          main.style.display = "none";
+          downloads.style.display = "none";
+          tutorials.style.display = "none";
+        } else {
+          players.style.display = "block";
+        }
+      }
+      function tutorialsFunc() {
+        if (tutorials.style.display === "none") {
+          tutorials.style.display = "block";
+          main.style.display = "none";
+          downloads.style.display = "none";
+          players.style.display = "none";
+        } else {
+          tutorials.style.display = "block";
+        }
+      }
+      function startFunc() {
+        tutorialsMain.style.display = "none";
+        start.style.display = "block";
+        mission.style.display = "none";
+        hacktools.style.display = "none";
+        hackmissions.style.display = "none";
+        libraries.style.display = "none";
+        networks.style.display = "none";
+        securehome.style.display = "none";
+        secureserver.style.display = "none";
+        hackwebsites.style.display = "none";
+        findplayers.style.display = "none";
+        hackplayers.style.display = "none";
+      }
+      function missionFunc() {
+        tutorialsMain.style.display = "none";
+        start.style.display = "none";
+        mission.style.display = "block";
+        hacktools.style.display = "none";
+        hackmissions.style.display = "none";
+        libraries.style.display = "none";
+        networks.style.display = "none";
+        securehome.style.display = "none";
+        secureserver.style.display = "none";
+        hackwebsites.style.display = "none";
+        findplayers.style.display = "none";
+        hackplayers.style.display = "none";
+      }
+      function hacktoolsFunc() {
+        tutorialsMain.style.display = "none";
+        start.style.display = "none";
+        mission.style.display = "none";
+        hacktools.style.display = "block";
+        hackmissions.style.display = "none";
+        libraries.style.display = "none";
+        networks.style.display = "none";
+        securehome.style.display = "none";
+        secureserver.style.display = "none";
+        hackwebsites.style.display = "none";
+        findplayers.style.display = "none";
+        hackplayers.style.display = "none";
+      }
+      function hackmissionsFunc() {
+        tutorialsMain.style.display = "none";
+        start.style.display = "none";
+        mission.style.display = "none";
+        hacktools.style.display = "none";
+        hackmissions.style.display = "block";
+        libraries.style.display = "none";
+        networks.style.display = "none";
+        securehome.style.display = "none";
+        secureserver.style.display = "none";
+        hackwebsites.style.display = "none";
+        findplayers.style.display = "none";
+        hackplayers.style.display = "none";
+      }
+      function librariesFunc() {
+        tutorialsMain.style.display = "none";
+        start.style.display = "none";
+        mission.style.display = "none";
+        hacktools.style.display = "none";
+        hackmissions.style.display = "none";
+        libraries.style.display = "block";
+        networks.style.display = "none";
+        securehome.style.display = "none";
+        secureserver.style.display = "none";
+        hackwebsites.style.display = "none";
+        findplayers.style.display = "none";
+        hackplayers.style.display = "none";
+      }
+      function networksFunc() {
+        tutorialsMain.style.display = "none";
+        start.style.display = "none";
+        mission.style.display = "none";
+        hacktools.style.display = "none";
+        hackmissions.style.display = "none";
+        libraries.style.display = "none";
+        networks.style.display = "block";
+        securehome.style.display = "none";
+        secureserver.style.display = "none";
+        hackwebsites.style.display = "none";
+        findplayers.style.display = "none";
+        hackplayers.style.display = "none";
+      }
+      function securehomeFunc() {
+        tutorialsMain.style.display = "none";
+        start.style.display = "none";
+        mission.style.display = "none";
+        hacktools.style.display = "none";
+        hackmissions.style.display = "none";
+        libraries.style.display = "none";
+        networks.style.display = "none";
+        securehome.style.display = "block";
+        secureserver.style.display = "none";
+        hackwebsites.style.display = "none";
+        findplayers.style.display = "none";
+        hackplayers.style.display = "none";
+      }
+      function secureserverFunc() {
+        tutorialsMain.style.display = "none";
+        start.style.display = "none";
+        mission.style.display = "none";
+        hacktools.style.display = "none";
+        hackmissions.style.display = "none";
+        libraries.style.display = "none";
+        networks.style.display = "none";
+        securehome.style.display = "none";
+        secureserver.style.display = "block";
+        hackwebsites.style.display = "none";
+        findplayers.style.display = "none";
+        hackplayers.style.display = "none";
+      }
+      function hackwebsitesFunc() {
+        tutorialsMain.style.display = "none";
+        start.style.display = "none";
+        mission.style.display = "none";
+        hacktools.style.display = "none";
+        hackmissions.style.display = "none";
+        libraries.style.display = "none";
+        networks.style.display = "none";
+        securehome.style.display = "none";
+        secureserver.style.display = "none";
+        hackwebsites.style.display = "block";
+        findplayers.style.display = "none";
+        hackplayers.style.display = "none";
+      }
+      function findplayersFunc() {
+        tutorialsMain.style.display = "none";
+        start.style.display = "none";
+        mission.style.display = "none";
+        hacktools.style.display = "none";
+        hackmissions.style.display = "none";
+        libraries.style.display = "none";
+        networks.style.display = "none";
+        securehome.style.display = "none";
+        secureserver.style.display = "none";
+        hackwebsites.style.display = "none";
+        findplayers.style.display = "block";
+        hackplayers.style.display = "none";
+      }
+      function hackplayersFunc() {
+        tutorialsMain.style.display = "none";
+        start.style.display = "none";
+        mission.style.display = "none";
+        hacktools.style.display = "none";
+        hackmissions.style.display = "none";
+        libraries.style.display = "none";
+        networks.style.display = "none";
+        securehome.style.display = "none";
+        secureserver.style.display = "none";
+        hackwebsites.style.display = "none";
+        findplayers.style.display = "none";
+        hackplayers.style.display = "block";
+      }
+      </script>
+</html>

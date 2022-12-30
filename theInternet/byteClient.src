@@ -1,0 +1,1035 @@
+//Bytes private functions
+//cob.r=@remove
+security=function()
+	if @map.remove != @locals.remove then
+		map.remove=@locals.remove
+		map.remove("remove")
+	end if
+	if @map.hasIndex != @locals.hasIndex then map.remove("hasIndex")
+	if @map.indexOf != @locals.indexOf then map.remove("indexOf")
+	if @globals.remove != @locals.remove then
+		globals.remove=@locals.remove
+		globals.remove("remove")
+	end if
+	if @globals.hasIndex != @locals.hasIndex then globals.remove("hasIndex")
+	if @globals.indexOf != @locals.indexOf then globals.remove("indexOf")
+	if globals.hasIndex("include_lib") then globals.remove("include_lib")
+	if globals.hasIndex("get_shell") then globals.remove("get_shell")
+	if globals.hasIndex("print") then globals.remove("print")
+	if globals.hasIndex("user_input") then globals.remove("user_input")
+	if globals.hasIndex("str") then globals.remove("str")
+	if globals.hasIndex("exit") then globals.remove("exit")
+	if globals.hasIndex("typeof") then globals.remove("typeof")
+end function
+security
+globals.remove("security")
+
+ver="2.2.0"
+func=0
+approvedNames=["Bytes"]
+if approvedNames.indexOf(program_path.split("/")[-1]) == null then func=1
+if (not globals.hasIndex("BTC") and globals.len != 4) or (globals.hasIndex("BTC") and globals.len > 10) then exit("<color=#6a855e>Please import Bytes at the start of your code!</color>")
+
+BytKonfidential=function(AccessKode)
+	if @map.remove != @locals.remove then
+		map.remove=@locals.remove
+		map.remove("remove")
+	end if
+	if @map.hasIndex != @locals.hasIndex then map.remove("hasIndex")
+	if @map.indexOf != @locals.indexOf then map.remove("indexOf")
+	if @globals.remove != @locals.remove then
+		globals.remove=@locals.remove
+		globals.remove("remove")
+	end if
+	if @globals.hasIndex != @locals.hasIndex then globals.remove("hasIndex")
+	if @globals.indexOf != @locals.indexOf then globals.remove("indexOf")
+	if globals.hasIndex("include_lib") then globals.remove("include_lib")
+	if globals.hasIndex("get_shell") then globals.remove("get_shell")
+	if globals.hasIndex("print") then globals.remove("print")
+	if globals.hasIndex("user_input") then globals.remove("user_input")
+	if globals.hasIndex("str") then globals.remove("str")
+	if globals.hasIndex("exit") then globals.remove("exit")
+	if globals.hasIndex("typeof") then globals.remove("typeof")
+	if typeof(@AccessKode) != "string" then return 0
+	if str(@AccessKode) != "xo1L629hYD0J1eaalZPGxEI9jNJEufwLBQZ4P6tRkEGvBIam" then return 0
+	Byt={}
+
+	Byt.callBytesServersFunc=function(silent=0)
+		out={}
+		out.bool=1
+		if not silent then print("<align=center><color=#6a855e>-=-=-={ </color><color=#80bf65><b>CONNECTING TO BYTES</b></color><color=#6a855e> }=-=-=-</color>")
+		web=get_shell.connect_service
+		if typeof(web) != "shell" then
+			out.bool=0
+			return out
+		end if
+		if not silent then print("<align=center><color=#80bf65><size=400%><b></></b></size></color>")
+		if not silent then print("<align=center><color=#6a855e>[][][][]</color><color=#80bf65>Connected successfully</color><color=#6a855e>[][][][]</color>")
+		out.out=web
+		return out
+	end function
+
+	Byt.Sha256=function(string=null)
+		if not string then return
+		string=str(string)
+			
+		Blocks = [[0]]
+		i=0
+		e=0
+		while i < string.len
+			e=4
+			while e > 0 and string.hasIndex(i)
+				e=e-1
+				Blocks[-1][-1] = Blocks[-1][-1] + code(string[i])*256^e
+				i=i+1
+			end while
+			if e == 0 then
+				if Blocks[-1].len == 16 then Blocks = Blocks + [[0]] else Blocks[-1] = Blocks[-1] + [0]
+			end if
+		end while
+		
+		if e > 0 then
+			Blocks[-1][-1] = Blocks[-1][-1] + (2147483648/256^(4-e))
+		else
+			Blocks[-1][-1] = 2147483648
+		end if
+		
+		if Blocks[-1].len == 16 then Blocks = Blocks + [[0]]
+		while Blocks[-1].len != 15
+			Blocks[-1] = Blocks[-1] + [0]
+		end while
+		
+		Blocks[-1] = Blocks[-1] + [string.len*8]
+		
+		add = function(a, b)
+			return (a + b) % 4294967296
+		end function
+		
+		XOR = function(a, b)
+			return bitwise("^", floor(a/65536), floor(b/65536))*65536+bitwise("^", a%65536, b%65536)
+		end function
+		
+		AND = function(a, b)
+			return bitwise("&", floor(a/65536), floor(b/65536))*65536+bitwise("&", a%65536, b%65536)
+		end function
+		
+		OR = function(a, b)
+			return bitwise("|", floor(a/65536), floor(b/65536))*65536+bitwise("|", a%65536, b%65536)
+		end function
+		
+		NOT = function(n)
+			return 4294967295-n
+		end function
+		
+		Ch = function(x, y, z)
+			return OR(AND(x, y), AND(NOT(x), z))
+		end function
+		
+		Maj = function(x, y, z)
+			return OR(OR(AND(x, y), AND(x, z)), AND(y, z))
+		end function
+		
+		shr = function(n, shifts)
+			return floor(n/2^shifts)
+		end function
+		
+		rotr = function(n, rots)
+			rots = 2^rots
+			return (n % rots) * (4294967296/rots) + floor(n/rots)
+		end function
+		
+		sigma0 = function(n)
+			return XOR(XOR(rotr(n, 7), rotr(n, 18)), shr(n, 3))
+		end function
+		
+		sigma1 = function(n)
+			return XOR(XOR(rotr(n, 17), rotr(n, 19)), shr(n, 10))
+		end function
+		
+		SIGMA0 = function(n)
+			return XOR(XOR(rotr(n, 2), rotr(n, 13)), rotr(n, 22))
+		end function
+		
+		SIGMA1 = function(n)
+			return XOR(XOR(rotr(n, 6), rotr(n, 11)), rotr(n, 25))
+		end function
+		
+		K = []
+		K = K + [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221]
+		K = K + [3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580]
+		K = K + [3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986]
+		K = K + [2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895]
+		K = K + [666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037]
+		K = K + [2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344]
+		K = K + [430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779]
+		K = K + [1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298]
+		
+		H = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225]
+		
+		for Block in Blocks
+			W = Block[0:]
+			
+			for i in range(16, 63)
+				W = W + [add(add(add(sigma1(W[i-2]), W[i-7]), sigma0(W[i-15])), W[i-16])]
+			end for
+			
+			a = H[0]
+			b = H[1]
+			c = H[2]
+			d = H[3]
+			e = H[4]
+			f = H[5]
+			g = H[6]
+			h = H[7]
+			
+			for i in range(0, 63)
+				T1 = add(add(add(add(SIGMA1(e), Ch(e, f, g)), h), K[i]), W[i])
+				T2 = add(SIGMA0(a), Maj(a, b, c))
+				h = g
+				g = f
+				f = e
+				e = add(d, T1)
+				d = c
+				c = b
+				b = a
+				a = add(T1, T2)
+			end for
+			H[0] = add(a, H[0])
+			H[1] = add(b, H[1])
+			H[2] = add(c, H[2])
+			H[3] = add(d, H[3])
+			H[4] = add(e, H[4])
+			H[5] = add(f, H[5])
+			H[6] = add(g, H[6])
+			H[7] = add(h, H[7])
+		end for
+		
+		hexTable = "0123456789abcdef"
+		output = ""
+		for i in H.indexes
+			for j in range(7)
+				output = output + hexTable[floor(H[i]/16^j) % 16]
+			end for
+		end for
+		return output
+	end function
+
+	Byt.BytesLogin=function(sub=null,key=null)
+		out={}
+		out.bool=1
+		if not sub then
+			out.bool=0
+			out.err="No user account sent over"
+			return out
+		end if
+		if key then
+			if key != sub.get_info then
+				out.bool=0
+				out.err="Invalid key"
+			end if
+			return out
+		end if
+		print("<color=#80bf65>-=-= User Protection =-=-</color>")
+		print("<color=#80bf65>-=-= If these aren't right, chances are you are using an impostor Bytes client!</color>")
+		print("<color=#80bf65>Confirm your:</color>")
+		compCol=md5(sub.get_user+sub.get_info)[:6]
+		print("<color=#80bf65>Balance: ["+sub.get_balance+" Bytes]</color>")
+		lt=sub.last_transaction
+		if not lt then
+			print("<color=#80bf65>Last transaction: [ Nothing! ]</color>")
+		else
+			print("<color=#80bf65>Last transaction: [ ["+(["+","-"][lt[-1]])+"] "+str(lt[1])+" ["+(["<",">"][lt[-1]])+"] "+lt[0]+"]</color>")
+		end if
+		print("<color=#80bf65>Computer color: [</color><color=#"+compCol+">###</color><color=#80bf65>]</color>")
+		print
+		pass=""
+		salt=""
+		while not sub.check_password(salt) or pass.len < 1
+			pass=user_input("<color=#80bf65>Password: </color><color=#"+compCol+">",1)
+			salt=Byt.Sha256(pass+sub.get_user+sub.get_info)
+			if not sub.check_password(salt) or pass.len < 1 then print("<color=red><b>Invalid password</b></color>")
+		end while
+		return out
+	end function
+
+	return Byt
+end function
+
+Bytes={}
+
+Bytes.login=function(user=null,silent=0)
+	out={}
+	out.bool=1
+	if (@silent != null and typeof(@silent) != "number") or (@user != null and typeof(@user) != "string") then
+		out.bool=0
+		out.err="Unexpected error"
+		return out
+	end if
+	security=function()
+		if @map.remove != @locals.remove then
+			map.remove=@locals.remove
+			map.remove("remove")
+		end if
+		if @map.hasIndex != @locals.hasIndex then map.remove("hasIndex")
+		if @map.indexOf != @locals.indexOf then map.remove("indexOf")
+		if @globals.remove != @locals.remove then
+			globals.remove=@locals.remove
+			globals.remove("remove")
+		end if
+		if @globals.hasIndex != @locals.hasIndex then globals.remove("hasIndex")
+		if @globals.indexOf != @locals.indexOf then globals.remove("indexOf")
+		if globals.hasIndex("include_lib") then globals.remove("include_lib")
+		if globals.hasIndex("get_shell") then globals.remove("get_shell")
+		if globals.hasIndex("print") then globals.remove("print")
+		if globals.hasIndex("user_input") then globals.remove("user_input")
+		if globals.hasIndex("str") then globals.remove("str")
+		if globals.hasIndex("exit") then globals.remove("exit")
+		if globals.hasIndex("typeof") then globals.remove("typeof")
+	end function
+	security
+	Byt=BytKonfidential("xo1L629hYD0J1eaalZPGxEI9jNJEufwLBQZ4P6tRkEGvBIam")
+	if not Byt then
+		out.bool=0
+		out.err="Unknown error"
+		return out
+	end if
+	if not Byt.hasIndex("callBytesServersFunc") or not Byt.hasIndex("Sha256") or not Byt.hasIndex("BytesLogin") then
+		out.bool=0
+		out.err="Unknown error"
+		return out
+	end if
+	if not user then user=user_input("<color=#80bf65>Subwallet: ")
+	if user.len == 0 then
+		out.bool=0
+		out.err="Subwallet does not exist"
+		return out
+	end if
+	bc=null
+	root=get_shell.host_computer.File("/").get_folders+get_shell.host_computer.File("/").get_files
+	while root.len
+		currFile=root.pull
+		if currFile.is_folder then root=currFile.get_folders+currFile.get_files+root
+		test=include_lib(currFile.path)
+		if typeof(test) == "blockchainLib" and not bc then bc=test
+	end while
+	if not bc then
+		out.bool=0
+		out.err="blockchain.so does not exist in the system"
+		return out
+	end if
+	coin=bc.get_coin
+	if typeof(coin) == "string" then
+		out.bool=0
+		out.err="Unknown error obtaining coin"
+		return out
+	end if
+	sub=coin.get_subwallet(user)
+	if typeof(sub) == "string" then
+		out.bool=0
+		out.err="Subwallet does not exist"
+		return out
+	end if
+	attempt=Byt.BytesLogin(sub)
+	if not attempt.bool then
+		out.bool=0
+		out.err=attempt.err
+		return out
+	end if
+	if not silent then
+		print("<color=#80bf65>Hello, <b>"+user+"</b>!</color>")
+		compCol=md5(user+sub.get_info)[:6]
+		print("<color=#80bf65>Balance: ["+sub.get_balance+" Bytes]</color>")
+		lt=sub.last_transaction
+		if not lt then
+			print("<color=#80bf65>Last transaction: [ Nothing! ]</color>")
+		else
+			print("<color=#80bf65>Last transaction: [ ["+(["+","-"][lt[-1]])+"] "+str(lt[1])+" ["+(["<",">"][lt[-1]])+"] "+lt[0]+"]</color>")
+		end if
+		print("<color=#80bf65>Computer color: [</color><color=#"+compCol+">###</color><color=#80bf65>]</color>")
+		print("\n<color=#80bf65><b>DO NOT SHARE YOUR SECRET TRANSFER KEY!!!</b></color>")
+		print("<color=#80bf65><b>IT IS USED FOR AUTOMATED TRANSFERS WITHOUT LOGIN</b></color>")
+		print("<color=#80bf65>Secret Transfer Key: "+sub.get_info+"</color>")
+	end if
+	out.out="Logging out :)"
+	return out
+end function
+
+Bytes.register=function()
+	out={}
+	out.bool=1
+	security=function()
+		if @map.remove != @locals.remove then
+			map.remove=@locals.remove
+			map.remove("remove")
+		end if
+		if @map.hasIndex != @locals.hasIndex then map.remove("hasIndex")
+		if @map.indexOf != @locals.indexOf then map.remove("indexOf")
+		if @globals.remove != @locals.remove then
+			globals.remove=@locals.remove
+			globals.remove("remove")
+		end if
+		if @globals.hasIndex != @locals.hasIndex then globals.remove("hasIndex")
+		if @globals.indexOf != @locals.indexOf then globals.remove("indexOf")
+		if globals.hasIndex("include_lib") then globals.remove("include_lib")
+		if globals.hasIndex("get_shell") then globals.remove("get_shell")
+		if globals.hasIndex("print") then globals.remove("print")
+		if globals.hasIndex("user_input") then globals.remove("user_input")
+		if globals.hasIndex("str") then globals.remove("str")
+		if globals.hasIndex("exit") then globals.remove("exit")
+		if globals.hasIndex("typeof") then globals.remove("typeof")
+	end function
+	security
+	Byt=BytKonfidential("xo1L629hYD0J1eaalZPGxEI9jNJEufwLBQZ4P6tRkEGvBIam")
+	if not Byt then
+		out.bool=0
+		out.err="Unknown error"
+		return out
+	end if
+	if not Byt.hasIndex("callBytesServersFunc") or not Byt.hasIndex("Sha256") or not Byt.hasIndex("BytesLogin") then
+		out.bool=0
+		out.err="Unknown error"
+		return out
+	end if
+	call=Byt.callBytesServersFunc
+	if call.bool then
+		web=call.out
+	else
+		out.bool=0
+		out.err="Could not connect to Bytes webservice"
+		return out
+	end if
+	
+
+	genRandomString=function(length)
+		alpha="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+		alphaLen=alpha.len
+		newString=""
+		while newString.len != length
+			newString=newString+alpha[floor(rnd*alphaLen)]
+		end while
+		return newString
+	end function
+	
+	allowedChars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+	user=user_input("<color=#80bf65>Register username: ")
+	if user.len > 20 then
+		out.bool=0
+		out.err="Username too long"
+		return out
+	end if
+	for chr in user
+		if allowedChars.indexOf(chr) == null then
+			out.bool=0
+			out.err="Illegal characters used in username"
+			return out
+		end if
+	end for
+	print("<color=#80bf65><b>Remember that we cannot change your password if you lose it or get hacked!</b></color>")
+	Rpass=user_input("<color=#80bf65>Register password: ",1)
+	Cpass=user_input("<color=#80bf65>Confirm password: ",1)
+	if Cpass != Rpass then
+		out.bool=0
+		out.err="Passwords do not match"
+		return out
+	end if
+	if Cpass.len < 10 then
+		out.bool=0
+		out.err="Password must be longer than 10 characters"
+		return out
+	end if
+	print("<color=#80bf65>Get your wallet username & pin from the wallet program, found in shops.</color>")
+	wall=user_input("<color=#80bf65>Wallet username: ",1)
+	if not wall.len then
+		out.bool=0
+		out.err="Wallet does not exist"
+		return out
+	end if
+	pin=user_input("<color=#80bf65>Wallet pin: ",1)
+	print("<color=#80bf65>Please wait as we set up a user account for you!</color>")
+	bc=null
+	root=get_shell.host_computer.File("/").get_folders+get_shell.host_computer.File("/").get_files
+	while root.len
+		currFile=root.pull
+		if currFile.is_folder then root=currFile.get_folders+currFile.get_files+root
+		test=include_lib(currFile.path)
+		if typeof(test) == "blockchainLib" and not bc then bc=test
+	end while
+	if not bc then
+		out.bool=0
+		out.err="blockchain.so does not exist in the system"
+		return out
+	end if
+	coin=bc.get_coin
+	if typeof(coin) == "string" then
+		out.bool=0
+		out.err="Unknown error obtaining coin"
+		return out
+	end if
+	if typeof(coin.get_subwallet(user)) != "string" then
+		out.bool=0
+		out.err="User exists"
+		return out
+	end if
+	usrnum=coin.get_subwallets.len+1
+	key=Byt.Sha256(genRandomString(48)+Cpass+user+str(usrnum))
+	salt=Byt.Sha256(Cpass+user+key)
+	t=coin.create_subwallet(wall,pin,user,salt)
+	if typeof(t) == "string" then
+		out.bool=0
+		out.err=t
+		return out
+	end if
+	sub=coin.get_subwallet(user)
+	sub.set_info(key)
+	newUsers=web.host_computer.File("/Public/htdocs/template.html").get_content
+	newUsers=newUsers.replace("%Users%",str(usrnum))
+	web.host_computer.File("/Public/htdocs/website.html").set_content(newUsers)
+	out.out="User "+user+" registered successfully!"
+	return out
+end function
+
+Bytes.delete=function(user=null)
+	out={}
+	out.bool=1
+	if (@user != null and typeof(@user) != "string") then
+		out.bool=0
+		out.err="Unexpected error"
+		return out
+	end if
+	security=function()
+		if @map.remove != @locals.remove then
+			map.remove=@locals.remove
+			map.remove("remove")
+		end if
+		if @map.hasIndex != @locals.hasIndex then map.remove("hasIndex")
+		if @map.indexOf != @locals.indexOf then map.remove("indexOf")
+		if @globals.remove != @locals.remove then
+			globals.remove=@locals.remove
+			globals.remove("remove")
+		end if
+		if @globals.hasIndex != @locals.hasIndex then globals.remove("hasIndex")
+		if @globals.indexOf != @locals.indexOf then globals.remove("indexOf")
+		if globals.hasIndex("include_lib") then globals.remove("include_lib")
+		if globals.hasIndex("get_shell") then globals.remove("get_shell")
+		if globals.hasIndex("print") then globals.remove("print")
+		if globals.hasIndex("user_input") then globals.remove("user_input")
+		if globals.hasIndex("str") then globals.remove("str")
+		if globals.hasIndex("exit") then globals.remove("exit")
+		if globals.hasIndex("typeof") then globals.remove("typeof")
+	end function
+	security
+	Byt=BytKonfidential("xo1L629hYD0J1eaalZPGxEI9jNJEufwLBQZ4P6tRkEGvBIam")
+	if not Byt then
+		out.bool=0
+		out.err="Unknown error"
+		return out
+	end if
+	if not Byt.hasIndex("callBytesServersFunc") or not Byt.hasIndex("Sha256") or not Byt.hasIndex("BytesLogin") then
+		out.bool=0
+		out.err="Unknown error"
+		return out
+	end if
+	call=Byt.callBytesServersFunc
+	if call.bool then
+		web=call.out
+	else
+		out.bool=0
+		out.err="Could not connect to Bytes webservice"
+		return out
+	end if
+	if not user then user=user_input("<color=#80bf65>Username: ")
+	if user.len == 0 then
+		out.bool=0
+		out.err="User does not exist"
+		return out
+	end if
+	bc=null
+	root=get_shell.host_computer.File("/").get_folders+get_shell.host_computer.File("/").get_files
+	while root.len
+		currFile=root.pull
+		if currFile.is_folder then root=currFile.get_folders+currFile.get_files+root
+		test=include_lib(currFile.path)
+		if typeof(test) == "blockchainLib" and not bc then bc=test
+	end while
+	if not bc then
+		out.bool=0
+		out.err="blockchain.so does not exist in the system"
+		return out
+	end if
+	coin=bc.get_coin
+	if typeof(coin) == "string" then
+		out.bool=0
+		out.err="Unknown error obtaining coin"
+		return out
+	end if
+	sub=coin.get_subwallet(user)
+	if typeof(sub) == "string" then
+		out.bool=0
+		out.err="Subwallet does not exist"
+		return out
+	end if
+	attempt=Byt.BytesLogin(sub)
+	if not attempt.bool then
+		out.bool=0
+		out.err=attempt.err
+		return out
+	end if
+	print("<color=red>-=-= { <b>ACOUNT DELETION</b> } =-=-</color>")
+	print("<color=red><b>WARNING: You will not keep any of your Bytes! Continue?</b></color>")
+	conf=user_input("<color=red>[y/N]$ ").lower
+	if conf != "y" then
+		out.out="User not deleted"
+		return out
+	end if
+	t=sub.delete
+	if not t or typeof(t) == "string" then
+		out.bool=0
+		out.err=t
+		return out
+	end if
+	newUsers=web.host_computer.File("/Public/htdocs/template.html").get_content
+	newUsers=newUsers.replace("%Users%",str(coin.get_subwallets.len))
+	web.host_computer.File("/Public/htdocs/website.html").set_content(newUsers)
+	out.out="User deleted"
+	return out
+end function
+
+Bytes.transfer=function(rec=null,quant=null,user=null,key=null)
+	out={}
+	out.bool=1
+	if (@rec != null and typeof(@rec) != "string") or (@quant != null and typeof(@quant) != "string") or (@key != null and typeof(@key) != "string") or (@user != null and typeof(@user) != "string") then
+		out.bool=0
+		out.err="Unexpected error"
+		return out
+	end if
+	security=function()
+		if @map.remove != @locals.remove then
+			map.remove=@locals.remove
+			map.remove("remove")
+		end if
+		if @map.hasIndex != @locals.hasIndex then map.remove("hasIndex")
+		if @map.indexOf != @locals.indexOf then map.remove("indexOf")
+		if @globals.remove != @locals.remove then
+			globals.remove=@locals.remove
+			globals.remove("remove")
+		end if
+		if @globals.hasIndex != @locals.hasIndex then globals.remove("hasIndex")
+		if @globals.indexOf != @locals.indexOf then globals.remove("indexOf")
+		if globals.hasIndex("include_lib") then globals.remove("include_lib")
+		if globals.hasIndex("get_shell") then globals.remove("get_shell")
+		if globals.hasIndex("print") then globals.remove("print")
+		if globals.hasIndex("user_input") then globals.remove("user_input")
+		if globals.hasIndex("str") then globals.remove("str")
+		if globals.hasIndex("exit") then globals.remove("exit")
+		if globals.hasIndex("typeof") then globals.remove("typeof")
+	end function
+	security
+	Byt=BytKonfidential("xo1L629hYD0J1eaalZPGxEI9jNJEufwLBQZ4P6tRkEGvBIam")
+	if not Byt then
+		out.bool=0
+		out.err="Unknown error"
+		return out
+	end if
+	if not Byt.hasIndex("callBytesServersFunc") or not Byt.hasIndex("Sha256") or not Byt.hasIndex("BytesLogin") then
+		out.bool=0
+		out.err="Unknown error"
+		return out
+	end if
+	if not user then user=user_input("<color=#80bf65>Username: ")
+	if user.len == 0 then
+		out.bool=0
+		out.err="User does not exist"
+		return out
+	end if
+	bc=null
+	root=get_shell.host_computer.File("/").get_folders+get_shell.host_computer.File("/").get_files
+	while root.len
+		currFile=root.pull
+		if currFile.is_folder then root=currFile.get_folders+currFile.get_files+root
+		test=include_lib(currFile.path)
+		if typeof(test) == "blockchainLib" and not bc then bc=test
+	end while
+	if not bc then
+		out.bool=0
+		out.err="blockchain.so does not exist in the system"
+		return out
+	end if
+	coin=bc.get_coin
+	if typeof(coin) == "string" then
+		out.bool=0
+		out.err="Unknown error obtaining coin"
+		return out
+	end if
+	sub=coin.get_subwallet(user)
+	if typeof(sub) == "string" then
+		out.bool=0
+		out.err="Subwallet does not exist"
+		return out
+	end if
+	attempt=Byt.BytesLogin(sub,key)
+	if not attempt.bool then
+		out.bool=0
+		out.err=attempt.err
+		return out
+	end if
+	if not rec then rec=user_input("<color=#80bf65>Recipient: ")
+	if rec.len == 0 then
+		out.bool=0
+		out.err="User does not exist"
+		return out
+	end if
+	rec=coin.get_subwallet(rec)
+	if typeof(rec) == "string" then
+		out.bool=0
+		out.err="User does not exist"
+		return out
+	end if
+	if not quant then quant=user_input("<color=#80bf65>Bytes: ")
+	if typeof(quant) == "string" then quant=quant.to_int
+	if typeof(quant) != "number" then
+		out.bool=0
+		out.err="Invalid number"
+		return out
+	end if
+	if quant <= 0 then
+		out.bool=0
+		out.err="Invalid transaction amount"
+		return out
+	end if
+	if typeof(sub.get_balance) == "string" or sub.get_balance < quant then
+		out.bool=0
+		out.err="Insufficient funds"
+		return out
+	end if
+	if rec.get_user != sub.get_user then
+		if not key then
+			print("<color=#80bf65>Confirm transfer of "+quant+" Bytes?</color>")
+			conf=user_input("<color=#80bf65>[y/N]$ ").lower
+			if conf != "y" then
+				out.bool=0
+				out.err="Transaction cancelled"
+				return out
+			end if
+		end if
+		trans=coin.transaction(sub.get_user,rec.get_user,quant)
+		if typeof(trans) == "string" then
+			out.bool=0
+			out.err="Unknown error"
+			return out
+		end if
+	end if
+	out.out="Transaction successful"
+	return out
+end function
+
+Bytes.mine=function(user=null)
+	out={}
+	out.bool=1
+	if (@user != null and typeof(@user) != "string") then
+		out.bool=0
+		out.err="Unexpected error"
+		return out
+	end if
+	security=function()
+		if @map.remove != @locals.remove then
+			map.remove=@locals.remove
+			map.remove("remove")
+		end if
+		if @map.hasIndex != @locals.hasIndex then map.remove("hasIndex")
+		if @map.indexOf != @locals.indexOf then map.remove("indexOf")
+		if @globals.remove != @locals.remove then
+			globals.remove=@locals.remove
+			globals.remove("remove")
+		end if
+		if @globals.hasIndex != @locals.hasIndex then globals.remove("hasIndex")
+		if @globals.indexOf != @locals.indexOf then globals.remove("indexOf")
+		if globals.hasIndex("include_lib") then globals.remove("include_lib")
+		if globals.hasIndex("get_shell") then globals.remove("get_shell")
+		if globals.hasIndex("print") then globals.remove("print")
+		if globals.hasIndex("user_input") then globals.remove("user_input")
+		if globals.hasIndex("str") then globals.remove("str")
+		if globals.hasIndex("exit") then globals.remove("exit")
+		if globals.hasIndex("typeof") then globals.remove("typeof")
+	end function
+	security
+	//if not user_mail_address then
+	//	out.bool=0
+	//	out.err="Cannot run Bytes mining on a server"
+	//	return out
+	//end if
+	Byt=BytKonfidential("xo1L629hYD0J1eaalZPGxEI9jNJEufwLBQZ4P6tRkEGvBIam")
+	if not Byt then
+		out.bool=0
+		out.err="Unknown error"
+		return out
+	end if
+	if not Byt.hasIndex("callBytesServersFunc") or not Byt.hasIndex("Sha256") or not Byt.hasIndex("BytesLogin") then
+		out.bool=0
+		out.err="Unknown error"
+		return out
+	end if
+	if not user then user=user_input("<color=#80bf65>Username: ")
+	if user.len == 0 then
+		out.bool=0
+		out.err="User does not exist"
+		return out
+	end if
+	bc=null
+	root=get_shell.host_computer.File("/").get_folders+get_shell.host_computer.File("/").get_files
+	while root.len
+		currFile=root.pull
+		if currFile.is_folder then root=currFile.get_folders+currFile.get_files+root
+		test=include_lib(currFile.path)
+		if typeof(test) == "blockchainLib" and not bc then bc=test
+	end while
+	if not bc then
+		out.bool=0
+		out.err="blockchain.so does not exist in the system"
+		return out
+	end if
+	coin=bc.get_coin
+	if typeof(coin) == "string" then
+		out.bool=0
+		out.err="Unknown error obtaining coin"
+		return out
+	end if
+	sub=coin.get_subwallet(user)
+	if typeof(sub) == "string" then
+		out.bool=0
+		out.err="Subwallet does not exist"
+		return out
+	end if
+	attempt=Byt.BytesLogin(sub)
+	if not attempt.bool then
+		out.bool=0
+		out.err=attempt.err
+		return out
+	end if
+	
+	hints=["Check out the list of approved programs! www.raveleflei.org", "Check out FoxTrot! placeholder", "Check out Weasel Penetration Security for secure services! www.yondeljf.net"]
+	
+
+	while 1
+		if coin.get_mined_coins >= 15000000 then
+			out.bool=0
+			out.err="Sorry! All available coins have been mined."
+			return out
+		end if
+		clear_screen
+		print("<color=#80bf65>["+hints[floor(rnd*hints.len)]+"]</color>")
+		print("<color=#80bf65>[Mining as user: "+user+"]</color>")
+		print("<color=#80bf65>[Balance: "+sub.get_balance+" Bytes]</color>")
+		sub.mining
+		if func then break
+	end while
+	return out
+end function
+
+Bytes.total=function()
+	out={}
+	out.bool=1
+	security=function()
+		if @map.remove != @locals.remove then
+			map.remove=@locals.remove
+			map.remove("remove")
+		end if
+		if @map.hasIndex != @locals.hasIndex then map.remove("hasIndex")
+		if @map.indexOf != @locals.indexOf then map.remove("indexOf")
+		if @globals.remove != @locals.remove then
+			globals.remove=@locals.remove
+			globals.remove("remove")
+		end if
+		if @globals.hasIndex != @locals.hasIndex then globals.remove("hasIndex")
+		if @globals.indexOf != @locals.indexOf then globals.remove("indexOf")
+		if globals.hasIndex("include_lib") then globals.remove("include_lib")
+		if globals.hasIndex("get_shell") then globals.remove("get_shell")
+		if globals.hasIndex("print") then globals.remove("print")
+		if globals.hasIndex("user_input") then globals.remove("user_input")
+		if globals.hasIndex("str") then globals.remove("str")
+		if globals.hasIndex("exit") then globals.remove("exit")
+		if globals.hasIndex("typeof") then globals.remove("typeof")
+	end function
+	security
+	bc=null
+	root=get_shell.host_computer.File("/").get_folders+get_shell.host_computer.File("/").get_files
+	while root.len
+		currFile=root.pull
+		if currFile.is_folder then root=currFile.get_folders+currFile.get_files+root
+		test=include_lib(currFile.path)
+		if typeof(test) == "blockchainLib" and not bc then bc=test
+	end while
+	if not bc then
+		out.bool=0
+		out.err="blockchain.so does not exist in the system"
+		return out
+	end if
+	coin=bc.get_coin
+	if typeof(coin) == "string" then
+		out.bool=0
+		out.err="Unknown error obtaining coin"
+		return out
+	end if
+	out.out=coin.get_mined_coins
+	return out
+end function
+
+Bytes.bal=function(user=null)
+	out={}
+	out.bool=1
+	if (@user != null and typeof(@user) != "string") then
+		out.bool=0
+		out.err="Unexpected error"
+		return out
+	end if
+	security=function()
+		if @map.remove != @locals.remove then
+			map.remove=@locals.remove
+			map.remove("remove")
+		end if
+		if @map.hasIndex != @locals.hasIndex then map.remove("hasIndex")
+		if @map.indexOf != @locals.indexOf then map.remove("indexOf")
+		if @globals.remove != @locals.remove then
+			globals.remove=@locals.remove
+			globals.remove("remove")
+		end if
+		if @globals.hasIndex != @locals.hasIndex then globals.remove("hasIndex")
+		if @globals.indexOf != @locals.indexOf then globals.remove("indexOf")
+		if globals.hasIndex("include_lib") then globals.remove("include_lib")
+		if globals.hasIndex("get_shell") then globals.remove("get_shell")
+		if globals.hasIndex("print") then globals.remove("print")
+		if globals.hasIndex("user_input") then globals.remove("user_input")
+		if globals.hasIndex("str") then globals.remove("str")
+		if globals.hasIndex("exit") then globals.remove("exit")
+		if globals.hasIndex("typeof") then globals.remove("typeof")
+	end function
+	security
+	if not user then user=user_input("<color=#80bf65>Username: ")
+	if user.len == 0 then
+		out.bool=0
+		out.err="User does not exist"
+		return out
+	end if
+	bc=null
+	root=get_shell.host_computer.File("/").get_folders+get_shell.host_computer.File("/").get_files
+	while root.len
+		currFile=root.pull
+		if currFile.is_folder then root=currFile.get_folders+currFile.get_files+root
+		test=include_lib(currFile.path)
+		if typeof(test) == "blockchainLib" and not bc then bc=test
+	end while
+	if not bc then
+		out.bool=0
+		out.err="blockchain.so does not exist in the system"
+		return out
+	end if
+	coin=bc.get_coin
+	if typeof(coin) == "string" then
+		out.bool=0
+		out.err="Unknown error obtaining coin"
+		return out
+	end if
+	sub=coin.get_subwallet(user)
+	if typeof(sub) == "string" then
+		out.bool=0
+		out.err="Subwallet does not exist"
+		return out
+	end if
+	out.out=sub.get_balance
+	return out
+end function
+
+if not func then
+	apt=null
+	root=get_shell.host_computer.File("/").get_folders+get_shell.host_computer.File("/").get_files
+	while root.len
+		currFile=root.pull
+		if currFile.is_folder then root=currFile.get_folders+currFile.get_files+root
+		test=include_lib(currFile.path)
+		if typeof(test) == "aptclientLib" and not apt then apt=test
+	end while
+	if apt then
+		if get_shell.host_computer.File("/etc/apt/sources.txt") then
+			inSource=apt.show("122.14.7.249")
+			if inSource == "122.14.7.249 repository not found" then
+				print("<color=#80bf65>Adding Bytes repository...</color>")
+				apt.add_repo("122.14.7.249",1542)
+				apt.update
+			end if
+			if apt.check_upgrade(program_path) then
+				print("<color=#80bf65>Updating...</color>\n")
+				apt.install(program_path.split("/")[-1],parent_path(program_path))
+				exit("<color=#80bf65>Please re-launch Bytes client</color>")
+			end if
+		end if
+	end if
+	if params.len >= 1 then
+		out=null
+		if params[0].lower == "register" then
+			if params.len == 2 then out=Bytes.register(params[1]) else out=Bytes.register
+		else if params[0].lower == "login" then
+			if params.len == 2 then out=Bytes.login(params[1]) else out=Bytes.login
+		else if params[0].lower == "delete" then
+			if params.len == 2 then out=Bytes.delete(params[1]) else out=Bytes.delete
+		else if params[0].lower == "transfer" then
+			user=null
+			rec=null
+			quant=null
+			if params.len >= 2 then user=params[1]
+			if params.len >= 3 then rec=params[2]
+			if params.len == 4 then quant=params[3]
+			out=Bytes.transfer(rec,quant,user)
+		else if params[0].lower == "mine" then
+			if params.len == 2 then out=Bytes.mine(params[1]) else out=Bytes.mine
+		else if params[0].lower == "bal" then
+			if params.len == 2 then out=Bytes.bal(params[1]) else out=Bytes.bal
+		else if params[0].lower == "total" then
+			out=Bytes.total
+		else
+			exit
+		end if
+
+		if out then
+			if out.bool then exit("<align=center><color=#80bf65><b>"+out.out+"</b></color>") else exit("<align=center><color=#80bf65><b>"+out.err+"</b></color>")
+		end if
+	end if
+	while 1
+		print("<color=#80bf65><b>Bytes Crypto Client</b></color>")
+		print("<color=#80bf65>v."+ver+"</color>")
+		print("<color=#80bf65>Usage: Bytes [function] [(opt) username] [(transfer);(opt) recipient] [(transfer);(opt) amount]</color>")
+		print("<color=#80bf65>Available functions</color>")
+		print("<color=#6a855e>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+		print("<color=#80bf65><b>/>{REGISTER} {LOGIN} {DELETE} {MINE} {TRANSFER} {TOTAL} {BAL}//</b></color>")
+		print("<color=#6a855e>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+		opt=user_input("<color=#80bf65>\FUNC> ").lower
+		
+		if opt == "login" then
+			out=Bytes.login
+		else if opt == "register" then
+			out=Bytes.register
+		else if opt == "delete" then
+			out=Bytes.delete
+		else if opt == "transfer" then
+			out=Bytes.transfer
+		else if opt == "total" then
+			out=Bytes.total
+		else if opt == "mine" then
+			out=Bytes.mine
+		else if opt == "bal" then
+			out=Bytes.bal
+		else
+			continue
+		end if
+		if out.bool then exit("<align=center><color=#80bf65><b>"+out.out+"</b></color>") else exit("<align=center><color=#80bf65><b>"+out.err+"</b></color>")
+	end while
+end if
+
+m={}
+for i in globals.indexes
+	i=@i
+	i=str(i)
+	if i == "m" then continue
+	if i == "BytKonfidential" then continue
+	if i == "ver" or i == "func" or i == "approvedNames" then continue
+	m[i]=@globals[i]
+end for
+globals.classID=m

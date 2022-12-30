@@ -1,0 +1,31 @@
+import_code("/root/Fox.so")
+counters=1
+alpha="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+al=alpha.len
+if params.len == 1 then base=params[0].to_int else base=10
+if typeof(base) != "number" then base=10
+if base < 2 or base > 62 then base=10
+c=[]
+while 1
+	for _ in range(c.len,counters-1)
+		c.push(0)
+	end for
+	while 1
+		bin=[]
+		for q in range(0,counters-1)
+			if c[q] == base then
+				c[q]=0
+				if q != counters-1 then c[q+1]=c[q+1]+1 else continue
+			end if
+			bin.push(alpha[c[q]])
+		end for
+		bin.reverse
+		bin=bin.join("")
+		if base != 10 then print FoxLib.General.ParseInt(bin,10,base)
+		c[0]=c[0]+1
+		print bin+char(10)
+		wait(0.1)
+		if floor((c[:counters].sum-1)/(base-1)) == counters then break
+	end while
+	counters=counters+1
+end while

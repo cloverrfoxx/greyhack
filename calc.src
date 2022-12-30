@@ -1,0 +1,297 @@
+Token=function(type,value)
+    return {"type": type, "value": value}
+end function
+
+Lexer=function(text)
+    out={}
+    out.text=text
+    out.pos=0
+    out.currChar=out.text[out.pos]
+
+    out.error=function()
+        exit("Invalid character!")
+    end function
+
+    out.advance=function(self)
+        self.pos=self.pos+1
+        if self.pos > self.text.len-1 then
+            self.currChar=null
+        else
+            self.currChar=self.text[self.pos]
+        end if
+    end function
+
+    out.skip_ws=function(self)
+        while self.currChar and self.currChar == " "
+            self.advance
+        end while
+    end function
+
+    out.integer=function(self)
+        result=""
+        while self.currChar != null and (typeof(self.currChar.to_int) == "number" or self.currChar == ".")
+            result=result+self.currChar
+            self.advance
+        end while
+        return result.val
+    end function
+
+    out.gnt=function(self)
+        while self.currChar
+
+            if self.currChar == " " then
+                self.skip_ws
+                continue
+            end if
+
+            if typeof(self.currChar.to_int) == "number" then
+                return Token("INT",self.integer)
+            end if
+
+            if self.currChar == "+" then
+                self.advance
+                return Token("ADD","+")
+            end if
+
+            if self.currChar == "-" then
+                self.advance
+                return Token("SUB","-")
+            end if
+
+            if self.currChar == "*" then
+                self.advance
+                return Token("MUL","*")
+            end if
+
+            if self.currChar == "/" then
+                self.advance
+                return Token("DIV","/")
+            end if
+
+            if self.currChar == "^" then
+                self.advance
+                return Token("EXP","^")
+            end if
+
+            if self.currChar == "%" then
+                self.advance
+                return Token("MOD","%")
+            end if
+
+            if self.currChar == "(" then
+                self.advance
+                return Token("LPAREN","(")
+            end if
+
+            if self.currChar == ")" then
+                self.advance
+                return Token("RPAREN",")")
+            end if
+
+            self.error
+        end while
+
+        return Token("EOF",null)
+    end function
+
+    return out
+end function
+
+AST=function()
+    return {}
+end function
+
+BinOp=function(left,op,right)
+    out=AST
+    out.left=left
+    out.op=op
+    out.token=op
+    out.right=right
+    out.classID="BinOp"
+    return out
+end function
+
+Num=function(token)
+    out=AST
+    out.token=token
+    out.value=token.value
+    out.classID="Num"
+    return out
+end function
+
+UnaryOp=function(op,expr)
+    out=AST
+    out.op=op
+    out.token=op
+    out.expr=expr
+    out.classID="UnaryOp"
+    return out
+end function
+
+Parser=function(lexer)
+    out={}
+    out.lexer=lexer
+    out.ct=out.lexer.gnt
+
+    out.error=function()
+        exit("Invalid syntax!")
+    end function
+
+    out.eat=function(self,ttype)
+        if self.ct.type == ttype then self.ct=self.lexer.gnt else self.error
+    end function
+
+    out.factor=function(self)
+        token=self.ct
+        if token.type == "ADD" then
+            self.eat("ADD")
+            node=UnaryOp(token,self.factor)
+            return node
+        else if token.type == "SUB" then
+            self.eat("SUB")
+            node=UnaryOp(token,self.factor)
+            return node
+        else if token.type == "INT" then
+            self.eat("INT")
+            return Num(token)
+        else if token.type == "LPAREN" then
+            self.eat("LPAREN")
+            node=self.expr
+            self.eat("RPAREN")
+            return node
+        end if
+    end function
+
+    out.exp=function(self)
+        node=self.factor
+
+        while self.ct.type == "EXP"
+            token=self.ct
+            self.eat("EXP")
+            node=BinOp(node,token,self.factor)
+        end while
+        return node
+    end function
+
+    out.term=function(self)
+        node=self.exp
+
+        while ["MUL","DIV","MOD"].indexOf(self.ct.type) != null
+            token=self.ct
+            if token.type == "MUL" then
+                self.eat("MUL")
+            else if token.type == "DIV" then
+                self.eat("DIV")
+            else if token.type == "MOD" then
+                self.eat("MOD")
+            end if
+            
+            node=BinOp(node,token,self.exp)
+        end while
+        return node
+    end function
+
+    out.expr=function(self)
+        node=self.term
+        
+        while ["ADD","SUB"].indexOf(self.ct.type) != null
+            token=self.ct
+            if token.type == "ADD" then
+                self.eat("ADD")
+            else if token.type == "SUB" then
+                self.eat("SUB")
+            end if
+
+            node=BinOp(node,token,self.term)
+        end while
+        return node
+    end function
+
+    out.parse=function(self)
+        return self.expr
+    end function
+    return out
+end function
+
+NodeVisitor=function()
+    out={}
+    out.visit=function(self,node)
+        method="visit_"+typeof(node)
+        if not self.hasIndex(method) then self.generic_visit
+        result=null
+        if method == "visit_BinOp" then
+            result=self.visit_BinOp(node)
+        else if method == "visit_Num" then
+            result=self.visit_Num(node)
+        else if method == "visit_UnaryOp" then
+            result=self.visit_UnaryOp(node)
+        end if
+        return result
+    end function
+
+    out.generic_visit=function()
+        exit("No visit method")
+    end function
+    return out
+end function
+
+Interpreter=function(parser)
+    out=NodeVisitor
+    out.parser=parser
+
+    out.visit_BinOp=function(self,node)
+        if node.op.type == "ADD" then
+            return self.visit(node.left) + self.visit(node.right)
+        else if node.op.type == "SUB" then
+            return self.visit(node.left) - self.visit(node.right)
+        else if node.op.type == "MUL" then
+            return self.visit(node.left) * self.visit(node.right)
+        else if node.op.type == "DIV" then
+            return self.visit(node.left) / self.visit(node.right)
+        else if node.op.type == "MOD" then
+            return self.visit(node.left) % self.visit(node.right)
+        else if node.op.type == "EXP" then
+            return self.visit(node.left) ^ self.visit(node.right)
+        end if
+    end function
+
+    out.visit_Num=function(self,node)
+        return node.value
+    end function
+
+    out.visit_UnaryOp=function(self,node)
+        op=node.op.type
+        if op == "ADD" then
+            return self.visit(node.expr)
+        else if op == "SUB" then
+            return -self.visit(node.expr)
+        end if
+    end function
+
+    out.interp=function(self)
+        tree=self.parser.parse
+        return self.visit(tree)
+    end function
+
+    return out
+end function
+
+main=function()
+    print("Four Leaf Calculator")
+    print
+    while 1
+        text=user_input("calc> ")
+        if not text then continue
+        run(text)
+    end while
+end function
+
+run=function(script)
+    lexer=Lexer(script)
+    parser=Parser(lexer)
+    interp=Interpreter(parser)
+    result=interp.interp
+    print(result)
+end function
+
+main

@@ -1,0 +1,50 @@
+//server control program
+colors={}
+colors.lg="#1FCB69"
+colors.g="#4B693D"
+colors.lr="#E51C1C"
+colors.r="#A20000"
+colors.p="#6E2FB6"
+colors.c="#5FCCFF"
+colors.w="#6E6E6E"
+colors.o="#E58638"
+COB=get_custom_object
+import_code("/root/Fox.so")
+
+COB.server={}
+
+libs=FoxLib.General.LibFinder
+print libs
+mxf=libs.mxf
+cpf=libs.cpf
+cp=null
+apt=null
+if cpf then cp=include_lib(cpf)
+if libs.apt then apt=include_lib(libs.apt)
+COB.server.cp=cp
+
+mx=null
+
+if not mxf then exit("<color="+colors.w+">[</color><color="+colors.r+">Remote exploit library not found!</color><color="+colors.w+">]</color>")
+if not cpf then exit("<color="+colors.w+">[</color><color="+colors.r+">Remote crypto library not found!</color><color="+colors.w+">]</color>")
+cp=include_lib(cpf)
+
+if apt then
+	if get_shell.host_computer.File("/etc/apt") then
+		if not get_shell.host_computer.File("/etc/apt/aptcache.bin") then apt.update
+	end if
+	inSource=apt.show("30.30.30.30")
+	if inSource == "30.30.30.30 repository not found" then
+		apt.add_repo("30.30.30.30",1542)
+		apt.update
+	end if
+	if typeof(apt.check_upgrade(mxf)) == "number" and apt.check_upgrade(mxf) then
+		print("<color="+colors.w+">[</color><color="+colors.g+">Updating remote exploit library...</color><color="+colors.w+">]</color>")
+		apt.install("metaxploit.so",parent_path(mxf))
+	end if
+end if
+
+mx=include_lib(mxf)
+
+COB.server.mx=mx
+exit

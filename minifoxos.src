@@ -1,0 +1,131 @@
+minifox=function(shell,user)
+	import_code("/root/minifoxcmds")
+	globals.origShell=0
+	globals.clipboard=0
+	shelltype=typeof(shell)
+	if shelltype == "shell" then
+		comp=shell.host_computer
+	else
+		comp=shell
+	end if
+	globals.xuser=user
+	globals.rfile=comp.File("/root")
+	if xuser == "root" then globals.xpath="/root" else globals.xpath="/home/"+xuser
+	if not comp.File(xpath) then globals.xpath="/"
+
+	getPath=function(path)
+		path=path.split("/")
+		cpath=xpath.split("/")
+		if cpath.join("/") == "/" then cpath=[""]
+		if path[0] == "" then cpath=[""]
+		if path[0] == "#" and home != "/" then cpath=home.split("/")
+		for p in path
+			if p == "" then continue
+			if p == "#" then continue
+			if p == "." then
+				check=null
+				if shelltype == "file" then check=getFile((cpath+[p]).join("/")) else check=comp.File((cpath+[p]).join("/"))
+				if not check then continue
+			end if
+			if p == ".." then
+				cpath.pop
+				continue
+			end if
+			cpath.push(p)
+		end for
+		cpath=cpath.join("/")
+		if cpath == "" then cpath="/"
+		return cpath
+	end function
+
+	print("<color=#6a855e>-={ miniFoxOS }=-</color>")
+	print("<color=#6a855e>Type ""help"" for commands list")
+	fssh=function()
+	while 1
+		shelltype=typeof(shell)
+		if shelltype == "shell" then
+			comp=shell.host_computer
+			sstat="Shell"
+		else
+			comp=shell
+			sstat="Computer"
+		end if
+
+		pubip=comp.public_ip
+		locip=comp.local_ip
+		display="\n<color=#445239>[</color><color=#6a855e>"+sstat+"</color><color=#445239>] [</color><color=#6a855e>"+locip+"</color><color=#445239>]</color>"
+
+		if xuser == "root" then home="/root" else home="/home/"+xuser
+		if not comp.File(home) then home="/"
+		
+		displaypath=xpath
+		if home != "/" then
+			displaypath=xpath.split("/")[:home.split("/").len].join("/")
+			if displaypath == home then displaypath="~"+([""]+xpath.split("/")[home.split("/").len:]).join("/") else displaypath=xpath
+		end if
+
+		display=display+"\n<color=#445239>[</color><color=#6A855E>"+xuser+"@"+pubip+"</color><color=#445239>:</color><color=#6A855E>"+displaypath+"</color><color=#445239>]</color><color=white>~$ "
+
+		pipe=[]
+		prompt=[]
+		next=[]
+		prompt=user_input(display).split(" ")
+		if prompt[0] == "|" then continue
+		if prompt.indexOf("|") >= 0 then
+		    prompt.push("|")
+		    while prompt.len
+		        pipe.push(prompt[:prompt.indexOf("|")])
+		        prompt=prompt[prompt.indexOf("|"):][1:]
+		    end while
+		else
+		    pipe.push(prompt[0:])
+		end if
+		while pipe.len
+		    dbfile=null
+		    shelltype=typeof(shell)
+		    if shelltype == "shell" then
+		        comp=shell.host_computer
+		    else if shelltype == "computer" then
+		        comp=shell
+		    end if
+		    pubip=comp.public_ip
+		    locip=comp.local_ip
+		
+		    prompt=pipe.pull
+		    if next.len then prompt.push(next.pull)
+		    if prompt[0] == "" or prompt[0] == "0" or not prompt[0] then continue
+		    i=0
+		    for el in prompt
+		        if el == "" then prompt[i]=0
+		        i=i+1
+		    end for
+		    if prompt[0] == "!!" then prompt=previous
+		    previous=prompt
+		    args=prompt[1:]
+		    comm=prompt[0]
+			if comm == "exit" then return "exit"
+		    if cmds.hasIndex(comm) then
+		        f=@cmds[comm]
+		        if clipboard then
+		            for inp in args
+		                if typeof(clipboard) == "string" and inp == "copyv" then args[args.indexOf(inp)] = clipboard
+		                if typeof(clipboard) == "map" and clipboard.hasIndex(inp) then args[args.indexOf(inp)] = clipboard[inp]
+		            end for
+		        end if
+			
+		        out=f(args)
+		        if out.bool == 1 then
+		            if pipe.len then next.push(out.out) else print("<color=#6A855E>:> "+out.out+"</color>")
+		        else if out.bool == 0 then
+		            print("<color=#6A855E>:> "+out.err+"</color>")
+		            break
+		        end if
+		        if out.bool == 3 then break
+		    end if
+		end while
+	end while
+	end function
+	while 1
+		if fssh == "exit" then return
+	end while
+end function

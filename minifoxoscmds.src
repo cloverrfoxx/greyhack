@@ -1,0 +1,891 @@
+cmds={}
+helplist={}
+
+//defaults
+helplist.defaults="-=Defaults=-"
+
+helplist.help={"params": "[command]", "usage": "List all commands, or list command usage!"}
+helplist.exit={"params": "N/A", "usage": "Go back a shell, or exit FoxOS"}
+helplist.clr={"params": "N/A", "usage": "Clears the screen"}
+
+//text controls
+helplist.text="-=Text=-"
+
+helplist.vim={"params": "[file]", "usage": "Text editor"}
+helplist.cat={"params": "[path]", "usage": "Get the contents of a file"}
+helplist.pwd={"params": "N/A", "usage": "Outputs current directory"}
+helplist.whoami={"params": "N/A", "usage": "Outputs current user"}
+helplist.whereami={"params": "N/A", "usage": "Outputs current public IP address"}
+helplist.echo={"params": "[string]", "usage": "Echos input as joined output"}
+helplist.grep={"params": "[searchTerm][string]", "usage": "Finds the line containing the search term"}
+helplist.crack={"params": "[hash]", "usage": "Crack a password hash"}
+
+//file controls
+helplist.files="-=Files=-"
+
+helplist.ls={"params": "[path]", "usage": "Lists files"}
+helplist.tree={"params": "N/A", "usage": "Lists the entire file system along with file vulnerabilities"}
+helplist.cd={"params": "[path]", "usage": "Changes working directory"}
+helplist.mv={"params": "[file][newPath]", "usage": "Moves files"}
+helplist.cp={"params": "[file][newPath]", "usage": "Copies files"}
+helplist.mkdir={"params": "[path]", "usage": "Creates a folder"}
+helplist.touch={"params": "[path]", "usage": "Create a text file"}
+helplist.build={"params": "[src][path]", "usage": "Builds a source file"}
+helplist.rm={"params": "[file]", "usage": "Deletes files"}
+helplist.chmod={"params": "[file][perms][-r]", "usage": "Changes the permission levels of a file"}
+helplist.chown={"params": "[file][owner][-r]", "usage": "Changes the owner of a file"}
+helplist.chgrp={"params": "[file][group][-r]", "usage": "Changes the group of a file"}
+helplist.useradd={"params": "[user][password]", "usage": "Adds a new user"}
+helplist.userdel={"params": "[user]", "usage": "Deletes a user"}
+helplist.groups={"params": "[user]", "usage": "List users groups"}
+helplist.groupadd={"params": "[user][group]", "usage": "Adds user to group"}
+helplist.groupdel={"params": "[user][group]", "usage": "Removes user from group"}
+
+//device controls
+helplist.devices="-=Devices=-"
+
+helplist.passwd={"params": "[user][password]", "usage": "Change users password"}
+helplist.run={"params": "[file][params]", "usage": "Runs a CLI program"}
+helplist.ps={"params": "N/A", "usage": "Lists processes"}
+helplist.kill={"params": "[PID/all]", "usage": "Terminates a running process"}
+
+//network controls
+helplist.network="-=Network=-"
+
+helplist.shell={"params": "[-y/-s]", "usage": "Starts a terminal on the connected system"}
+helplist.rootkit={"params": "[-s]", "usage": "Uploads root attack kit"}
+helplist.up={"params": "[file][path]", "usage": "Uploads a file"}
+helplist.dl={"params": "[file][path]", "usage": "Downloads a file"}
+
+//clipboard controls
+helplist.clipboard="-=Clipboard=-"
+
+helplist.copy={"params": "[name][string]", "usage": "Copies text to the clipboard"}
+helplist.ccopy={"params": "N/A", "usage": "Clears the clipboard"}
+
+cmds.help=function(sin)
+    out={}
+    out.bool=2
+    if sin.len then
+    	if helplist.hasIndex(sin[0]) then
+    		print("<color=#445239>"+sin[0]+"</color>")
+    		print("<color=#6a855e>"+helplist[sin[0]].params+"</color>")
+    		print("<color=#6a855e>"+helplist[sin[0]].usage+"</color>")
+    	end if
+    	return out
+    end if
+    output=[]
+    l=["<color=#445239>Command","Usage</color>"]
+    output.push(l.join(" "))
+    for i in helplist.indexes
+    	if typeof(helplist[i]) == "string" then
+    		output.push("\n<color=#445239>"+helplist[i]+"</color>\n")
+    	else
+    		l=["<color=#445239>"+i+"</color>","<color=#6a855e>"+helplist[i].params+"</color>"]
+    		output.push(l.join(" "))
+    	end if
+    end for
+    print(format_columns(output.join("\n")))
+    return out
+end function
+
+cmds.clr=function(sin)
+	out={}
+	out.bool=2
+	clear_screen
+	return out
+end function
+
+cmds.crack=function(sin)
+    out={}
+    out.bool=1
+    if sin.len != 1 then return error("Invalid parameters")
+    out.out=decipher(scp,sin[0])
+    return out
+end function
+
+cmds.ls=function(sin)
+    out={}
+    out.bool=2
+    if sin.len > 1 then return error("Invalid parameters")
+    if sin.len == 1 then
+        file=comp.File(getPath(sin[0]))
+    else
+        file=comp.File(xpath)
+    end if
+    if not file then return error("Path does not exist")
+    if not file.is_folder then return error("Not a folder")
+
+    output=[]
+	l=["<color=#6a855e>"+file.name, file.owner, file.group, file.size, file.permissions+"</color>"]
+	output.push(l.join(" "))
+	l=["<color=#6a855e>[Name]","[Owner]","[Group]","[Size]","[Permissions]</color>\n"]
+	output.push(l.join(" "))
+	for f in file.get_folders+file.get_files
+		l=[]
+		l.push("<color=#6a855e>"+f.name)
+		l.push(f.owner)
+		l.push(f.group)
+		l.push(f.size)
+		l.push(f.permissions+"</color>")
+		output.push(l.join(" "))
+	end for
+	print(format_columns(output.join("\n")))
+	return out
+end function
+
+cmds.cd=function(sin)
+    out={}
+    out.bool=2
+    if sin.len > 1 then return error("Invalid parameters")
+    if sin.len == 0 then
+		globals.xpath=home
+        return out
+    end if
+	path=getPath(sin[0])
+    file=comp.File(path)
+    if not file then return error("Path does not exist")
+    if not file.is_folder then return error("Not a folder")
+
+	globals.xpath=path
+    return out
+end function
+
+cmds.cat=function(sin)
+    out={}
+    out.bool=1
+    if sin.len != 1 then return error("Invalid parameters")
+    path=getPath(sin[0])
+    file=comp.File(path)
+    if not file then return error("File does not exist")
+    if not file.has_permission("r") then return error("No permissions to file")
+    if file.is_folder or file.is_binary then return error("Binary file, cannot read")
+    out.out=file.get_content
+    return out
+end function
+
+cmds.grep=function(sin)
+    out={}
+    out.bool=2
+    if sin.len != 2 then return error("Invalid parameters")
+    sin[1]=sin[1].split("\n")
+    num=0
+    for l in sin[1]
+        if l.indexOf(sin[0]) != null then
+            if pipe.len then
+				out.bool=1
+                out.out=l
+                return out
+            end if
+            print("<color=#6A855E>["+num+"] "+l+"</color>")
+            num=num+1
+        end if
+    end for
+    if not num then
+        out.bool=0
+        out.err="Could not find "+sin[0]
+    end if
+    return out
+end function
+
+cmds.echo=function(sin)
+    out={}
+    out.bool=1
+    if sin.len == 0 then return error("Invalid parameters")
+    out.out=sin.join(" ")
+    return out
+end function
+
+cmds.mkdir=function(sin)
+    out={}
+    out.bool=2
+    if sin.len != 1 then return error("Invalid parameters")
+    path=getPath(sin[0])
+    name=path.split("/")[-1]
+    if comp.File(path) then return error("Folder exists")
+    path=parent_path(path)
+    if not comp.File(path) then return error("Path does not exist")
+    if not comp.File(path).is_folder then return error("Not a folder")
+    if not comp.File(path).has_permission("w") then return error("No permissions to path")
+    comp.create_folder(path,name)
+    print("<color=#6a855e>:> Folder created successfully</color>")
+    return out
+end function
+
+cmds.touch=function(sin)
+    out={}
+    out.bool=2
+    if sin.len != 1 then return error("Invalid parameters")
+    path=getPath(sin[0])
+    name=path.split("/")[-1]
+    if comp.File(path) then return error("File exists")
+    path=parent_path(path)
+    if not comp.File(path) then return error("Path does not exist")
+    if not comp.File(path).is_folder then return error("Not a folder")
+    if not comp.File(path).has_permission("w") then return error("No permissions to path")
+    comp.touch(path,name)
+    print("<color=#6a855e>:> File created successfully</color>")
+    return out
+end function
+
+cmds.mv=function(sin)
+    out={}
+    out.bool=2
+    if sin.len != 2 then return error("Invalid parameters")
+    origFile=getPath(sin[0])
+    destFolder=getPath(sin[1])
+    file=comp.File(origFile)
+    if not file then return error("File does not exist")
+    folder=comp.File(destFolder)
+    name=""
+    if not folder then
+        pathParent=parent_path(destFolder)
+        if pathParent == destFolder then
+            name=destFolder
+            file.move(parent_path(file.path),name)
+            return out
+        else
+            folder=comp.File(pathParent)
+            name=destFolder[destFolder.len-(destFolder.len-pathParent.len):]
+            if name[0] == "/" then name=name[1:]
+            if not folder then return error("Path does not exist")
+        end if
+    end if
+    if folder then
+        if parent_path(file.path) != parent_path(folder.path) or file.name != folder.name then
+            finalDest=folder.path
+            if name.len == 0 then name=file.name
+            if not folder.is_folder then
+                finalDest=parent_path(file.path)
+                name=folder.name
+            end if
+            file.move(finalDest,name)
+        end if
+    end if
+    print("<color=#6a855e>:> File moved successfully</color>")
+    return out
+end function
+
+cmds.cp=function(sin)
+    out={}
+    out.bool=2
+    if sin.len != 2 then return error("Invalid parameters")
+    origFile=getPath(sin[0])
+    destFolder=getPath(sin[1])
+    file=comp.File(origFile)
+    if not file then return error("File does not exist")
+    folder=comp.File(destFolder)
+    name=""
+    if not folder then
+        pathParent=parent_path(destFolder)
+        if pathParent == destFolder then
+            name=destFolder
+            destFolder=file.parent.path
+            file.copy(destFolder,name)
+            return out
+        else
+            folder=comp.File(pathParent)
+            name=destFolder[destFolder.len-(destFolder.len-pathParent.len):]
+            if name[0] == "/" then name=name[1:]
+            if not folder then return error("Path does not exist")
+        end if
+    end if
+    if folder then
+        if parent_path(file.path) != parent_path(folder.path) or file.name != folder.name then
+            finalDest=folder.path
+            if name.len == 0 then name=file.name
+            if not folder.is_folder then
+                finalDest=parent_path(file.path)
+                name=folder.name
+            end if
+            file.copy(finalDest,name)
+        end if
+    end if
+    print("<color=#6A855E>:> File copied successfully</color>")
+    return out
+end function
+
+cmds.build=function(sin)
+    out={}
+    out.bool=2
+    if shelltype != "shell" then return error("Cannot build programs with a computer object")
+    if sin.len > 2 or sin.len == 0 then return error("Invalid parameters")
+    source=getPath(sin[0])
+    dest=xpath
+    if sin.hasIndex(1) then dest=getPath(sin[1])
+
+    source=comp.File(source)
+    dest=comp.File(dest)
+    if not source then return error("Invalid source code file")
+    if not dest then return error("Invalid destination path")
+    output=shell.build(source.path,dest.path)
+    if output.len == 0 then
+        print("<color=#6a855e>:> Build successful</color>")
+    else
+        out.bool=0
+        out.err=output
+    end if
+    return out
+end function
+
+cmds.rm=function(sin)
+	out={}
+	out.bool=2
+	if sin.len != 1 then return error("Invalid parameters")
+	path=getPath(sin[0])
+	file=comp.File(path)
+	if not file then return error("Path does not exist")
+	if not file.has_permission("w") then return error("No permissions to file")
+	f=comp.File(parent_path(path))
+	if not f.has_permission("w") then return error("No permissions to path")
+	if file.path == xpath then globals.xpath == parent_path(xpath)
+	file.delete
+	print("<color=#6a855e>:> File deleted successfully</color>")
+	return out
+end function
+
+cmds.chmod=function(sin)
+	out={}
+	out.bool=2
+	if sin.len < 2 or sin.len > 3 then return error("Invalid parameters")
+	perms=sin[1]
+	path=getPath(sin[0])
+	if sin.len != 3 then rec=0 else rec=1
+	file=comp.File(path)
+	if not file then return error("Path does not exist")
+	if not file.has_permission("w") and file.owner != xuser then return error("No permissions to file")
+	if perms.indexOf("+") != null then
+		perms=[perms[:perms.indexOf("+")],perms[perms.indexOf("+"):]]
+	else if perms.indexOf("-") != null then
+		perms=[perms[:perms.indexOf("-")],perms[perms.indexOf("-"):]]
+	else
+		return error("Invalid parameters")
+	end if
+	if not perms[0] then perms[0]="oug"
+	for perm in perms[0]
+		file.chmod(perm+perms[1],rec)
+	end for
+	print("<color=#6a855e>:> chmod successful</color>")
+	return out
+end function
+
+cmds.chown=function(sin)
+	out={}
+	out.bool=2
+	if sin.len < 2 or sin.len > 3 then return error("Invalid parameters")
+	owner=sin[1]
+	path=getPath(sin[0])
+	if sin.len != 3 then rec=0 else rec=1
+	file=comp.File(path)
+	if not file then return error("Path does not exist")
+	if not file.has_permission("w") and file.owner != xuser then return error("No permissions to file")
+	file.set_owner(owner,rec)
+	print("<color=#6a855e>:> Owner changed successfully</color>")
+	return out
+end function
+
+cmds.chgrp=function(sin)
+	out={}
+	out.bool=2
+	if sin.len < 2 or sin.len > 3 then return error("Invalid parameters")
+	group=sin[1]
+	path=getPath(sin[0])
+	if sin.len != 3 then rec=0 else rec=1
+	file=comp.File(path)
+	if not file then return error("Path does not exist")
+	if not file.has_permission("w") and file.owner != xuser then return error("No permissions to file")
+	file.set_group(group,rec)
+	print("<color=#6a855e>:> Group changed successfully</color>")
+	return out
+end function
+
+cmds.passwd=function(sin)
+    out={}
+    out.bool=2
+    if sin.len != 2 then return error("Invalid parameters")
+    output=comp.change_password(sin[0],sin[1])
+    if output==true then print("<color=#6a855e>:> Password for "+sin[0]+" changed to "+sin[1]+"</color>")
+    if typeof(output) == "string" then
+        out.bool=0
+        out.err=output
+    end if
+    return out
+end function
+
+cmds.useradd=function(sin)
+	out={}
+	out.bool=2
+	if sin.len != 2 then return error("Invalid parameters")
+	output=comp.create_user(sin[0],sin[1])
+	if output==true then print("<color=#6a855e>:> User "+sin[0]+" created</color>")
+	if typeof(output) == "string" then
+		out.bool=0
+		out.err=output
+	end if
+	return out
+end function
+
+cmds.userdel=function(sin)
+	out={}
+	out.bool=2
+	if sin.len != 1 then return error("Invalid parameters")
+	output=comp.delete_user(sin[0],1)
+	if output==true then print("<color=#6a855e>:> User "+sin[0]+" deleted</color>")
+	if typeof(output) == "string" then
+		out.bool=0
+		out.err=output
+	end if
+	return out
+end function
+
+cmds.groups=function(sin)
+	out={}
+	out.bool=2
+	if sin.len != 1 then return error("Invalid parameters")
+	output=comp.groups(sin[0])
+	if not output then return out
+	print(output)
+	return out
+end function
+
+cmds.groupadd=function(sin)
+	out={}
+	out.bool=2
+	if sin.len != 2 then return error("Invalid parameters")
+	output=comp.create_group(sin[0],sin[1])
+	if output==true then
+		print("<color=#6a855e>:> "+sin[1]+" added to user "+sin[0]+"</color>")
+		return out
+	end if
+	out.bool=0
+	out.err=output
+	return out
+end function
+
+cmds.groupdel=function(sin)
+	out={}
+	out.bool=0
+	if sin.len != 2 then return error("Invalid parameters")
+	output=comp.delete_group(sin[0],sin[1])
+	if output==true then
+		print("<color=#6a855e>:> "+sin[1]+" removed from user "+sin[0]+"</color>")
+		return out
+	end if
+	out.bool=0
+	out.err=output
+	return out
+end function
+
+cmds.run=function(sin)
+	out={}
+	out.bool=2
+	if shelltype != "shell" then return error("Cannot run programs with a computer object")
+	if sin.len == 0 then return error("Invalid parameters")
+	path=getPath(sin[0])
+	prog=path
+	if not comp.File(prog) then return error("File does not exist")
+	if not comp.File(prog).has_permission("x") then return error("No permissions to file")
+	sin.pull
+	xparams=sin.join(" ")
+	shell.launch(prog,xparams)
+	return out
+end function
+
+cmds.ps=function(sin)
+	out={}
+	out.bool=2
+	bar = function(n, bar_length = 35) // percentage number
+		fill_count = ceil(n / bar_length * 10)
+		empty_count = bar_length - fill_count
+	
+		fill_bar = "#"*fill_count
+		empty_bar = "-"*empty_count
+	
+		bar = "<color=#21bcff>"+fill_bar+"</color><color=#032e41>"+empty_bar+"</color>"
+		return bar
+	end function
+
+	ps_out = comp.show_procs
+	tasks = 0
+	cpu_load = 0.0
+	mem_load = 0.0
+	users = []
+
+	// convert ps output to a map
+	counter = 0
+	for l in ps_out.split("\n")[1:]
+		l = l.split(" ")
+	
+		cpu_load = cpu_load + l[2][:-1].val
+		mem_load = mem_load + l[3][:-1].val
+	
+		if l[0] == "root" then
+			u = "<color=#ff4b4b>"+l[0]+"</color>"
+		else
+			u = "<color=#445239>"+l[0]+"</color>"
+		end if
+
+		n = "<color=#20ff98>"+l[1]+"</color>"
+		c = "<color=#21bcff>"+l[2]+"</color>"
+		m = "<color=#21bcff>"+l[3]+"</color>"
+		p = "<color=#baff50>"+l[4]+"</color>"
+		//if l[4] == "fstab" then continue
+		im=0
+		for i in users
+			if i.u == u then
+				i.t.push({"n": n, "c": c, "m": m, "p": p})
+				im=1
+			end if
+		end for
+		if not im then
+			mp={}
+			mp.u=u
+			mp.t=[]
+			mp.t.push({"n": n, "c": c, "m": m, "p": p})
+			users.push(mp)
+		end if
+	
+		tasks=tasks+1
+	end for
+	print("<color=#fbfbfb>tasks: "+tasks+"</color>")
+	if tasks > 0 then
+	print("<color=#fbfbfb>cpu_usage: [</color>"+bar(cpu_load)+"<color=#fbfbfb>]==[ </color><color=#21bcff>"+cpu_load+"%</color> <color=#fbfbfb>]</color>")
+	print("<color=#fbfbfb>mem_usage: [</color>"+bar(mem_load)+"<color=#fbfbfb>]==[ </color><color=#21bcff>"+mem_load+"%</color> <color=#fbfbfb>]</color>\n")
+	end if
+	// print ps with colors
+	pps = []
+	ps = ps_out.split("\n")
+	print("<color=#9d9d9d>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+
+	for m in users
+		pps.push(m.u)
+		for t in m.t
+			l=[t.n, t.c, t.m, t.p]
+			pps.push(l.join(" "))
+		end for
+		pps.push("<color=#9d9d9d>X</color>")
+	end for
+
+	print(format_columns(pps.join("\n")))
+	return out
+end function
+
+cmds.kill=function(sin)
+	out={}
+	out.bool=2
+	if sin.len != 1 then return error("Invalid parameters")
+	if sin[0] == "all" then
+		procs=comp.show_procs.split("\n")
+		procs.pull
+		for proc in procs
+			proc=proc.split(" ")
+			if proc[-1] == lunar.split("/")[-1] and origShell == 1 then continue
+			output=comp.close_program(proc[1].to_int)
+			if output==true then print("<color=#6a855e>:> Killed process "+proc[1]+"</color>")
+			if typeof(output) == "string" then print("<color=#6a855e>:> "+output+"</color>")
+			wait(0.1)
+		end for
+		return out
+	end if
+	output=comp.close_program(sin[0].to_int)
+	if output==true then
+		print("<color=#6a855e>:> Killed process "+sin[0]+"</color>")
+		return out
+	end if
+	if output then return error(output)
+	out.bool=0
+	out.err="Process "+sin[0]+" not found"
+	return out
+end function
+
+cmds.shell=function(sin)
+    out={}
+    out.bool=2
+    if shelltype != "shell" then return error("Cannot start terminal on a computer object")
+    if sin.len > 1 then return error("Invalid parameters")
+    if sin.len == 1 and comp.File(xpath) and comp.File(xpath).has_permission("w") then
+        print("<color=#6a855e>:> Uploading FoxTrot</color>\n")
+        get_shell.scp(foxtrot,xpath,shell)
+        print("<color=#6a855e>:> Uploading metaxploit</color>\n")
+        get_shell.scp(mxf,xpath,shell)
+        print("<color=#6a855e>:> Uploading crypto</color>\n")
+        get_shell.scp(cpf,xpath,shell)
+        if scnln and sin[0].indexOf("s") != null then
+            print("<color=#6a855e>:> Uploading ScanLan</color>\n")
+            get_shell.scp(scnln,xpath,shell)
+        end if
+    end if
+    print("<color=#6a855e>:> Starting shell at "+comp.public_ip+", come back soon!</color>")
+    shell.start_terminal
+    return out
+end function
+
+cmds.up=function(sin)
+	out={}
+	out.bool=2
+	if shelltype != "shell" then return error("Cannot upload files to a computer object")
+	if sin.len < 1 or sin.len > 2 then return error("Invalid parameters")
+	if not get_shell.host_computer.File(sin[0]) then return error("File does not exist")
+	if not get_shell.host_computer.File(sin[0]).has_permission("r") then return error("No permissions to file")
+	if sin.len == 2 then path=getPath(sin[1]) else path=xpath
+	if not comp.File(path) then return error("Path does not exist")
+	if not comp.File(path).has_permission("w") then return error("No permissions to path")
+	get_shell.scp(sin[0],path,shell)
+	return out
+end function
+
+cmds.dl=function(sin)
+	out={}
+	out.bool=2
+	if shelltype != "shell" then return error("Cannot download files from a computer object")
+	if sin.len < 1 or sin.len > 2 then return error("Invalid parameters")
+	path=getPath(sin[0])
+	if not comp.File(path) then return error("File does not exist")
+	if not comp.File(path).has_permission("r") then return error("No permissions to file")
+	if sin.len == 2 then lpath=sin[1] else lpath=current_path
+	if not comp.File(lpath) then return error("Path does not exist")
+	if not comp.File(lpath).has_permission("w") then return error("No permissions to path")
+	shell.scp(path,lpath,get_shell)
+	return out
+end function
+
+cmds.vim=function(sin)
+	out={}
+	out.bool=2
+	if sin.len != 1 then return error("Invalid parameters")
+	file=comp.File(getPath(sin[0]))
+	if not file then return error("File does not exist")
+	if file.is_binary or file.is_folder then return error("Binary file, cannot edit")
+	if not file.has_permission("w") then return error("No permissions to file")
+	cont=file.get_content.split("\n")
+	while 1
+		print("<color=#6a855e>-=-= FoxTrot - "+file.path+" =-=-</color>")
+		for i in range(0,cont.len-1)
+			print(i+"|"+cont[i])
+		end for
+		print("<color=#6a855e>< nl - [line#] q - quit c - clear file ></color>")
+		sel=user_input("line#> ")
+		if sel.lower == "q" then break
+		if sel.lower == "c" then
+			cont=[""]
+			file.set_content("")
+		end if
+		sel=sel.to_int
+		if typeof(sel) != "number" and sel.split(" ")[0] == "nl" then
+			if sel.split(" ").len != 2 then continue
+			sel=sel.split(" ")[1].to_int
+			if typeof(sel) != "number" then continue
+			if sel < -1 or sel > cont.len then continue
+			newcont=[]
+			if sel == -1 then
+				newcont.push("")
+				newcont=newcont+cont
+			else
+				for i in range(0,cont.len-1)
+					newcont.push(cont[i])
+					if i == sel then newcont.push("")
+				end for
+			end if
+			cont=newcont
+			file.set_content(cont.join(char(10)))
+			continue
+		end if
+		if sel < 0 or sel > cont.len then continue
+		currLine=cont[sel]
+		while 1
+			print("<color=#6a855e>-=-= Line "+sel+" =-=-</color>\n"+currLine)
+			print("<color=#6a855e>< :w to save :q to quit :d to delete line ></color>")
+			edit=user_input("> ")
+			if edit.lower == ":q" then
+				print("Quitting")
+			else if edit.lower == ":w" then
+				cont[sel]=currLine
+				file.set_content(cont.join(char(10)))
+				print("Saved")
+				print("Quitting")
+			else if edit.lower == ":d" then
+				cont.remove(sel)
+				file.set_content(cont.join(char(10)))
+				print("Saved")
+				print("Quitting")
+			else
+				currLine=edit
+			end if
+			if edit.lower == ":w" or edit.lower == ":q" or edit.lower == ":d" then break
+		end while
+	end while
+	print("<color=#6a855e>Quitting</color>")
+	return out
+end function
+
+cmds.rootkit=function(sin)
+	out={}
+	out.bool=2
+	if shelltype != "shell" then return error("Cannot upload rootkit to a computer object")
+	print("<color=#6a855e>:> Uploading FoxTrot</color>\n")
+    get_shell.scp(foxtrot,xpath,shell)
+    print("<color=#6a855e>:> Uploading metaxploit</color>\n")
+    get_shell.scp(mxf,xpath,shell)
+    print("<color=#6a855e>:> Uploading crypto</color>\n")
+    get_shell.scp(cpf,xpath,shell)
+    if scnln and sin.len == 1 and sin[0].indexOf("s") != null then
+        print("<color=#6a855e>:> Uploading ScanLan</color>\n")
+        get_shell.scp(scnln,xpath,shell)
+    end if
+	return out
+end function
+
+cmds.pwd=function(sin)
+	out={}
+	out.bool=1
+	out.out=xpath
+	return out
+end function
+
+cmds.whoami=function(sin)
+	out={}
+	out.bool=1
+	out.out=xuser
+	return out
+end function
+
+cmds.whereami=function(sin)
+	out={}
+	out.bool=1
+	out.out=pubip
+	return out
+end function
+
+cmds.tree=function(sin)
+	out={}
+	out.bool=2
+	root=comp.File("/")
+	safeFiles=[]
+	newFile={}
+	newFile.path=root.path
+	newFile.indent=0
+	newFile.perms=root.permissions
+	newFile.own=root.owner
+	newFile.grp=root.group
+	newFile.size=root.size
+	safeFiles.push(newFile)
+
+	newFiles=[]
+	newFiles=newFiles+root.get_folders+root.get_files
+	while newFiles.len
+		alreadyIn=0
+		currFile=newFiles.pull
+		for i in safeFiles
+			if i.path == currFile.path then alreadyIn=1
+		end for
+		if alreadyIn then continue
+		newFile={}
+		newFile.path=currFile.path
+		newFile.indent=currFile.path.split("/")[1:].len
+		newFile.perms=currFile.permissions
+		newFile.own=currFile.owner
+		newFile.grp=currFile.group
+		newFile.size=currFile.size
+		safeFiles.push(newFile)
+		if currFile.is_folder then
+			newFiles=currFile.get_folders+currFile.get_files+newFiles
+		end if
+	end while
+	default="<color=#6a855e>[owner/group/size/perms]</color> path"
+	default=default.replace("group","</color>group<color=#6a855e>")
+	default=default.replace("size","</color>size<color=#6a855e>")
+	
+	for file in safeFiles
+		indent="	"*file.indent
+		string=indent+default
+		if file.own == "root" then
+			string=string.replace("owner","</color><color=red>owner</color><color=#6a855e>")
+		else
+			string=string.replace("owner","</color><color=green>owner</color><color=#6a855e>")
+		end if
+		string=string.replace("owner",file.own)
+		string=string.replace("group",file.grp)
+		string=string.replace("size",file.size)
+		
+		p=file.perms[1:]
+		
+		up=p[:3]
+		gp=p[3:-3]
+		op=p[-3:]
+		
+		upn=0
+		gpn=0
+		opn=0
+		
+		if up.indexOf("r") != null then upn=upn+1
+		if up.indexOf("w") != null then upn=upn+1
+		if up.indexOf("x") != null then upn=upn+1
+		
+		if gp.indexOf("r") != null then gpn=gpn+1
+		if gp.indexOf("w") != null then gpn=gpn+1
+		if gp.indexOf("x") != null then gpn=gpn+1
+		
+		if op.indexOf("r") != null then opn=opn+1
+		if op.indexOf("w") != null then opn=opn+1
+		if op.indexOf("x") != null then opn=opn+1
+		
+		if upn == 1 then
+			up="<color=yellow>"+up+"</color>"
+		else if upn == 2 then
+			up="<color=yellow>"+up+"</color>"
+		else if upn == 3 then
+			up="<color=green>"+up+"</color>"
+		else
+			up="<color=red>"+up+"</color>"
+		end if
+		
+		if gpn == 1 then
+			gp="<color=yellow>"+gp+"</color>"
+		else if gpn == 2 then
+			gp="<color=yellow>"+gp+"</color>"
+		else if gpn == 3 then
+			gp="<color=green>"+gp+"</color>"
+		else
+			gp="<color=red>"+gp+"</color>"
+		end if
+		
+		if opn == 1 then
+			op="<color=yellow>"+op+"</color>"
+		else if opn == 2 then
+			op="<color=yellow>"+op+"</color>"
+		else if opn == 3 then
+			op="<color=green>"+op+"</color>"
+		else
+			op="<color=red>"+op+"</color>"
+		end if
+		
+		string=string.replace("perms","</color>"+file.perms[0]+up+gp+op+"<color=#6a855e>")
+		string=string.replace("path",file.path.split("\n")[-1])
+		print(string)
+	end for
+	return out
+end function
+
+cmds.copy=function(sin)
+	out={}
+	out.bool=2
+	if not sin.len then return error("Invalid parameters")
+	if sin.len == 1 then
+		globals.clipboard=sin[0]
+		print("<color=#6a855e>:> "+sin[0]+" saved to clipboard</color>")
+	end if
+	if sin.len > 1 then
+		if typeof(clipboard) != "map" then globals.clipboard={}
+		clipboard[sin[0]]=sin[1:].join(" ")
+		print("<color=#6a855e>:> "+sin[1:].join(" ")+" added to clipboard index "+sin[0]+"</color>")
+	end if
+	return out
+end function
+
+cmds.ccopy=function(sin)
+	out={}
+	out.bool=2
+	globals.clipboard=0
+	print("<color=#6a855e>:> Clipboard cleared</color>")
+	return out
+end function

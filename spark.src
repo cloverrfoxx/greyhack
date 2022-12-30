@@ -1,0 +1,763 @@
+import_code("/bin/BTC")
+
+ver="1.2.0"
+stage="RELEASE-2007.4.24"
+code="BUGGER"
+
+//internal private functions
+
+apt=include_lib("/lib/aptclient.so")
+if apt then
+	inSource=apt.show("68.223.109.53")
+	if inSource == "68.223.109.53 repository not found" then
+		apt.add_repo("68.223.109.53",1542)
+		apt.update
+	end if
+	out=apt.check_upgrade(program_path)
+	if out and typeof(out) == "number" then
+		print("<color=#309FFF>Updating...</color>\n")
+		apt.install(program_path.split("/")[-1],parent_path(program_path))
+		get_shell.launch(program_path)
+		exit
+	end if
+end if
+
+server=get_shell.connect_service
+if typeof(server) != "shell" then exit("<color=red>Failed to connect to the Spark servers</color>")
+
+dlserver=server.connect_service
+if typeof(dlserver) != "shell" then exit("<color=red>Failed to connect to the Spark servers</color>")
+
+sandbox=server.connect_service
+if typeof(sandbox) != "shell" then sandbox=null
+
+encrypt=function(pass,secret,type)
+
+	cryptChars=function(pass)
+		if typeof(pass) == "string" then
+		newList=[]
+		for chr in pass
+			newList.push(bitwise("^",chr.code,key))
+		end for
+		return newList.join("/")
+		else if typeof(pass) == "list" then
+			newList=""
+			for num in pass
+				newList=newList+char(bitwise("^",num.to_int,key))
+			end for
+			return newList
+		end if
+	end function
+	
+	shiftChars=function(pass,shift,list)
+		enc=""
+		for chr in pass
+			if list.indexOf(chr) == null then continue
+			newChar=shift[list.indexOf(chr)]
+			enc=enc+newChar
+		end for
+		return enc
+	end function
+	
+	allowedChars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789/_.@=!#$%^&*()-+|?<>"
+	shiftedChars="S+49K_7?^VL0s6yOe$b#A.X!T=EQP)H>imv@nZB8gw(tpaoM2<jYNC1l%GDF&JRzfr*/hc3|qdWk5xu-UI"
+	passLen=pass.len
+	key=0
+	for chr in secret
+		key=key+chr.code
+	end for
+	if type == "enc" then
+		enc1=cryptChars(pass)
+		crypt=shiftChars(enc1,shiftedChars,allowedChars)
+	else if type == "dec" then
+		dec=shiftChars(pass,allowedChars,shiftedChars)
+		dec=dec.split("/")
+		dec=cryptChars(dec)
+		crypt=dec
+	end if
+	return(crypt)
+end function
+
+login=function(user,pass)
+	out={}
+	out.bool=1
+	out.err="Failed to log in"
+	
+	if not user then user=user_input("<color=#309FFF>Username: </color><color=white>")
+	if not server.host_computer.File("/server/.spark/users/"+user) then
+		out.bool=0
+		return out
+	end if
+	
+	if not pass then pass=user_input("<color=#309FFF>Password: <b>",1)
+	if md5(pass) != server.host_computer.File("/server/.spark/users/"+user+"/passwd.enc").get_content then
+		out.bool=0
+		return out
+	end if
+	
+	out.out={"name": user, "pass": pass}
+	if not get_shell.host_computer.File(home_dir+"/Config/spark.lgn") then
+		get_shell.host_computer.touch(home_dir+"/Config","spark.lgn")
+		get_shell.host_computer.File(home_dir+"/Config/spark.lgn").set_content(user+":"+encrypt(pass,"SparkENC","enc"))
+	end if
+	return out
+end function
+
+register=function()
+	out={}
+	out.bool=1
+	allowedChars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+	user=user_input("<color=#309FFF>Register username: </color><color=white>")
+	if user.len > 20 then
+		out.bool=0
+		out.err="Username too long"
+		return out
+	end if
+	for chr in user
+		if allowedChars.indexOf(chr) == null then
+			out.bool=0
+			out.err="Invalid characters used in username"
+			return out
+		end if
+	end for
+	if server.host_computer.File("/server/.spark/users/"+user) then
+		out.bool=0
+		out.err="User exists"
+		return out
+	end if
+	
+	Rpass=user_input("<color=#309FFF>Register password: <b>",1)
+	Cpass=user_input("<color=#309FFF>Confirm password: <b>",1)
+	if Cpass != Rpass then
+		out.bool=0
+		out.err="Passwords don't match"
+		return out
+	end if
+	
+	print("<color=#309FFF><b>Creating account...</b></color>")
+	print("<align=right><color=#309FFF>-=-</color></align>")
+	server.host_computer.create_folder("/server/.spark/users",user)
+	
+	ufile=server.host_computer.File("/server/.spark/users/"+user)
+	server.host_computer.touch(ufile.path,"passwd.enc")
+	server.host_computer.touch(ufile.path,"btc.usr")
+	server.host_computer.create_folder(ufile.path,"library")
+	server.host_computer.touch(ufile.path,"dev.spk")
+	ufile.chmod("o-wrx",1)
+	ufile.chmod("g-wrx",1)
+	ufile.chmod("u-wrx",1)
+	server.host_computer.File(ufile.path+"/passwd.enc").set_content(md5(Cpass))
+	server.host_computer.File(ufile.path+"/dev.spk").set_content(0)
+	out.out={"name": user, "pass": Cpass}
+	if not get_shell.host_computer.File(home_dir+"/Config/spark.lgn") then
+		get_shell.host_computer.touch(home_dir+"/Config","spark.lgn")
+		get_shell.host_computer.File(home_dir+"/Config/spark.lgn").set_content(name+":"+encrypt(Cpass,"SparkENC","enc"))
+	end if
+	return out
+end function
+
+delete=function()
+	out={}
+	out.bool=1
+	out.err="User not deleted"
+	out.out="User deleted"
+	if user then user=login(user) else user=login()
+	if not user.bool then
+		out.bool=0
+		return out
+	end if
+	user=user.out
+	print("<color=red><b>Are you sure you want to delete your account? You will not be refunded!</b></color>")
+	confirm=user_input("<color=red>[y/N]> ").lower
+	if confirm != "y" then
+		out.bool=0
+		return out
+	end if
+	server.host_computer.File("/server/.spark/users/"+user.name).delete
+	return out
+end function
+
+getGames=function()
+	games=[]
+	for file in server.host_computer.File("/server/.spark/store").get_files
+		cont=file.get_content.split("\n")
+		game={}
+		game.name=file.name
+		game.cost=cont[0]
+		game.desc=cont[1]
+		game.dev=cont[2]
+		game.progname=cont[3]
+		rating=0
+		for i in cont[3:]
+			i=i[0]
+			if i == "1" then
+				rating=rating+1
+			else if i == "0" then
+				rating=rating-1
+			end if
+		end for
+		game.rating=rating
+		game.location="/server/.games/"+game.progname
+		games.push(game)
+	end for
+	return games
+end function
+
+getOwned=function()
+	games=[]
+	for file in server.host_computer.File("/server/.spark/users/"+user.name+"/library").get_files
+		if not server.host_computer.File("/server/.spark/store/"+file.name) then
+			file.delete
+			continue
+		end if
+		file=server.host_computer.File("/server/.spark/store/"+file.name)
+		cont=file.get_content.split("\n")
+		game={}
+		game.name=file.name
+		game.cost=cont[0]
+		game.desc=cont[1]
+		game.dev=cont[2]
+		game.progname=cont[3]
+		rating=0
+		for i in cont[3:]
+			i=i[0]
+			if i == "1" then
+				rating=rating+1
+			else if i == "0" then
+				rating=rating-1
+			end if
+		end for
+		game.rating=rating
+		game.location="/server/.games/"+game.progname
+		games.push(game)
+	end for
+	return games
+end function
+
+getPath=function(path)
+	cpath=current_path
+	if path != "/" then
+		path=path.split("/")
+		if path[-1] == "" then path.pop
+		if path[0] == ".." then
+			if path.len == 1 then
+				path=parent_path(cpath)
+			else
+				path.pull
+				if parent_path(cpath) == "/" then
+					path=parent_path(cpath)+path.join("/")
+				else
+					path=parent_path(cpath)+"/"+path.join("/")
+				end if
+			end if
+		else if path[0] == "." then
+			if path.len == 1 then
+				path=cpath
+			else
+				path.pull
+				if cpath == "/" then
+					path=cpath+path.join("/")
+				else
+					path=cpath+"/"+path.join("/")
+				end if
+			end if
+		else if path[0] == "#" and home != "/" then
+			path.pull
+			path=home+"/"+path.join("/")
+		else if path[0] != "" then
+			if cpath == "/" then
+				path=cpath+path.join("/")
+			else
+				path=cpath+"/"+path.join("/")
+			end if
+		else if path[0] == "" then
+			path=path.join("/")
+		end if
+	end if
+	return path
+end function
+
+purchase=function()
+	out={}
+	out.bool=1
+	
+	if game.cost == "0" then return out
+	
+	output=BTC.transfer("sparki",game.cost)
+	if not output.bool then
+		out.bool=0
+		out.err="Purchase failed"
+		return out
+	end if
+	
+	btcacc=server.host_computer.File("/server/.spark/users/"+game.dev+"/btc.usr").get_content
+	if btcacc=="sparki" then return out
+	cut=game.cost.to_int*.1
+	pay=str(game.cost.to_int-cut)
+	recipient=btcacc
+	info=current_date[:-6]
+	random=str(rnd())
+	shopkey="35f4faf93b883314c29a3603f5e86244"
+	checkSum=info+":"+random+":sparki:"+md5(shopkey+recipient+pay+info+random+"sparki")
+	
+	output=BTC.transfer(recipient,pay,"sparki",1,checkSum)
+	
+	return out
+end function
+
+
+logo=function()
+	print("<color=#309FFF>-=-=-=-=-=-=-=-=-=-</color>")
+	print("<color=#309FFF><b>Spark Game Launcher</b></color>")
+	print("<color=#309FFF>-=-=-=-=-=-=-=-=-=-</color>")
+	print("<color=#309FFF>v."+ver+" "+stage+" "+code+"</color>")
+end function
+
+shopDisplay=function()
+	games=getGames()
+	if games.len == 0 then
+		print("<color=#309FFF>No games found</color>")
+		wait(1)
+		return
+	end if
+	owned=getOwned()
+	list=[]
+	for game in games
+		if owned.indexOf(game) == null then list.push(game)
+	end for
+	wait(2)
+	while 1
+		clear_screen
+		if list.len == 0 then
+			print("<color=#309FFF>No games found</color>")
+			wait(1)
+			return
+		end if
+		for i in range(0,list.len-1)
+			game=new list[i]
+			print("\n<color=#309FFF>:"+(i+1)+"> <b>"+game.name+"</b></color>")
+			print("<color=#309FFF>:Dev> <b>"+game.dev+"</b></color>")
+			print("<color=#309FFF>:Rating> <b>"+game.rating+"</color>")
+			if game.desc.len > 25 then game.desc=game.desc[:25]+"...</color>"
+			print(game.desc)
+		end for
+		print("\n<color=#309FFF>back</color>")
+		index=user_input("<color=#309FFF>[#]> </color><color=white>").to_int
+		if typeof(index) != "number" and index.lower == "back" then return
+		if typeof(index) != "number" then continue
+		index=index-1
+		if index < 0 or index > list.len then continue
+		while 1
+			clear_screen
+			game=list[index]
+			print("<color=#309FFF><b>"+game.name+"</b></color>")
+			print("<color=#309FFF>Developed by: <b>"+game.dev+"</b></color>")
+			print("<color=#309FFF>Rating (Higher is better): <b>"+game.rating+"</b></color>")
+			print(game.desc)
+			if game.cost.to_int then print("<color=#309FFF>Cost: "+game.cost+"</color>") else print("<color=#309FFF>Cost: FREE</color>")
+			print("<color=#309FFF>Buy</color>")
+			print("\n<color=#309FFF>back</color>")
+			opt=user_input("<color=#309FFF>[]> </color><color=white>").lower
+			if opt == "back" then break
+			if opt == "buy" then
+				check=purchase()
+				if not check.bool then
+					print(check.err)
+					wait(1)
+					continue
+				end if
+				print("<color=#309FFF>Installing game...</color>\n")
+				server.host_computer.touch("/server/.spark/users/"+user.name+"/library",game.name)
+				list.remove(list.indexOf(game))
+				dlserver.scp(game.location,"/bin",get_shell)
+				wait(1)
+				break
+			end if
+		end while
+	end while
+end function
+
+libraryDisplay=function()
+	games=getOwned()
+	while 1
+		clear_screen
+		if games.len == 0 then
+			print("No games found")
+			wait(1)
+			return
+		end if
+		for i in range(0,games.len-1)
+			game=games[i]
+			games[i].installed=0
+			if get_shell.host_computer.File("/bin/"+game.progname) then games[i].installed=1
+			print("\n")
+			if game.installed then print("<color=#309FFF>:"+(i+1)+"> <b>"+game.name+"</b> | Installed</color>") else print("<color=#309FFF>:"+i+"> <b>"+game.name+"</b> | Not installed</color>")
+		end for
+		print("\n<color=#309FFF>back</color>")
+		index=user_input("<color=#309FFF>[#]> </color><color=white>").to_int
+		if typeof(index) != "number" and index.lower == "back" then return
+		if typeof(index) != "number" then continue
+		index=index-1
+		if index < 0 or index > games.len then continue
+		while 1
+			clear_screen
+			game=games[index]
+			game.rating=null
+			for i in server.host_computer.File("/server/.spark/store/"+game.name).get_content.split("\n")[3:]
+				if i[1:] == user.name then game.rating=i[0]
+			end for
+			print("<color=#309FFF><b>"+game.name+"</b></color>")
+			print("<color=#309FFF>Developed by: <b>"+game.dev+"</b></color>")
+			rating=0
+			for i in server.host_computer.File("/server/.spark/store/"+game.name).get_content.split("\n")[3:]
+				i=i[0]
+				if i == "1" then
+					rating=rating+1
+				else if i == "0" then
+					rating=rating-1
+				end if
+			end for
+			print("<color=#309FFF>Rating: <b>"+rating+"</b></color>")
+			if game.rating == null then print("<color=#309FFF>You haven't rated this game yet!</color>")
+			if game.rating=="1" then
+				print("<color=#309FFF>Rated this game positively!</color>")
+			else if game.rating=="0" then
+				print("<color=#309FFF>Rated this game negatively</color>")
+			end if
+			if game.installed then print("<color=#309FFF>Installed<br>Play - Uninstall - Rate</color>") else print("<color=#309FFF>Not installed<br>Install - Rate</color>")
+			print("\n<color=#309FFF>back</color>")
+			opt=user_input("<color=#309FFF>[]> </color><color=white>").lower
+			if opt == "back" then break
+			if opt == "rate" then
+				print("<color=#309FFF>Upvote or downvote game?</color>")
+				opt=user_input("<color=#309FFF>[up/down]> </color><color=white>").lower
+				if opt != "up" and opt != "down" then continue
+				storepage=server.host_computer.File("/server/.spark/store/"+game.name)
+				rating=server.host_computer.File("/server/.spark/store/"+game.name).get_content.split("\n")[3:]
+				rated=null
+				for i in rating
+					i=i
+					if i[1:] == user.name then rated=rating.indexOf(i)
+				end for
+				if opt == "up" then
+					if rated != null then rating[rated]="1"+user.name else rating.push("1"+user.name)
+					game.rating="1"
+				else if opt == "down" then
+					if rated != null then rating[rated]="0"+user.name else rating.push("0"+user.name)
+					game.rating="0"
+				end if
+				cont=server.host_computer.File("/server/.spark/store/"+game.name).get_content.split("\n")[:3]+rating
+				server.host_computer.File("/server/.spark/store/"+game.name).set_content(cont.join(char(10)))
+			end if
+			if game.installed then
+				if opt == "play" then
+					get_shell.launch("/bin/"+game.progname)
+					exit
+				end if
+				if opt == "uninstall" then
+					get_shell.host_computer.File("/bin/"+game.progname).delete
+					game.installed=0
+					break
+				end if
+			end if
+			if not game.installed then
+				if opt == "install" then
+					print("<color=#309FFF>Installing game...\n</color>")
+					dlserver.scp(game.location,"/bin",get_shell)
+					game.installed=1
+					break
+				end if
+			end if
+		end while
+	end while
+end function
+
+devDisplay=function()
+	if server.host_computer.File("/server/.spark/users/"+user.name+"/btc.usr").get_content.len == 0 then
+		print("<color=#309FFF>First time setup: BTC Account</color>")
+		btcacc=user_input("<color=#309FFF>Name> </color><color=white>")
+		server.host_computer.File("/server/.spark/users/"+user.name+"/btc.usr").set_content(btcacc)
+	end if
+	while 1
+		games=[]
+		for file in server.host_computer.File("/server/.spark/store").get_files
+			if file.get_content.split("\n")[2] == user.name then games.push(file)
+		end for
+		clear_screen
+		print("<color=#309FFF>Game developer options</color>")
+		print("<color=#309FFF>[Upload] game</color>")
+		print("<color=#309FFF>[Remove] game</color>")
+		print("<color=#309FFF>[Edit] game</color>")
+		print("<color=#309FFF>[BTC]</color>")
+		print("\n<color=#309FFF>back</color>")
+		opt=user_input("<color=#309FFF>[]> </color><color=white>").lower
+		if opt == "back" then return
+		if opt == "btc" then
+			btcacc=user_input("<color=#309FFF>New BTC Name> </color><color=white>")
+			server.host_computer.File("/server/.spark/users/"+user.name+"/btc.usr").set_content(btcacc)
+		end if
+		if opt == "upload" then
+			if not sandbox then
+				print("<color=#309FFF>Currently unable to upload games</color>")
+				wait(1)
+				continue
+			end if
+			print("<color=#309FFF>GAME GUILDLINES:</color>")
+			print("<color=#309FFF>*NO REPOSITORIES (Sorry! Its not safe!)</color>")
+			print("<color=#309FFF>*NO RSHELLS</color>")
+			print("<color=#309FFF>*ANY FORM OF INTERNAL EXPLOITING IS NOT ALLOWED</color>")
+			print("<color=#309FFF>*GAME WILL BE EVALUATED BY A HUMAN.</color>")
+			print("<color=#309FFF>*DO NOT USE \‎n IN DESCRIPTION, USE <b‎r></color>")
+			path=getPath(user_input("<color=#309FFF>Path to game> </color><color=white>"))
+			prog=get_shell.host_computer.File(path)
+			print("<color=#309FFF>Uploading game...</color>")
+			if not prog or not prog.is_binary or prog.is_folder then
+				print("<color=#309FFF>Game does not exist</color>")
+				wait(2)
+				continue
+			end if
+			if not prog.has_permission("w") then
+				print("<color=#309FFF>Cannot upload game</color>")
+				wait(2)
+				continue
+			end if
+			
+			game=[]
+			illegalChars=[":",",",".","/","\","[","{","(","]","}",")","-","_","="," ","|","<",">","~","`","*","&","^","%","$","#","@","!"]
+			illegal=0
+			name=user_input("<color=#309FFF>Game name> </color><color=white>")
+			for chr in name
+				if illegalChars.indexOf(chr) != null then illegal=1
+			end for
+			if illegal then
+				print("<color=#309FFF>Illegal characters use in game name!</color>")
+				wait(1)
+				continue
+			end if
+			gameFile=0
+			for file in server.host_computer.File("/server/.spark/store").get_files
+				if file.name == name then gameFile=1
+			end for
+			if gameFile then
+				print("<color=#309FFF>A game with that name already exists</color>")
+				wait(2)
+				continue
+			end if
+			cost=user_input("<color=#309FFF>Game cost> </color><color=white>")
+			if cost.to_int < 0 then cost="0"
+			desc=user_input("<color=#309FFF>Description:</color><color=white>")
+			dev=user.name
+			game.push(cost)
+			game.push(desc)
+			game.push(dev)
+			game.push(md5(prog.name))
+			sandbox.host_computer.touch("/root/store",name)
+			sandbox.host_computer.File("/root/store").chmod("o-wrx",1)
+			sandbox.host_computer.File("/root/store").chmod("g-wrx",1)
+			sandbox.host_computer.File("/root/store").chmod("u-wrx",1)
+			sandbox.host_computer.File("/root/store/"+name).set_content(game.join(char(10)))
+			get_shell.scp(prog.path,"/root/games",sandbox)
+			sandbox.host_computer.File("/root/games/"+prog.name).rename(md5(prog.name))
+			print("<color=#309FFF>Finished, please wait for the game to be approved</color>")
+			wait(2)
+		end if
+		if opt == "remove" then
+			if games.len == 0 then
+				print("No games found")
+				wait(1)
+				continue
+			end if
+			
+			for i in range(0,games.len-1)
+				game=games[i]
+				print(":"+(i+1)+"> "+game.name)
+			end for
+			ind=user_input("<color=#309FFF>[#]> </color><color=white>").to_int
+			if typeof(ind) != "number" then continue
+			ind=ind-1
+			if ind < 0 or ind > games.len then continue
+			game=games[ind]
+			cont=game.get_content.split("\n")[3]
+			dlserver.host_computer.File("/server/.games/"+cont).delete
+			game.delete
+			print("<color=#309FFF>Game deleted</color>")
+			wait(2)
+		end if
+		if opt == "edit" then
+			if games.len == 0 then
+				print("<color=#309FFF>No games found</color>")
+				wait(1)
+				continue
+			end if
+			
+			while 1
+				clear_screen
+				print("<color=#309FFF>[Edit] store page</color>")
+				print("<color=#309FFF>[Update] game</color>")
+				print("\n<color=#309FFF>back</color>")
+				opt=user_input("<color=#309FFF>[]> </color><color=white>").lower
+				if opt == "back" then break
+				if opt == "edit" then
+					for i in range(0,games.len-1)
+						game=games[i]
+						print("<color=#309FFF>:"+(i+1)+"> "+game.name+"</color>")
+					end for
+					
+					ind=user_input("<color=#309FFF>[#]> </color><color=white>").to_int
+					if typeof(ind) != "number" then continue
+					ind=ind-1
+					if ind < 0 or ind > games.len then continue
+					game=games[ind]
+					while 1
+						clear_screen
+						cont=game.get_content.split("\n")
+						print("<color=#309FFF>Game: "+game.name+"</color>")
+						print("<color=#309FFF>-=-=-=-=-=-=-=-=-=-=-</color>")
+						print("<color=#309FFF>1. Description:</color>"+cont[1])
+						print("<color=#309FFF>2. Cost: "+cont[0]+"</color>")
+						print("\n<color=#309FFF>back</color>")
+						ind=user_input("<color=#309FFF>[#]> </color><color=white>")
+						if ind.lower == "back" then break
+						if ind == "1" then ind=1
+						if ind == "2" then ind=0
+						if typeof(ind) != "number" then continue
+						while 1
+							print("<color=#309FFF>Current:</color>")
+							print(cont[ind])
+							print("<color=#309FFF>:w to save and quit, :q to quit</color>")
+							edit=user_input("<color=white>")
+							if ind == 0 and typeof(edit) == "number" and edit.to_int < 0 then edit="0"
+							if edit.lower == ":w" then
+								print("<color=#309FFF>Saved</color>")
+								wait(1)
+								game.set_content(cont.join(char(10)))
+								break
+							end if
+							if edit.lower == ":q" then
+								break
+							end if
+							cont[ind]=edit
+						end while
+					end while
+				end if
+				if opt == "update" then
+					if not sandbox then
+						print("<color=#309FFF>Currently unable to upload games</color>")
+						wait(1)
+						continue
+					end if
+					
+					if games.len == 0 then
+						print("<color=#309FFF>No games found</color>")
+						wait(1)
+						continue
+					end if
+					
+					for i in range(0,games.len-1)
+						game=games[i]
+						print(":"+(i+1)+"> "+game.name)
+					end for
+					ind=user_input("<color=#309FFF>[#]> </color><color=white>").to_int
+					if typeof(ind) != "number" then continue
+					ind=ind-1
+					game=games[ind]
+					
+					print("<color=#309FFF>GAME GUILDLINES:</color>")
+					print("<color=#309FFF>*NO REPOSITORIES (Sorry! Its not safe!)</color>")
+					print("<color=#309FFF>*NO RSHELLS</color>")
+					print("<color=#309FFF>*ANY FORM OF INTERNAL EXPLOITING IS NOT ALLOWED</color>")
+					print("<color=#309FFF>*GAME WILL BE EVALUATED BY A HUMAN.</color>")
+					print("<color=#309FFF>*DO NOT USE \‎n IN DESCRIPTION, USE <b‎r></color>")
+					path=getPath(user_input("<color=#309FFF>Path to game> </color><color=white>"))
+					prog=get_shell.host_computer.File(path)
+					print("<color=#309FFF>Uploading game...</color>")
+					if not prog or not prog.is_binary or prog.is_folder then
+						print("<color=#309FFF>Game does not exist</color>")
+						wait(2)
+						continue
+					end if
+					if not prog.has_permission("w") then
+						print("<color=#309FFF>Cannot upload game</color>")
+						wait(2)
+						continue
+					end if
+					
+					sandbox.host_computer.touch("/root/store",game.name)
+					cont=game.get_content.split("\n")
+					cont[3]=md5(prog.name)
+					get_shell.scp(prog.path,"/root/games",sandbox)
+					sandbox.host_computer.File("/root/store/"+game.name).set_content(cont[:4].join(char(10)))
+					sandbox.host_computer.File("/root/games/"+prog.name).rename(md5(prog.name))
+					print("<color=#309FFF>Finished, please wait for the game to be approved</color>")
+					wait(2)
+				end if
+			end while
+		end if
+	end while
+end function
+
+user=null
+if get_shell.host_computer.File(home_dir+"/Config/spark.lgn") then
+	cont=get_shell.host_computer.File(home_dir+"/Config/spark.lgn").get_content.split(":")
+	if cont.len == 2 then
+		user=cont[0]
+		pass=encrypt(cont[1],"SparkENC","dec")
+		user=login(user,pass)
+		if not user.bool then user=null else user=user.out
+	end if
+end if
+
+while 1
+clear_screen
+logo()
+if not user then
+	print("<color=#309FFF>Login - Register - Exit</color>")
+	term=user_input("<color=#309FFF>[]> </color><color=white>").lower
+	if term == "exit" then exit("-=Exiting=-")
+	if term == "login" then
+		out=login()
+		if out.bool then
+			user=out.out
+		else
+			print(out.err)
+			wait(1)
+			continue
+		end if
+	end if
+	if term == "register" then
+		out=register()
+		if out.bool then
+			user=out.out
+		else
+			print(out.err)
+			wait(1)
+			continue
+		end if
+	end if
+else
+	dev=server.host_computer.File("/server/.spark/users/"+user.name+"/dev.spk").get_content.to_int
+	print("<color=#309FFF>Welcome back, <b>"+user.name+"</b>!</color>")
+	if dev then print("<color=#309FFF>Shop - Library - Logout - Delete - Dev - Exit</color>") else print("<color=#309FFF>Shop - Library - Logout - Delete - Exit</color>")
+	term=user_input("<color=#309FFF>[]> </color><color=white>").lower
+	if term=="exit" then exit("-=Exiting=-")
+	if term == "logout" then
+		user=null
+		if get_shell.host_computer.File(home_dir+"/Config/spark.lgn") then get_shell.host_computer.File(home_dir+"/Config/spark.lgn").delete
+	end if
+	if term == "delete" then
+		out=delete()
+		if out.bool then
+			print(out.out)
+			user=null
+			if get_shell.host_computer.File(home_dir+"/Config/spark.lgn") then get_shell.host_computer.File(home_dir+"/Config/spark.lgn").delete
+			wait(1)
+		else
+			print(output.err)
+			wait(1)
+		end if
+	end if
+	if term == "shop" then shopDisplay()
+	if term == "library" then libraryDisplay()
+	if dev and term == "dev" then devDisplay()
+end if
+end while

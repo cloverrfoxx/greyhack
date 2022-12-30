@@ -1,0 +1,811 @@
+//CryptLib
+CryptLib={}
+CryptLib.MaxCode=65536
+
+CryptLib.ToBinary=function(string=null,bits=0)
+    if string == null then return
+    if typeof(bits) != "number" then bits=0
+    if typeof(string) == "string" then
+        grouped=[]
+        for i in string
+            f=""
+            i=i.code
+            while i >= 0
+                rem=i%2
+                i=i-rem
+                f=rem+f
+                i=i/2
+                if i == 0 then break
+            end while
+            if f.len > bits then bits=f.len
+            while f.len < bits
+                f="0"+f
+            end while
+            grouped.push(f)
+        end for
+        return grouped.join(" ")
+    else if typeof(string) == "number" then
+        f=""
+        n=0
+        i=string
+        if i < 0 then n=1
+        if n then i=abs(i)
+        while i > 0
+            rem=i%2
+            i=i-rem
+            f=rem+f
+            i=i/2
+        end while
+
+        while f.len < bits
+            f="0"+f
+        end while
+        if n then
+            nn=""
+            for i in f
+                if i == "0" then nn=nn+"1"
+                if i == "1" then nn=nn+"0"
+            end for
+            f=CryptLib.ToBinary(CryptLib.FromBinary(nn,nn.len)+1,nn.len)
+        end if
+        return f
+    else
+        return null
+    end if
+end function
+
+CryptLib.FromBinary=function(binary=null,bits=null)
+    if binary.split(" ").len != 1 then
+        bits=binary.split(" ")[0].len
+        binary=binary.split(" ").join("")
+    end if
+    if not bits then return
+    if not binary or typeof(binary) != "string" then return
+    grouped=[]
+    s=[]
+    while binary.len != 0
+        f=binary[:bits]
+        binary=binary[bits:]
+        if binary == null then binary=""
+        grouped.push(f)
+    end while
+
+    for f in grouped
+        t=0
+        for i in range(0,str(f).len-1)
+            c=f.len-1
+            c=c-i
+            i=f[i].to_int
+            t=t+(i*(2^c))
+        end for
+        s.push(t)
+    end for
+    if s.len == 1 then s=s[0]
+    return s
+end function
+
+CryptLib.Vigenere=function(string=null, key=null, type=null)
+    if key == null then key = active_user
+    if not type or typeof(type) != "string" or (type != "enc" and type != "dec") then return null
+    if not string or typeof(string) != "string" then return null
+    keySize=key.len
+    answer=""
+    counter=0
+    for i in string
+        currKey=key[counter]
+        final = (i.code+currKey.code) % CryptLib.MaxCode
+        answer=answer+char(final)
+        counter=(counter+1) % keySize
+    end for
+    return answer
+end function
+
+CryptLib.ROT=function(pos=null,string=null)
+    if typeof(pos) != "number" then return "NaN"
+    if pos <= 0 then return "Rot must be greater than 0"
+    if not string or typeof(string) != "string" then return
+    cases=[]
+    cases.push("abcdefghijklmnopqrstuvwxyz")
+    cases.push("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    newString=[]
+    for i in string
+        case=null
+        for c in cases
+            if c.indexOf(i) != null then case=c
+        end for
+        if not case then
+            newString.push(i)
+            continue
+        end if
+        ind=case.indexOf(i)
+        newPos=(ind+pos)%case.len
+        newString.push(case[newPos])
+    end for
+    return newString.join("")
+end function
+
+CryptLib.Base64=function(string=null,type=null)
+    if not string or typeof(string) != "string" then return
+
+    if not type or typeof(type) != "string" or (type != "enc" and type != "dec") then return
+    alpha="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+    alphaLen=alpha.len-1
+    based=null
+    
+    if type == "enc" then
+        grouped=[]
+        while string.len != 0
+            s=string[:3]
+            string=string[s.len:]
+            if string == null then string=""
+            grouped.push(CryptLib.ToBinary(s,8).split(" ").join(""))
+        end while
+
+        based=""
+        for g in grouped
+            block=[]
+            while g.len != 0
+                s=g[:6]
+                g=g[s.len:]
+                if g == null then g=""
+                while s.len < 6
+                    s=s+"0"
+                end while
+                block.push(s)
+            end while
+            for i in block
+                based=based+alpha[CryptLib.FromBinary(i,i.len)%alphaLen]
+            end for
+            check=block.len
+            while check != 4
+                based=based+"="
+                check=check+1
+            end while
+        end for
+    else
+        grouped=[]
+        while string.len != 0
+            block=[]
+            s=string[:4]
+            string=string[s.len:]
+            if string == null then string=""
+            for i in s
+                if i == "=" then continue
+                block.push(CryptLib.ToBinary(alpha.indexOf(i),6))
+            end for
+            grouped.push(block.join(""))
+        end while
+
+        based=""
+        for g in grouped
+            block=[]
+            while g.len != 0
+                s=g[:8]
+                g=g[s.len:]
+                if g == null then g=""
+                while s.len < 8
+                    s="0"+s
+                end while
+                block.push(s)
+            end while
+            for i in block
+                based=based+char(CryptLib.FromBinary(i,i.len))
+            end for
+        end for
+    end if
+    return based
+end function
+
+CryptLib.Sha256=function(string=null)
+    if not string or typeof(string) != "string" then return
+    	
+	Blocks = [[0]]
+	i=0
+	e=0
+	while i < string.len
+		e=4
+		while e > 0 and string.hasIndex(i)
+			e=e-1
+			Blocks[-1][-1] = Blocks[-1][-1] + code(string[i])*256^e
+			i=i+1
+		end while
+		if e == 0 then
+			if Blocks[-1].len == 16 then Blocks = Blocks + [[0]] else Blocks[-1] = Blocks[-1] + [0]
+		end if
+	end while
+	
+	if e > 0 then
+		Blocks[-1][-1] = Blocks[-1][-1] + (2147483648/256^(4-e))
+	else
+		Blocks[-1][-1] = 2147483648
+	end if
+	
+	if Blocks[-1].len == 16 then Blocks = Blocks + [[0]]
+	while Blocks[-1].len != 15
+		Blocks[-1] = Blocks[-1] + [0]
+	end while
+	
+	Blocks[-1] = Blocks[-1] + [string.len*8]
+	
+	add = function(a, b)
+		return (a + b) % 4294967296
+	end function
+	
+	XOR = function(a, b)
+		return bitwise("^", floor(a/65536), floor(b/65536))*65536+bitwise("^", a%65536, b%65536)
+	end function
+	
+	AND = function(a, b)
+		return bitwise("&", floor(a/65536), floor(b/65536))*65536+bitwise("&", a%65536, b%65536)
+	end function
+	
+	OR = function(a, b)
+		return bitwise("|", floor(a/65536), floor(b/65536))*65536+bitwise("|", a%65536, b%65536)
+	end function
+	
+	NOT = function(n)
+		return 4294967295-n
+	end function
+	
+	Ch = function(x, y, z)
+		return OR(AND(x, y), AND(NOT(x), z))
+	end function
+	
+	Maj = function(x, y, z)
+		return OR(OR(AND(x, y), AND(x, z)), AND(y, z))
+	end function
+	
+	shr = function(n, shifts)
+		return floor(n/2^shifts)
+	end function
+	
+	rotr = function(n, rots)
+		rots = 2^rots
+		return (n % rots) * (4294967296/rots) + floor(n/rots)
+	end function
+	
+	sigma0 = function(n)
+		return XOR(XOR(rotr(n, 7), rotr(n, 18)), shr(n, 3))
+	end function
+	
+	sigma1 = function(n)
+		return XOR(XOR(rotr(n, 17), rotr(n, 19)), shr(n, 10))
+	end function
+	
+	SIGMA0 = function(n)
+		return XOR(XOR(rotr(n, 2), rotr(n, 13)), rotr(n, 22))
+	end function
+	
+	SIGMA1 = function(n)
+		return XOR(XOR(rotr(n, 6), rotr(n, 11)), rotr(n, 25))
+	end function
+	
+	K = []
+	K = K + [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221]
+	K = K + [3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580]
+	K = K + [3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986]
+	K = K + [2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895]
+	K = K + [666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037]
+	K = K + [2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344]
+	K = K + [430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779]
+	K = K + [1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298]
+	
+	H = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225]
+	
+	for Block in Blocks
+		W = Block[0:]
+		
+		for i in range(16, 63)
+			W = W + [add(add(add(sigma1(W[i-2]), W[i-7]), sigma0(W[i-15])), W[i-16])]
+		end for
+		
+		a = H[0]
+		b = H[1]
+		c = H[2]
+		d = H[3]
+		e = H[4]
+		f = H[5]
+		g = H[6]
+		h = H[7]
+		
+		for i in range(0, 63)
+			T1 = add(add(add(add(SIGMA1(e), Ch(e, f, g)), h), K[i]), W[i])
+			T2 = add(SIGMA0(a), Maj(a, b, c))
+			h = g
+			g = f
+			f = e
+			e = add(d, T1)
+			d = c
+			c = b
+			b = a
+			a = add(T1, T2)
+		end for
+		H[0] = add(a, H[0])
+		H[1] = add(b, H[1])
+		H[2] = add(c, H[2])
+		H[3] = add(d, H[3])
+		H[4] = add(e, H[4])
+		H[5] = add(f, H[5])
+		H[6] = add(g, H[6])
+		H[7] = add(h, H[7])
+	end for
+	
+	hexTable = "0123456789abcdef"
+	output = ""
+	for i in H.indexes
+		for j in range(7)
+			output = output + hexTable[floor(H[i]/16^j) % 16]
+		end for
+	end for
+	return output
+end function
+
+CryptLib.genRandomString=function(length=null)
+    if not length or typeof(length) != "number" then return
+	newString=""
+	alpha="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890"
+	while newString.len < length
+		string=alpha[floor(rnd*alpha.len)]
+		newString=newString+string
+	end while
+	return newString
+end function
+
+CryptLib.Serialize=function(array=null,fancy=0)
+    if not array then return
+    //if typeof(array) != "list" and typeof(array) != "map" then return
+    type=typeof(array)
+    if type == "number" or type == "string" then return
+    type=null
+    if typeof(array) == "map" or array.indexes.hasIndex("classID") then type="map"
+    if typeof(array) == "list" then type="list"
+    if type == null then return null
+
+    if type == "list" then
+		string="["
+		list=array
+	else
+		string="{"
+		list=array.indexes
+	end if
+    if fancy then
+        string=string+char(10)
+        if CryptLib.hasIndex("SERN") then CryptLib.SERN=CryptLib.SERN+1 else CryptLib.SERN=1
+        N=CryptLib.SERN
+    end if
+	
+	for i in list.indexes
+		if type == "map" then v=@array[list[i]] else v=@array[i]
+        vt=typeof(@v)
+		if vt == "function" then
+            v="Err_Function_CannotSerialize"
+            vt="string"
+        end if
+        if fancy then
+            if vt == "map" or vt == "list" then v=CryptLib.Serialize(v,1)
+        else
+		    if vt == "map" or vt == "list" then v=CryptLib.Serialize(v)
+        end if
+		
+		if type == "list" then
+			if vt == "string" then v=""""+v+""""
+			if i == list.indexes[-1] then string=string+v else string=string+v+", "
+		else
+			if typeof(list[i]) == "string" then l=""""+list[i]+"""" else l=list[i]
+			if vt == "string" then v=""""+v+""""
+            if fancy then
+                if i == list.indexes[-1] then string=string+("	"*N)+l+": "+v else string=string+("	"*N)+l+": "+v+","
+                string=string+char(10)
+            else
+			    if i == list.indexes[-1] then string=string+l+": "+v else string=string+l+": "+v+", "
+            end if
+
+		end if
+	end for
+	
+    if fancy then
+        if type == "list" then string=string+("	"*(N-1))+"]" else string=string+("	"*(N-1))+"}"
+    else
+	    if type == "list" then string=string+"]" else string=string+"}"
+    end if
+
+    if fancy and N == 1 then CryptLib.remove("SERN")
+    return string
+end function
+
+CryptLib.Deserialize=function(string=null)
+    if not string or typeof(string) != "string" then return
+	type=null
+	if string[0] == "[" then type="list"
+	if string[0] == "{" then type="map"
+	if type == null then return null
+	
+	if type == "list" then
+		newArray=[]
+	else
+		newArray={}
+	end if
+    string=string.split(char(10)).join("")
+	string=string[1:-1]
+    if not string then return newArray
+    a=[]
+    b=[]
+    c=0
+    for i in range(0,string.len-1)
+        v=string[i]
+        if v == "{" or v == "[" then c=c+1
+        if v == "}" or v == "]" then c=c-1
+        if v == "," and c == 0 then
+            a.push(b.join(""))
+            b=[]
+            continue
+        end if
+        b.push(v)
+        if i == string.len-1 then
+            a.push(b.join(""))
+            b=[]
+            continue
+        end if
+    end for
+    string=a
+	
+	for i in string
+		i=i.trim
+		if type == "list" then
+			if i[0] == """" and i[-1] == """" then
+				i=i[1:-1]
+			else
+				if i == "null" then
+                    i=null
+                else if i == "true" then
+                    i=1
+                else if i == "false" then
+                    i=0
+                else if i[0] == "{" or i[0] == "[" then
+                    i=CryptLib.Deserialize(i)
+                else
+				    nv=""
+				    dc=0
+				    for l in i
+				    	if l == "." then
+				    		if dc == 1 then break
+				    		nv=nv+"."
+				    	end if
+				    	if "0123456789E-".indexOf(l) != null then nv=nv+l
+				    end for
+				    if nv != "" then i=i.val
+                end if
+			end if
+			
+			newArray.push(i)
+		else
+			k=i[0:i.indexOf(":")]
+			if k[0] == """" then k=k[1:-1]
+			v=i[i.indexOf(":")+1:]
+			if v[0] == " " then v=v[1:]
+			if v[0] == """" then
+				v=v[1:-1]
+			else
+				if v == "null" then
+                    v=null
+                else if v == "true" then
+                    v=1
+                else if v == "false" then
+                    v=0
+                else if v[0] == "{" or v[0] == "[" then
+                    v=CryptLib.Deserialize(v)
+                else
+				    nv=""
+				    dc=0
+				    for l in v
+				    	if l == "." then
+				    		if dc == 1 then break
+				    		nv=nv+"."
+				    	end if
+				    	if "0123456789E-".indexOf(l) != null then nv=nv+l
+				    end for
+				    if nv != "" then v=v.val
+                end if
+			end if
+			newArray[k]=v
+		end if
+	end for
+	
+	return newArray
+end function
+
+CryptLib.Compression=function(string=null,type=null)
+    basedictcompress={}
+    basedictdecompress={}
+
+    for i in range(0,65535)
+        if i >= 55296 and i <= 57343 then continue
+        ic = char(i)
+        iic = char(i)+char(0)
+        basedictcompress[ic]=iic
+        basedictdecompress[iic]=ic
+    end for
+
+    dictAddA=function(str,dict,a,b)
+        if a >= 65536 then
+            a = 0
+            b=b+1
+            if b >= 65536 then
+                dict={}
+                b=1
+            end if
+        end if
+        dict[str] = char(a)+char(b)
+        a=a+1
+        return [dict,a,b]
+    end function
+
+    compress=function(input)
+        if typeof(input) != "string" then return
+        len = input.len
+        if len <= 1 then return "u"+input
+
+        dict={}
+        a=0
+        b=1
+
+        result=["c"]
+        resultLen=result.len
+
+        word=""
+
+        for i in range(0,len-1)
+            c=input[i]
+            wc=word+c
+            if not (basedictcompress.hasIndex(wc) or dict.hasIndex(wc)) then
+                write=null
+                if basedictcompress.hasIndex(word) then
+                    write=basedictcompress[word]
+                else if dict.hasIndex(word) then
+                    write=dict[word]
+                end if
+                if not write then return "algo err. no word"
+                result.push(write)
+                resultLen=result.len
+                if len <= resultLen then return "u"+input
+                dict=dictAddA(wc, dict, a, b)
+                a=dict[1]
+                b=dict[2]
+                dict=dict[0]
+                word=c
+            else
+                word=wc
+            end if
+        end for
+        if basedictcompress.hasIndex(word) then result.push(basedictcompress[word]) else result.push(dict[word])
+        resultLen = result.len
+        if len <= resultLen then return "u"+input
+        return result.join("")
+    end function
+
+    dictAddB=function(str,dict,a,b)
+        if a >= 65536 then
+            a=0
+            b=b+1
+            if b >= 65536 then
+                dict={}
+                b=1
+            end if
+        end if
+        dict[char(a)+char(b)]=str
+        a=a+1
+        return [dict,a,b]
+    end function
+
+    decompress=function(input)
+        if typeof(input) != "string" then return "invalid type: "+typeof(input)
+
+        if input.len < 1 then return "invalid compression"
+
+        control=input[0]
+        if control == "u" then
+            return input[1:]
+        else if control != "c" then
+            return "invalid compression"
+        end if
+        input=input[1:]
+        len=input.len
+
+        if len < 2 then return "invalid compression"
+
+        dict={}
+        a=0
+        b=1
+
+        result = []
+        last=input[0:2]
+
+        if basedictdecompress.hasIndex(last) then
+            result.push(basedictdecompress[last])
+        else if dict.hasIndex(last) then
+            result.push(dict[last])
+        end if
+
+        for i in range(2, len-1, 2)
+            code=input[i:i+2]
+            lastStr=null
+            if basedictdecompress.hasIndex(last) then
+                lastStr=basedictdecompress[last]
+            else if dict.hasIndex(last) then
+                lastStr=dict[last]
+            end if
+            if lastStr == null then return "could not find last"
+
+            if basedictdecompress.hasIndex(code) then
+                toAdd=basedictdecompress[code]
+            else if dict.hasIndex(code) then
+                toAdd=dict[code]
+            else
+                toAdd=0
+            end if
+
+            if toAdd then
+                result.push(toAdd)
+                dict=dictAddB(lastStr+toAdd[0],dict,a,b)
+                a=dict[1]
+                b=dict[2]
+                dict=dict[0]
+            else
+                tmp = lastStr+lastStr[0]
+                result.push(tmp)
+                dict=dictAddB(tmp,dict,a,b)
+                a=dict[1]
+                b=dict[2]
+                dict=dict[0]
+            end if
+
+            last=code
+        end for
+
+        return result.join("")
+    end function
+
+    if type == "compress" then
+        return compress(string)
+    else if type == "decompress" then
+        return decompress(string)
+    else
+        return
+    end if
+end function
+
+CryptLib.Encrypt=function(type,initial=null,key=null)
+	if type != "enc" and type != "dec" and type != "gen" then return
+	alpha="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+	al=alpha.len
+	if type == "gen" then
+        isPrime=function(num)
+            primes=[]
+            if num <= 0 then return 0
+            if num <= 2 then return 1
+            if (num%2) == 0 then return 0
+            
+            i=num/2
+            if str(i)[-2:] != ".5" then return 0
+            return 1
+        end function
+        
+        GCD=function(num1,num2)
+            if num2 == 0 then return num1
+            return GCD(num2,num1%num2)
+        end function
+        
+        LCM=function(num1,num2)
+            num1=abs(num1)*(abs(num2)/GCD(num1,num2))
+            return abs(num2)*(abs(num1)/GCD(num1,num2))
+        end function
+        check="1.0"
+        
+        while check.len > 1
+		    out={}
+        
+		    p=0
+		    q=0
+        
+		    while not isPrime(p)
+                p=ceil(rnd*100000000000000)
+            end while
+            
+            while not isPrime(q) or q == p
+                q=ceil(rnd*100000000000000)
+            end while
+        
+		    c=LCM(p-1,q-1)
+        
+		    e=0
+        
+		    while not e or (1 > e > c and GCD(e,c) != 1)
+                e=ceil(rnd*100000000)
+            end while
+            
+		    out.pub=e
+		    out.priv=(e^(-1))%c
+
+
+            check=str(out.priv*out.pub)
+        end while
+		return out
+	end if
+	
+	if type == "enc" then
+		if not initial or key == null then return
+		nn=[]
+		for i in initial
+			nn.push(CryptLib.ToBinary(i.code*key,36))
+		end for
+        
+		cipher=""
+		for g in nn
+			block=[]
+			while g.len != 0
+				s=g[:6]
+				g=g[s.len:]
+				if g == null then g=""
+				while s.len < 6
+					s=s+"0"
+				end while
+				block.push(s)
+			end while
+			
+			for i in block
+				cipher=cipher+alpha[CryptLib.FromBinary(i,6)%al]
+			end for
+		end for
+		return cipher
+	else if type == "dec" then
+		if not initial or key == null then return
+		nn=[]
+		while initial.len != 0
+			block=[]
+			s=initial[:6]
+			initial=initial[s.len:]
+			if initial == null then initial=""
+			for i in s
+				block.push(CryptLib.ToBinary(alpha.indexOf(i),6))
+			end for
+			nn.push(block.join(""))
+		end while
+		
+		cipher=""
+		for g in nn
+			cipher=cipher+char(CryptLib.FromBinary(g,36)*key)
+		end for
+		return cipher
+	end if
+end function
+
+CryptLib.Manual=function()
+    s=[]
+    s.push("Clover's CryptLib Manual")
+    s.push("Reminder ""Type"" refers to a string ""enc"" (encrypt) or ""dec"" (decrypt)")
+    s.push("\nCryptLib.Encrypt(type,string,key)")
+    s.push("Encrypts a string using Clover's custom encryption (Type=""gen"": gen keys, ""enc"": encrypt, ""dec"": decrypt)")
+    s.push("\nCryptLib.Manual")
+    s.push("Prints a manual listing every feature")
+    s.push("\nCryptLib.ToBinary(string,bits)")
+    s.push("Converts a string to binary, semi-variable length")
+    s.push("\nCryptLib.FromBinary(string,bits)")
+    s.push("Converts a string from binary, MUST be the same bits length you used with CryptLib.ToBinary(), unless separated by spaces.")
+    s.push("\nCryptLib.Vigenere(string,key,type)")
+    s.push("Encrypt or decrypt a string using the Vigenere cipher")
+    s.push("\nCryptLib.ROT(string,rotation)")
+    s.push("Encrypt or decrypt a string using an alphabet ROTation cipher")
+    s.push("\nCryptLib.Base64(string,type)")
+    s.push("Converts a string to and from Base64")
+    s.push("\nCryptLib.Sha256(string)")
+    s.push("Hashes a string using Sha256")
+    s.push("\nCryptLib.genRandomString(length)")
+    s.push("Generates a random string (A-Z, a-z, 0-9)")
+    s.push("\nCryptLib.Serialize(array)")
+    s.push("Converts an array into a string (map/list)")
+    s.push("\nCryptLib.Deserialize(string)")
+    s.push("Converts a string back into an array (map/list)")
+    s.push("\nCryptLib.Compression(string,type)")
+    s.push("Compresses and decompresses a string using LZW compression, 'type' must be either 'compress' or 'decompress'")
+    return s.join("\n")
+end function

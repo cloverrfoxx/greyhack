@@ -1,0 +1,38 @@
+//file for use with the tracelib ctf
+content="IPAddr"
+start=host_set_time_start
+
+if floor(start-time) > host_set_time_end then exit("This files time-delay deletion switch has been triggered")
+
+genRandomString=function(cont)
+	newString=""
+	alpha="abcdefghijklmnopqrstuvwxyz0123456789"
+	for i in str(abs(cont))
+		string=alpha[i.to_int]
+		newString=newString+string
+	end for
+	return newString
+end function
+
+string=genRandomString(hash(content))
+
+analysis=md5(string)
+
+if params.len == 0 then exit("Encrypted file, cannot access content")
+
+if params[0] == "Analyze" then
+	if not get_shell.host_computer.File(program_path+".alz") then
+		get_shell.host_computer.touch(current_path,program_path.split("/")[-1]+".alz")
+		get_shell.host_computer.File(program_path+".alz").set_content(analysis)
+	else
+		print("File already analyzed.")
+	end if
+	exit
+end if
+
+if params[0] == "Debug" or params[0] == string then
+	print("Password confirmed, accessing content")
+	exit(content)
+end if
+
+if params[0] != string then exit("Invalid password")

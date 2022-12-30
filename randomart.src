@@ -1,0 +1,84 @@
+//create art from encryption keys :)
+import_code("/root/Fox.so")
+NW=0
+NE=1
+SW=2
+SE=3
+
+parseInt=@FoxLib.General.ParseInt
+
+max=function(int1,int2)
+    if int1 > int2 then return int1 else return int2
+end function
+
+min=function(int1,int2)
+    if int1 < int2 then return int1 else return int2
+end function
+
+move=function(position,mv,wid,high)
+    posx=floor(position%wid)
+    posy=floor(position/wid)
+
+    newposx=posx
+    if mv == NW or mv == SW then newposx=newposx-1
+    if mv == NE or mv == SE then newposx=newposx+1
+
+    newposy=posy
+    if mv == NW or mv == NE then newposy=newposy-1
+    if mv == SW or mv == SE then newposy=newposy+1
+
+    newposx=max(0,min(wid-1,newposx))
+    newposy=max(0,min(high-1,newposy))
+
+    return newposx+newposy*wid
+end function
+
+hex2dec=function(hex)
+    ints=[]
+
+    for i in range(0,hex.len-1,2)
+        ints.push(parseInt(hex[i:i+2],10,16))
+    end for
+    return ints
+end function
+
+randart=function(data)
+    alt=" .o+=*B0X@%&#/^"
+    width=17
+    height=9
+    board=[]
+    while board.len != width*height
+        board.push(0)
+    end while
+    bytes=hex2dec(data)
+    pos=width*4+8;
+    start=pos
+    for i in range(0,bytes.len-1)
+        d=bytes[i]
+        for j in range(0,6,2)
+            v = bitwise("&", bitwise(">>", d, j), 3)
+            newpos=move(pos,v,width,height)
+            board[newpos]=board[newpos]+1
+            pos=newpos
+        end for
+    end for
+
+    art=""
+    for p in range(0,width*height-1)
+        m=board[p]
+        if m >= alt.len then m=alt.len-1
+
+        chr=alt[m]
+        if p == start then chr="S"
+        if p == pos then chr="E"
+
+        art=art+chr
+
+        if(p % width == width -1) then art=art+char(10)
+    end for
+    return art
+end function
+
+init=md5(str((rnd*100000) - (rnd*100000)))
+print(init)
+print randart(init)

@@ -1,0 +1,225 @@
+Cyphlib = {"README":"Build and run code with `print(Cyphlib.Help)` to get manual"}
+Cyphlib.Unicode_max = 65536
+
+Cyphlib.Hide = function(message, key = null)
+	if (key == null) then key = active_user
+	locals.key_size = key.len
+	locals.anwser = ""
+	locals.counter = 0
+	for i in message
+		locals.key_current = key[locals.counter]
+		locals.final = (i.code + locals.key_current.code) % Cyphlib.Unicode_max
+		locals.anwser = locals.anwser + char(locals.final)
+		locals.counter = locals.counter + 1
+		locals.counter = locals.counter % locals.key_size
+	end for
+	return locals.anwser
+end function	
+
+Cyphlib.Open = function(message, key = null)
+	if (key == null) then key = active_user
+	locals.key_size = key.len
+	locals.anwser = ""
+	locals.counter = 0
+	for i in message
+		locals.key_current = key[locals.counter]
+		locals.final = (i.code - locals.key_current.code)
+		if locals.final < 0 then locals.final = Cyphlib.Unicode_max - locals.final
+		locals.anwser = locals.anwser + char(locals.final)
+		locals.counter = locals.counter + 1
+		locals.counter = locals.counter % locals.key_size
+	end for
+	return locals.anwser
+end function
+
+// param1 = path, param2 = params ([key-rhc])
+Cyphlib.HideFile = function(param1, param2 = null)
+	locals.rec = false
+	locals.key = active_user
+	
+	if typeof(param1) != "file" then
+		print("This function only for file encryption")
+		return null
+	end if
+	
+	if param2 != null then
+		if param2 != null and param2.indexOf("-") == null then 
+			locals.key = param2
+		else
+			if param2[:param2.indexOf("-")] and param2[:param2.indexOf("-")] != "" then 
+				locals.key = param2[:param2.indexOf("-")]
+			end if
+			if param2[param2.indexOf("-"):].indexOf("r") or param2[param2.indexOf("-"):].indexOf("R") then 
+				locals.rec = true
+			end if
+		end if
+	end if
+	
+	if locals.rec and not param1.is_folder then
+		print("Can't use -R for nonfolder file")
+		return null
+	end if
+	
+	// non -R alg
+	if not locals.rec then
+		if not param1.is_binary then
+			if param1.has_permission("r") and param1.has_permission("w") then
+				locals.encrfin = Cyphlib.Hide(param1.get_content, locals.key)
+				param1.set_content(locals.encrfin)
+			end if
+		end if
+	return true
+	end if
+
+	// -R alg
+	locals.txtfls = []
+	locals.fldrs = param1.get_folders
+	for i in locals.fldrs
+		if i.has_permission("r") then
+			locals.fldrs = Cyphlib.Merge(locals.fldrs, i.get_folders)
+		end if
+	end for
+	locals.untxtfls = locals.fldrs
+	locals.postfldrs = locals.fldrs
+	locals.fldrs.push(param1)
+	
+	for i in locals.postfldrs
+		for j in i.get_files
+			if j.is_binary then locals.untxtfls.push(j) else locals.txtfls.push(j)
+		end for
+	end for
+	
+	for i in locals.txtfls
+		if i.has_permission("w") then 
+			locals.encrfin = Cyphlib.Hide(i.get_content, locals.key)
+			i.set_content(locals.encrfin)
+			end if
+		end if
+	end for
+
+	return true
+end function
+
+
+Cyphlib.OpenFile = function(param1, param2 = null)
+	locals.rec = false
+	
+	locals.key = active_user
+	
+	if typeof(param1) != "file" then
+		print("This function only for file encryption")
+		return null
+	end if
+	
+	if param2 then
+		if param2 != null and param2.indexOf("-") == null then 
+			locals.key = param2 
+		else 
+			if param2[:param2.indexOf("-")] and param2[:param2.indexOf("-")] != "" then 
+				locals.key = param2[:param2.indexOf("-")]
+			end if
+			if param2[param2.indexOf("-"):].indexOf("r") or param2[param2.indexOf("-"):].indexOf("R") then locals.rec = true
+		end if
+	end if
+	
+	if locals.rec and not param1.is_folder then
+		print("Can't use -R for nonfolder file")
+		return null
+	end if
+	
+	// non -R alg
+	if not locals.rec then
+		if not param1.is_binary then
+			if param1.has_permission("r") and param1.has_permission("w") then
+				locals.encrfin = Cyphlib.Open(param1.get_content, locals.key)
+				param1.set_content(locals.encrfin)
+			end if
+		end if
+	return true
+	end if
+
+	// -R alg
+	locals.txtfls = []
+	locals.fldrs = param1.get_folders
+	for i in locals.fldrs
+		if i.has_permission("r") then
+			locals.fldrs = Cyphlib.Merge(locals.fldrs, i.get_folders)
+		end if
+	end for
+	locals.untxtfls = locals.fldrs
+	locals.postfldrs = locals.fldrs
+	locals.fldrs.push(param1)
+	
+	for i in locals.postfldrs
+		for j in i.get_files
+			if j.is_binary then locals.untxtfls.push(j) else locals.txtfls.push(j)
+		end for
+	end for
+	
+	for i in locals.txtfls
+		if i.has_permission("w") then 
+			locals.encrfin = Cyphlib.Open(i.get_content, locals.key)
+			i.set_content(locals.encrfin)
+			end if
+		end if
+	end for
+
+	return true
+end function
+
+
+Cyphlib.Merge = function(list1, list2)
+	locals.fin_list = list1
+	for i in list2
+		locals.fin_list.push(i)
+	end for
+	return locals.fin_list
+end function
+
+
+Cyphlib.Functions = ["Help", "Merge", "HideFile", "OpenFile", "Open", "Hide"]
+
+
+Cyphlib.Help = function(findKey = "")
+	locals.funcs = {}
+	locals.anws = "<color=#ffa500>Cyphlib manual (Cyphlib.[function])</color>" + char(10) + char(10)
+	locals.funcs["Main"] = locals.anws
+	locals.anws = "<color=#e38e00>string Hide(message:string, [opt:key:string])</color>" + char(10)
+	locals.anws = locals.anws + "Hides a string using the Vigenere cipher." + char(10)
+	locals.anws = locals.anws + "If key isn't specified function uses <color=#cc8899>active_user</color> as key." + char(10) + char(10)
+	locals.funcs["Hide"] = locals.anws
+	locals.anws = "<color=#ffc93b>string Open(message:string, [opt:key:string])</color>" + char(10)
+	locals.anws = locals.anws + "Reverse of <color=#e38e00>Hide(message:string, [opt:key:string])</color>" + char(10)
+	locals.anws = locals.anws + "Decrypts Vigenere cipher." + char(10)
+	locals.anws = locals.anws + "Also if key is unspecified uses <color=#cc8899>active_user</color> as key." + char(10) + char(10)
+	locals.funcs["Open"] = locals.anws
+	locals.anws = "<color=#e49b0f>list Merge(list1: list, list2: list)</color>" + char(10)
+	locals.anws = locals.anws + "Returns new list, where first part consists of elements are elements of list1," + char(10)
+	locals.anws = locals.anws + "last part of element of list2" + char(10) + char(10)
+	locals.funcs["Merge"] = locals.anws
+	locals.anws = "<color=#d99944>string Help([opt:findKey: string])</color>" + char(10)
+	locals.anws = locals.anws + "Returns string which contains Cyphlib's manual for using." + char(10)
+	locals.anws = locals.anws + "If you send argument in function, it will output only similarly named functions" + char(10)
+	locals.anws = locals.anws + "(use findKey only with name of function: Help, Open, etc)." + char(10) + char(10)
+	locals.funcs["Help"] = locals.anws
+	locals.anws = "<color=#ffc26c>bool/null HideFile(_file: file, [opt:params: string])</color>" + char(10)
+	locals.anws = locals.anws + "Returns bool or null (as exception with input error message)." + char(10)
+	locals.anws = locals.anws + "Function encrypts every txt file in area of application." + char(10)
+	locals.anws = locals.anws + "It also can take an argument of the form `<color=#cc8899>[encryption key]-[opt:r]</color>` or" + char(10)
+	locals.anws = locals.anws + "just `<color=#cc8899>[encryption key]</color>`/`<color=#cc8899>[-r]</color>`. If `<color=#cc8899>r</color>` is passed then it will run recursively." + char(10)
+	locals.anws = locals.anws + "Replaces contents with function <color=#e38e00>string Hide(message:string, [opt:key:string])</color>" + char(10) + char(10)
+	locals.funcs["HideFile"] = locals.anws
+	locals.anws = "<color=#ffe0b5>bool/null OpenFile(_file: file, [opt:params: string]</color>" + char(10)
+	locals.anws = locals.anws + "Reverse function of <color=#ffc26c>bool/null HideFile(_file: file, [opt:params: string])</color>." + char(10)
+	locals.anws = locals.anws + "Function decrypts every txt file in area of aplication." + char(10)
+	locals.anws = locals.anws + "It also can take an argument of the form `<color=#cc8899>[encryption key]-[opt:r]</color>` or" + char(10)
+	locals.anws = locals.anws + "just `<color=#cc8899>[encryption key]</color>`/`<color=#cc8899>[-r]</color>`. If `<color=#cc8899>r</color>` is passed then it will run recursively." + char(10)
+	locals.anws = locals.anws + "Replaces contents with function <color=#ffc93b>string Open(message:string, [opt:key:string])</color>" + char(10) + char(10)
+	locals.funcs["OpenFile"] = locals.anws
+	locals.finalanw = locals.funcs["Main"]
+	
+	for i in Cyphlib.Functions
+		if i.lower.indexOf(findKey.lower) != null then locals.finalanw = locals.finalanw + locals.funcs[i]
+	end for
+	return locals.finalanw
+end function

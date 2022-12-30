@@ -1,0 +1,220 @@
+import_code("/root/Fox.so")
+libs=FoxLib.General.LibFinder
+mxf=libs.mxf
+cpf=libs.cpf
+if not mxf or not cpf then exit
+mx=include_lib(mxf)
+cp=include_lib(cpf)
+if params.len != 1 then exit
+ip=params[0]
+router=get_router(ip)
+if is_lan_ip(ip) then router=get_router
+if not router then exit
+rver=router.kernel_version
+ports=[{"number": 0, "service": "router "+rver}]
+for port in router.used_ports
+	m={}
+	m.number=port.port_number
+	m.service=router.port_info(port)
+	ports.push(m)
+end for
+if ports.len == 0 then exit
+exploits=[]
+decrypted=null
+
+buildProgram=function(shell,dest)
+	program="mxf=""/home/guest/metaxploit.so"";mx=include_lib(mxf);libs=get_shell.host_computer.File(""/lib"").get_files;exploits=[];pass=null;for lib in libs;ml=mx.load(lib.path);lib=null;for dblib in exploits;libname=dblib.name;libver=dblib.ver;if ml.lib_name == libname and ml.version == libver then;lib=dblib;break;end if;end for;if lib then;vulns=lib.exploits;for vuln in vulns;mem=vuln.split("","")[0];exp=vuln.split("","")[1];result=ml.overflow(mem,exp);if typeof(result) == ""shell"" then;rfile=result.host_computer.File(""/etc/passwd"");if rfile and rfile.has_permission(""r"") then;pass=rfile.get_content.split(""\n"")[0];get_shell.host_computer.touch(current_path,""pass"");get_shell.host_computer.File(current_path+""/pass"").set_content(pass);exit;end if;else if typeof(result) == ""computer"" then;rfile=result.File(""/etc/passwd"");if rfile and rfile.has_permission(""r"") then;pass=rfile.get_content.split(""\n"")[0];get_shell.host_computer.touch(current_path,""pass"");get_shell.host_computer.File(current_path+""/pass"").set_content(pass);exit;end if;else if typeof(result) == ""file"" then;if result.path == ""/etc"" then;rfile=null;for file in result.get_files;if file.name == ""passwd"" then rfile=file;end for;if rfile and rfile.has_permission(""r"") then;pass=rfile.get_content.split(""\n"")[0];get_shell.host_computer.touch(current_path,""pass"");get_shell.host_computer.File(current_path+""/pass"").set_content(pass);exit;end if;else if result.path == ""/etc/passwd"" and result.has_permission(""r"") then;pass=result.get_content.split(""\n"")[0];get_shell.host_computer.touch(current_path,""pass"");get_shell.host_computer.File(current_path+""/pass"").set_content(pass);exit;end if;end if;end for;end if;if lib then continue;scan=mx.scan(ml);newLib={};newLib.name=ml.lib_name;newLib.ver=ml.version;newLib.exploits=[];for mem in scan;mems=mx.scan_address(ml,mem).split(""Unsafe check: "");for ent in mems;if ent == mems[0] then continue;exp=ent[ent.indexOf(""<b>"")+3:ent.indexOf(""</b>"")];result=ml.overflow(mem,exp);newLib.exploits.push(mem+"",""+exp);if typeof(result) == ""shell"" then;rfile=result.host_computer.File(""/etc/passwd"");if rfile and rfile.has_permission(""r"") then;pass=rfile.get_content.split(""\n"")[0];get_shell.host_computer.touch(current_path,""pass"");get_shell.host_computer.File(current_path+""/pass"").set_content(pass);exit;end if;else if typeof(result) == ""computer"" then;rfile=result.File(""/etc/passwd"");if rfile and rfile.has_permission(""r"") then;pass=rfile.get_content.split(""\n"")[0];get_shell.host_computer.touch(current_path,""pass"");get_shell.host_computer.File(current_path+""/pass"").set_content(pass);exit;end if;else if typeof(result) == ""file"" then;if result.path == ""/etc"" then;rfile=null;for file in result.get_files;if file.name == ""passwd"" then rfile=file;end for;if rfile and rfile.has_permission(""r"") then;pass=rfile.get_content.split(""\n"")[0];get_shell.host_computer.touch(current_path,""pass"");get_shell.host_computer.File(current_path+""/pass"").set_content(pass);exit;end if;else if result.path == ""/etc/passwd"" then;if result.has_permission(""r"") then;pass=result.get_content.split(""\n"")[0];get_shell.host_computer.touch(current_path,""pass"");get_shell.host_computer.File(current_path+""/pass"").set_content(pass);exit;end if;end if;end if;end for;end for;end for"
+	get_shell.scp(mxf,dest,shell)
+	get_shell.scp(cpf,dest,shell)
+	shell.host_computer.touch(dest,"automated.src")
+	shell.host_computer.File(dest+"/automated.src").set_content(program)
+	built=shell.build(dest+"/automated.src",dest)
+	shell.host_computer.File(dest+"/automated.src").delete
+end function
+	
+
+decrypt = function(hash)
+	GetPassword = function(userPass)
+		password=cp.decipher(userPass)
+		return(password)
+	end function
+origFile = hash
+	if origFile.len < 32 then return
+	lines=[origFile]
+	for line in lines
+		userPass=line.split(":")
+		if userPass.len == 2 then
+			user=userPass[0]
+			userPass=userPass[1]
+			password=GetPassword(userPass)
+			if not password then print("password for "+user+" not found")
+			if password then
+				password=user+":"+password
+				return password
+			end if
+		else
+			userPass=userPass[0]
+			password=GetPassword(userPass)
+			if not password then print ("could not decipher "+userPass)
+			if password then return password
+		end if
+	end for
+end function
+
+attempt=function(ip,user,pass)
+port=null
+for i in ports
+	if i.service.split(" ")[0] == "ssh" then
+		port=i.number
+		break
+	end if
+end for
+if not port then
+	print("Could not obtain shell")
+	print("Password: "+pass)
+else
+try=get_shell.connect_service(ip,port,user,pass)
+if typeof(try) == "shell" then
+	print("Shell obtained")
+	print("Pass: "+pass)
+	print("Start terminal?")
+	confirm=user_input("[Y/n]> ").lower
+	if confirm != "n" then try.start_terminal
+end if
+end if
+end function
+
+while 1
+	for port in ports
+		ns=mx.net_use(ip,port.number)
+		if not ns then continue
+		ml=ns.dump_lib
+		lib=null
+		newLib=null
+		for dblib in exploits
+			libname=dblib.name
+			libver=dblib.ver
+			if ml.lib_name == libname and ml.version == libver then
+				lib=dblib
+				break
+			end if
+		end for
+		if lib then
+		vulns=lib.exploits
+		for vuln in vulns
+			if vuln == "" then continue
+			mem=vuln.split(",")[0]
+			exp=vuln.split(",")[1]
+			result=ml.overflow(mem,exp)
+			if typeof(result) == "shell" then
+				rfile=result.host_computer.File("/root")
+				ruser="guest"
+				if rfile and rfile.has_permission("w") then ruser="root"
+				if ruser == "root" then
+					print("Shell obtained")
+					print("Start terminal?")
+					confirm=user_input("[Y/n]> ").lower
+					if confirm != "n" then result.start_terminal
+				else
+					if result.host_computer.File("/home/guest") and not result.host_computer.File("/home/guest/automated") and result.host_computer.File("/home/guest").has_permission("w") then
+						buildProgram(result,"/home/guest")
+						result.launch("/home/guest/automated")
+						if result.host_computer.File("/home/guest/pass") then
+							pass=result.host_computer.File("/home/guest/pass").get_content
+							decrypted=decrypt(pass.split("\n")[0])
+							attempt(ip,"root",decrypted)
+						end if
+					end if
+				end if
+			else if typeof(result) == "computer" then
+				rfile=result.File("/root")
+				if rfile and rfile.has_permission("w") then
+					pass=result.File("/etc/passwd").get_content.split("\n")[0]
+					decrypted=decrypt(pass)
+					attempt(ip,"root",decrypted)
+				end if
+			else if typeof(result) == "file" then
+				if result.path == "/etc" then
+					rfile=null
+					for file in result.get_files
+						if file.name == "passwd" then rfile=file
+					end for
+					if rfile and rfile.has_permission("r") then
+						pass=rfile.get_content.split("\n")[0]
+						decrypted=decrypt(pass)
+						attempt(ip,"root",decrypted)
+					end if
+				else if result.path == "/etc/passwd" then
+					if result.has_permission("r") then
+						pass=result.get_content.split("\n")[0]
+						decrypted=decrypt(pass)
+						attempt(ip,"root",decrypted)
+					end if
+				end if
+			end if
+		end for
+		end if
+		if lib then continue
+		scan=mx.scan(ml)
+		newLib={}
+		newLib.name=ml.lib_name
+		newLib.ver=ml.version
+		newLib.exploits=[]
+		for mem in scan
+			mems=mx.scan_address(ml,mem).split("Unsafe check: ")
+			for ent in mems
+				if ent == mems[0] then continue
+				exp=ent[ent.indexOf("<b>")+3:ent.indexOf("</b>")]
+				result=ml.overflow(mem,exp)
+				newLib.exploits.push(mem+","+exp)
+				if typeof(result) == "shell" then
+					rfile=result.host_computer.File("/root")
+					ruser="guest"
+					if rfile and rfile.has_permission("w") then ruser="root"
+					if ruser == "root" then
+						print("Shell obtained")
+						print("Start terminal?")
+						confirm=user_input("[Y/n]> ").lower
+						if confirm != "n" then result.start_terminal
+					else
+						if result.host_computer.File("/home/guest") and not result.host_computer.File("/home/guest/automated") and result.host_computer.File("/home/guest").has_permission("w") then
+							buildProgram(result,"/home/guest")
+							result.launch("/home/guest/automated")
+							if result.host_computer.File("/home/guest/pass") then
+								pass=result.host_computer.File("/home/guest/pass").get_content
+								decrypted=decrypt(pass.split("\n")[0])
+								attempt(ip,"root",decrypted)
+							end if
+						end if
+					end if
+				else if typeof(result) == "computer" then
+					rfile=result.File("/etc/passwd")
+					if rfile and rfile.has_permission("r") then
+						pass=rfile.get_content.split("\n")[0]
+						decrypted=decrypt(pass)
+						attempt(ip,"root",decrypted)
+					end if
+				else if typeof(result) == "file" then
+					if result.path == "/etc" then
+						rfile=null
+						for file in result.get_files
+							if file.name == "passwd" then rfile=file
+						end for
+						if rfile and rfile.has_permission("r") then
+							pass=rfile.get_content.split("\n")[0]
+							decrypted=decrypt(pass)
+							attempt(ip,"root",decrypted)
+						end if
+					else if result.path == "/etc/passwd" then
+						if result.has_permission("r") then
+							pass=result.get_content.split("\n")[0]
+							decrypted=decrypt(pass)
+							attempt(ip,"root",decrypted)
+						end if
+					end if
+				end if
+			end for
+		end for
+		exploits.push(newLib)
+	end for
+end while

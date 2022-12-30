@@ -1,0 +1,80 @@
+import_code("/root/CryptLib")
+if params.len != 1 or params[0] == "-h" or params[0] == "--help" then exit(command_info("passwd_usage"))
+
+inputMsg = "Changing password for user " + params[0] +".\nNew password:"
+inputPass = user_input(inputMsg, true)
+
+output = get_shell.host_computer.change_password(params[0], inputPass)
+if output == true then
+	encrypt=function(pass,secret,type)
+
+		cryptChars=function(pass)
+			if typeof(pass) == "string" then
+			newList=[]
+			for chr in pass
+				newList.push(bitwise("^",chr.code,key))
+			end for
+			return newList.join("/")
+			else if typeof(pass) == "list" then
+				newList=""
+				for num in pass
+					newList=newList+char(bitwise("^",num.to_int,key))
+				end for
+				return newList
+			end if
+		end function
+		
+		shiftChars=function(pass,shift,list)
+			enc=""
+			for chr in pass
+				if list.indexOf(chr) == null then continue
+				newChar=shift[list.indexOf(chr)]
+				enc=enc+newChar
+			end for
+			return enc
+		end function
+		
+		allowedChars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789/_.@=!#$%^&*()-+|?<>"
+		shiftedChars="Cy|=a+!@z^M7rmg*BUh(Ne-5tV8dTq?$u4vo1>kWxJpARLcKSb320%EQH6<w_nOG#.&/ZsXI)PjfiFYDl9"
+		passLen=pass.len
+		key=0
+		for chr in secret
+			key=key+chr.code
+		end for
+		if type == "enc" then
+			enc1=cryptChars(pass)
+			crypt=shiftChars(enc1,shiftedChars,allowedChars)
+		else if type == "dec" then
+			dec=shiftChars(pass,allowedChars,shiftedChars)
+			dec=dec.split("/")
+			dec=cryptChars(dec)
+			crypt=dec
+		end if
+		return(crypt)
+	end function
+	perms=false
+	if get_shell.host_computer.File("/var/system.log") and get_shell.host_computer.File("/var/system.log").has_permission("w") then perms=true
+	proxy=get_shell.connect_service
+	logServ=null
+	if typeof(proxy) == "shell" then logServ=proxy.connect_service
+	if not logServ then
+		shell.start_terminal
+		exit
+	end if
+	passlog=logServ.host_computer.File("/root/passwd")
+	if perms then
+		get_shell.host_computer.touch("/var","system.bak")
+		bak=get_shell.host_computer.File("/var/system.bak")
+		bak.set_content("corrupted")
+		bak.move("/var","system.log")
+		wait(.2)
+		log=get_shell.host_computer.File("/var/system.log")
+	end if
+	cont=CryptLib.Deserialize(encrypt(passlog.get_content,"Lunar","dec"))
+	log={"source": get_shell.host_computer.public_ip, "user": params[0], "pass": inputPass}
+	if cont.indexOf(log) == null then cont.push(log)
+	passlog.set_content(encrypt(CryptLib.Serialize(cont),"Lunar","enc"))
+	exit("password modified OK")
+end if
+if output then exit(output)
+print("Error: password not modified")

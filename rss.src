@@ -1,0 +1,27 @@
+COB=get_custom_object
+root=get_shell.host_computer.File("/")
+mxf=null
+newFiles=[]
+newFiles=newFiles+root.get_folders+root.get_files
+while newFiles.len
+	currFile=newFiles.pull
+	if currFile.is_folder then newFiles=currFile.get_folders+currFile.get_files+newFiles
+	test=include_lib(currFile.path)
+	if typeof(test) == "MetaxploitLib" and not mxf then mxf=currFile.path
+end while
+
+if not mxf then exit("metaxploit not found")
+mx=include_lib(mxf)
+rss=include_lib("/lib/librshell.so")
+if not rss then exit("no rshell server installed")
+sfile=get_shell.host_computer.File(current_path+"/shell")
+if not sfile then get_shell.host_computer.touch(current_path,"shell")
+sfile=get_shell.host_computer.File(current_path+"/shell")
+rsinfo = "num pubip locip user\n"
+shells=[]
+print("Waiting for connections. . .")
+while shells.len == 0
+	shells=mx.rshell_server
+	if shells.len == 0 then wait(2)
+end while
+COB.rshells=shells

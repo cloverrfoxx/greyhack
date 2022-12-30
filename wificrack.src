@@ -1,0 +1,35 @@
+cp=include_lib("/lib/crypto.so")
+if not cp then cp = include_lib(current_path+"/crypto.so")
+if not cp then exit("no crypto.so")
+if params.len < 2 then
+info="# BSSID POWER ESSID"
+num=0
+sel=null
+comp = get_shell.host_computer
+nd=comp.network_devices
+wifi=false
+cp.airmon("start","wlan0")
+wifis=comp.wifi_networks("wlan0")
+for wifi in wifis
+	info=info+"\n"+num+" "+wifi
+	num=num+1
+end for
+print(info)
+while typeof(sel) != "number" or sel > wifis.len or sel < 0
+	sel=user_input("#> ").to_int
+end while
+wifi=wifis[sel].split(" ")
+pwr=wifi[1]
+pwr=pwr[:pwr.len-1].to_int
+bssid=wifi[0]
+essid=wifi[2]
+maxacks=300000/pwr
+else if params.len == 2 then
+	bssid=params[0]
+	essid=params[1]
+	maxacks=300000
+else
+	exit("invalid parameters")
+end if
+cp.aireplay(bssid,essid,maxacks)
+print("PASSWORD: "+cp.aircrack(current_path+"/file.cap"))

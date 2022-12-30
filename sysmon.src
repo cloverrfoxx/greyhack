@@ -1,0 +1,63 @@
+shell=get_shell
+comp=shell.host_computer
+
+safeProcs=[]
+procs=comp.show_procs.split("\n")
+procs.pull
+for proc in procs
+	proc=proc.split(" ")
+	safeProcs.push({"user": proc[0], "id": proc[1], "name": proc[-1]})
+end for
+
+safeFiles=[]
+newFiles=[]
+root=comp.File("/")
+currFile=root
+newFiles=newFiles+root.get_folders+root.get_files
+while newFiles.len
+	alreadyIn=0
+	currFile=newFiles.pull
+	for i in safeFiles
+		if i.path == currFile.path then alreadyIn=1
+	end for
+	if alreadyIn then continue
+	safeFiles.push({"path": currFile.path, "size": currFile.size})
+	for file in currFile.get_folders+currFile.get_files
+		newFiles.push(file)
+	end for
+end while
+
+
+while 1
+	newProcs=comp.show_procs.split("\n")
+	newProcs.pull
+
+	for proc in newProcs
+		safeProc=0
+		proc=proc.split(" ")
+		for i in safeProcs
+			if proc[1] == i.id and proc[0] == i.user and proc[-1] == i.name then safeProc=1
+		end for
+		if not safeProc then
+			print("KILLING UNLISTED PROCESS "+proc[-1]")
+			comp.close_program(proc[1].to_int)
+		end if
+	end for
+
+	newFiles=[]
+	newFiles=newFiles+root.get_folders+root.get_files
+	while newFiles.len
+		safeFile=0
+		currFile=newFiles.pull
+		for file in safeFiles
+			if file.path == currFile.path and file.size == currFile.size then safeFile=1
+		end for
+		if not safeFile and not currFile.is_folder then
+			print("DELETING UNLISTED FILE "+currFile.path)
+			currFile.delete
+		end if
+		for file in currFile.get_folders+currFile.get_files
+			newFiles.push(file)
+		end for
+	end while
+end while

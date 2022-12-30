@@ -1,0 +1,94 @@
+if params.len > 2 or params.len < 1 then exit("[lib] (ver)\nssh, repo, chat, http, ftp, rshell, router")
+ver=null
+ips=get_shell.host_computer.File(current_path+"/ips")
+if not ips then
+    get_shell.host_computer.touch(current_path,"ips")
+    ips=get_shell.host_computer.File(current_path+"/ips")
+end if
+lib=params[0]
+if lib == "repo" then lib = "repository"
+if params.len == 2 then ver=params[1]
+
+getRandomIp=function()
+	//1-223.0-255.0-255.0-255
+	octets=[]
+	for i in range(0,3)
+		if i == 0 then octets.push(ceil(rnd*223)) else octets.push(floor(rnd*256))
+	end for
+	return octets.join(".")
+end function
+st=time
+while 1
+    while 1
+        ip=getRandomIp
+        if not get_router(ip) or is_lan_ip(ip) then continue
+        break
+    end while
+    router=get_router(ip)
+    if lib == "router" then
+        v=router.kernel_version
+        print("Checking "+ip+" "+v+"...")
+        if not ver then
+            print(ip+" "+lib+" "+v+" > "+current_path+"/ips")
+            print("Time since last found "+(time - st))
+            st=time
+            cont=ips.get_content.split("\n")
+            while cont.indexOf("") != null
+                cont.remove(cont.indexOf(""))
+            end while
+            cont.push(ip+" "+lib+"#"+v)
+            ips.set_content(cont.join(char(10)))
+            continue
+        end if
+        if v == ver then
+            print(ip+" "+lib+" "+v+" > "+current_path+"/ips")
+            print("Time since last found "+(time - st))
+            st=time
+            cont=ips.get_content.split("\n")
+            while cont.indexOf("") != null
+                cont.remove(cont.indexOf(""))
+            end while
+            cont.push(ip+" "+lib+"#"+v)
+            ips.set_content(cont.join(char(10)))
+            continue
+        end if
+        continue
+    end if
+    ports=router.used_ports
+    rports=[]
+    for port in ports
+        serv=[port.port_number]
+        serv=serv+router.port_info(port).split(" ")
+        rports.push(serv)
+    end for
+
+    for port in rports
+		print("Checking "+ip+" "+port.join(" ")+"...")
+        if not ver then
+            if port[1] == lib then
+                print(ip+" "+port[1]+" "+port[-1]+" > "+current_path+"/ips")
+                print("Time since last found "+(time - st))
+                st=time
+                cont=ips.get_content.split("\n")
+                while cont.indexOf("") != null
+                    cont.remove(cont.indexOf(""))
+                end while
+                cont.push(ip+" "+port[1]+"#"+port[-1])
+                ips.set_content(cont.join(char(10)))
+                continue
+            end if
+        end if
+        if port[1] == lib and port[-1] == ver then
+            print(ip+" "+port[1]+" "+port[-1]+" > "+current_path+"/ips")
+            print("Time since last found "+(time - st))
+            st=time
+            cont=ips.get_content.split("\n")
+            while cont.indexOf("") != null
+                cont.remove(cont.indexOf(""))
+            end while
+            cont.push(ip+" "+port[1]+"#"+port[-1])
+            ips.set_content(cont.join(char(10)))
+            continue
+        end if
+    end for
+end while

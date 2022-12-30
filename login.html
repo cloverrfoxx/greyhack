@@ -1,0 +1,67 @@
+<!doctype html>
+<title>lockout</title>
+<style>
+  body { text-align: center; padding: 25px; }
+  h1 { font-size: 50px; }
+  body { font: 20px Helvetica, sans-serif; color: black; }
+  article { display: block; text-align: left; width: 650px; margin: 0 auto; }
+  html{
+    background-color: whitesmoke;
+    height:100%;
+  }
+  .btn {
+    cursor: pointer;
+  }
+  .btn-primary{
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+    border: none;
+    margin-left: 4px;
+    margin-right: 4px;
+    background-color: #080808;
+  }
+  .btn-primary:hover{
+    background: #333;
+    color: white;
+  }
+</style>
+<h1>server login</h1>
+<div id="main">
+	<input type="password" id="password" placeholder="password"><br><br>
+	<button class="btn btn-primary" onclick="tryPass()"> login </button>
+	<p id="attempts">Attempts Left: null</p>
+</div>
+<div id="success">
+	<button class="btn btn-primary" id="InformaticaShop"> open shop </button>
+</div>
+<div id="failed">
+	<p>failed to log in, try again!</p>
+</div>
+<script>
+	var main = document.getElementById("main");
+	var downloads = document.getElementById("success");
+	var failed = document.getElementById("failed");
+	var attempts = document.getElementById("attempts");
+	let left = 2;
+	attempts.textContent = "Attempts left: "+left.toString();
+
+	downloads.style.display="none";
+	failed.style.display="none";
+
+	function tryPass(){
+		var attempt = document.getElementById("password").value;
+		var pass = "password";
+		if (attempt == pass) {
+			main.style.display="none";
+			downloads.style.display="block";
+		} else {
+			left--;
+			if (left === 0) {
+				main.style.display="none";
+				failed.style.display="block";
+			};
+			attempts.textContent = "Attempts left: "+left.toString();
+		};
+	};
+</script>

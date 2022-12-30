@@ -1,0 +1,58 @@
+mxf=null
+root=get_shell.host_computer.File("/")
+newFiles=root.get_folders+root.get_files
+while newFiles.len
+	currFile=newFiles.pull
+	if currFile.is_folder then
+		newFiles=currFile.get_folders+currFile.get_files+newFiles
+	end if
+	test=include_lib(currFile.path)
+	if typeof(test) == "MetaxploitLib" then mxf=currFile.path
+end while
+if not mxf then exit("no metaxploit")
+mx=include_lib(mxf)
+if params.len != 1 then exit("invalid parameters")
+getPath=function(path)
+	cpath=current_path
+	if path != "/" then
+		path=path.split("/")
+		if path[-1] == "" then path.pop
+		if path[0] == ".." then
+			if path.len == 1 then
+				path=parent_path(cpath)
+			else
+				path.pull
+				if parent_path(cpath) == "/" then
+					path=parent_path(cpath)+path.join("/")
+				else
+					path=parent_path(cpath)+"/"+path.join("/")
+				end if
+			end if
+		else if path[0] == "." then
+			if path.len == 1 then
+				path=cpath
+			else
+				path.pull
+				if cpath == "/" then
+					path=cpath+path.join("/")
+				else
+					path=cpath+"/"+path.join("/")
+				end if
+			end if
+		else if path[0] != "" then
+			if cpath == "/" then
+				path=cpath+path.join("/")
+			else
+				path=cpath+"/"+path.join("/")
+			end if
+		else if path[0] == "" then
+			path=path.join("/")
+		end if
+	end if
+	return path
+end function
+
+path=getPath(params[0])
+ml=mx.load(path)
+if not ml then exit("invalid file")
+print(ml.lib_name+" "+ml.version)

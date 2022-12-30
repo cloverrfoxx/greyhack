@@ -1,0 +1,427 @@
+ver="0.0.1"
+mxf="/lib/metaxploit.so"
+if not get_shell.host_computer.File(mxf) then mxf=current_path+"/metaxploit.so"
+if not get_shell.host_computer.File(mxf) then exit("Metaxploit.so not found in /lib or current path")
+mx=include_lib(mxf)
+cpf="/lib/crypto.so"
+if not get_shell.host_computer.File(cpf) then cpf=current_path+"/crypto.so"
+if not get_shell.host_computer.File(cpf) then exit("Crypto.so not found in /lib or current path")
+cp=include_lib(cpf)
+apt=include_lib("/lib/aptclient.so")
+msc=program_path
+
+//if apt then
+//	sources=get_shell.host_computer.File("/etc/apt/sources.txt")
+//	if sources and sources.has_permission("r") then
+//		inSource=0
+//		minSource=0
+//		sources=sources.get_content.split("\n")
+//		for source in sources
+//			source=source.split(":")
+//			if source[0] == "    ""15.15.15.15""" then inSource=1
+//			if source[0] == "    ""72.248.196.250""" then inSource=1
+//		end for
+//		if not inSource then
+//			apt.add_repo("15.15.15.15",1542)
+//			apt.update
+//		end if
+//		//if not minSource then
+//			//apt.add_repo("72.248.196.250",1542)
+//			//apt.update
+//		//end if
+//		//out=apt.check_upgrade(msc)
+//		outm=apt.check_upgrade(mxf)
+//		//if out then
+//			//print("Updating Metasploit\n")
+//			//apt.install("msfc",parent_path(msc))
+//		//end if
+//		if outm then
+//			print("Updating Metaxploit.so\n")
+//			apt.install("metaxploit.so",parent_path(mxf))
+//		end if
+//	end if
+//end if
+
+logos=get_shell.host_computer.File(current_path+"/logos.src")
+if not logos then
+	get_shell.host_computer.touch(current_path,"logos.src")
+	logos=get_shell.host_computer.File(current_path+"/logos.src")
+end if
+logos=logos.get_content.split("//logo/")
+logos.remove("")
+newlogos=[]
+for logo in logos
+	logo=logo.split("\n")
+	logo.pull
+	if logo[-1] == "" then logo.pop
+	logo=logo.join("\n")
+	newlogos.push(logo)
+end for
+logos=newlogos
+num=floor(rnd()*logos.len)
+print(logos[num])
+
+shiftChars=function(pass,shift,list)
+	enc=""
+	for chr in pass
+		newChar=shift[list.indexOf(chr)]
+		enc=enc+newChar
+	end for
+	return enc
+end function
+encrypt = function(pass,type)
+	allowedChars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789/_.@=!#$%^&*()-+\|?<>"
+	shiftedChars="W/d.YMF6Ua+bP2DZ^ch>&SkB#m1ITwynO\=HN*pjvQfu5A8CRx4L%G|Ji<()r0q7t@goXE_$sl?ezK!V93-"
+	shiftedCharsZERO="dk>I&T(s9RU4^-)h=a\g#LYQbXzlnV5<*AMu.KBvo2e6C_DJ3x0cHwpt%$SPiyZE!WN|OrGf+?7mq8@j/1F"
+	shiftedCharsONE="^y76twkU.mca!q*QPL+/|eJ3zOX9(p4Vvh)80R=BK-1<In$D>HZWl52MYu@\_sg%#rdEiTG?AojF&fbNCxS"
+	shiftedCharsTWO="*ly8e7DqW(mL\4<1F%MiS296TNwEZoI_p=rbVtc0?Pkh/K#&BXua@|-$fHG3.QCJOYjz!+>RxA5^sgnUvd)"
+	shiftedCharsTHREE="HxR>EQqKt/WCrBl_TikyDAY6g9wen1sMG)|OPSa8z-F+.p0^37V&L2d(*joUc<@Z!f54?INmuXvJ$b%h\=#"
+	shiftedCharsFOUR="42gUiwe%IJT>CFVlLkm8G-W0b1pBD^AoxPcz5d\|YsjE/3Nt$)_HyhnR&+<=a(QS.Mq9#*?@Z76v!rKXufO"
+	passLen=pass.len
+	if type == "enc" then
+		if passLen < 5 then
+			pass=pass+"/30291949172649172647158"
+			shifted=shiftChars(pass,shiftedCharsZERO,allowedChars)+"0"
+		end if
+		if passLen > 5 or passLen == 5 then
+			pass=pass+"/14018738716961863141344"
+			shifted=shiftChars(pass,shiftedCharsONE,allowedChars)+"1"
+		end if
+		if passLen == 10 then
+			pass=pass+"/10210849175165987169487"
+			shifted=shiftChars(pass,shiftedCharsTWO,allowedChars)+"2"
+		end if
+		if passLen > 10 then
+			pass=pass+"/02910841705671976198764"
+			shifted=shiftChars(pass,shiftedCharsTHREE,allowedChars)+"3"
+		end if
+		if passLen == 15 or passLen > 15 then
+			pass=pass+"/08173479165691740176565"
+			shifted=shiftChars(pass,shiftedCharsFOUR,allowedChars)+"4"
+		end if
+		shift=shiftChars(shifted,shiftedChars,allowedChars)
+		return shift
+	else if type == "dec" then
+		dec=shiftChars(pass,allowedChars,shiftedChars)
+		if dec[-1] == "0" then
+			dec=shiftChars(dec[:-1],allowedChars,shiftedCharsZERO).split("/")[0]
+		else if dec[-1] == "1" then
+			dec=shiftChars(dec[:-1],allowedChars,shiftedCharsONE).split("/")[0]
+		else if dec[-1] == "2" then
+			dec=shiftChars(dec[:-1],allowedChars,shiftedCharsTWO).split("/")[0]
+		else if dec[-1] == "3" then
+			dec=shiftChars(dec[:-1],allowedChars,shiftedCharsTHREE).split("/")[0]
+		else if dec[-1] == "4" then
+			dec=shiftChars(dec[:-1],allowedChars,shiftedCharsFOUR).split("/")[0]
+		end if
+		return dec
+	end if
+end function
+
+decrypt = function(hash)
+	GetPassword = function(userPass)
+		password=cp.decipher(userPass)
+		return(password)
+	end function
+origFile = hash
+	if origFile.len < 32 then exit
+	lines=[origFile]
+	for line in lines
+		userPass=line.split(":")
+		if userPass.len == 2 then
+			user=userPass[0]
+			userPass=userPass[1]
+			password=GetPassword(userPass)
+			if not password then print("password for "+user+" not found")
+			if password then
+				password=user+":"+password
+				return password
+			end if
+		else
+			userPass=userPass[0]
+			password=GetPassword(userPass)
+			if not password then print ("could not decipher "+userPass)
+			if password then return password
+		end if
+	end for
+end function
+
+defaultScan=function(ml,num,results)
+	scan=mx.scan(ml)
+	for mem in scan
+		mems=mx.scan_address(ml,mem).split("Unsafe check: ")
+		for ent in mems
+			if ent == mems[0] then continue
+			exp=ent[ent.indexOf("<b>")+3:ent.indexOf("</b>")]
+			print(mem+" "+exp)
+			if not args then result=ml.overflow(mem,exp) else result=ml.overflow(mem,exp,args)
+			if typeof(result) == "shell" or typeof(result) == "computer" then
+				obj=typeof(result)
+				print(obj)
+				if obj=="shell" then rcomp=result.host_computer else rcomp=result
+				rfile=rcomp.File("/root")
+				ruser="guest"
+				if rfile and rfile.has_permission("w") then
+					ruser="root"
+				else
+					rfile=rcomp.File("/home")
+					if rfile then
+						for user in rfile.get_folders
+							if user.name == "guest" then continue
+							if user.has_permission("w") then ruser=user.name
+						end for
+					end if
+				end if
+				explan=rcomp.local_ip
+				exploit={}
+				exploit.num=num
+				exploit.obj=obj
+				exploit.user=ruser
+				exploit.mem=mem
+				exploit.lan=explan
+				if args then exploit.args=args
+				exploit.lib=lib
+				results.push(exploit)
+				globals.num=num+1
+			else if typeof(result) == "file" then
+				if not result.has_permission("w") then continue
+				exploit={}
+				exploit.num=num
+				exploit.obj=typeof(result)
+				exploit.user=result.name
+				exploit.mem=mem
+				exploit.exp=exp
+				exploit.lan="unknown"
+				if args then exploit.args=args
+				exploit.lib=lib
+				results.push(exploit)
+				globals.num=num+1
+			end if
+		end for
+	end for
+	return results
+end function
+
+exploits=get_shell.host_computer.File(current_path+"/msf.db")
+if not exploits then
+	print("It looks like you don't have a supported Metasploit exploit database.")
+	print("Would you like to connect to the server and download the latest database?")
+	opt=user_input("[Y/N]~$ ").lower
+	if opt == "y" then
+		server=get_shell.connect_service("72.248.196.250",22,"root","CAR9LtzG2bcy6GN")
+		if typeof(server) != "shell" then
+			print("Connection failed.")
+		else
+			print("Downloading database. . .\n")
+			server.scp("/root/msf.db",current_path,get_shell)
+			print("Downloaded!")
+		end if
+	else
+		print("Creating empty database file. . .")
+		get_shell.host_computer.touch(current_path,"msf.db")
+	end if
+end if
+
+exploitsf=get_shell.host_computer.File(current_path+"/msf.db")
+nums=exploitsf.get_content.split("\n").len-1
+//num=0
+exploitsenc=exploitsf.get_content.split("\n")
+// /[lib]/[ver]/[memory]/[vuln]/[type]
+exploits=[]
+for exp in exploitsenc
+	if exp == "" then continue
+	exp=exp.split("/")
+	exploit={}
+	exp.pull
+	exploit.lib=exp[0]
+	exploit.ver=exp[1]
+	exploit.mem=exp[2]
+	exploit.exp=exp[3]
+	exploit.obj=exp[4]
+	//exploit.num=num
+	exploits.push(exploit)
+	//num=num+1
+end for
+
+print("-=||||||||||||||||||||||||||||||||=-")
+print("-=[ metasploit v"+ver+"            ]=-")
+print("-=[ "+nums+" exploits found             ]=-")
+print("-=[ by clover                    ]=-")
+print("-=||||||||||||||||||||||||||||||||=-")
+print("-=[ Type ""help"" for a list of commands ]=-")
+
+currentShell=get_shell
+currentUser=active_user
+currentPath=current_path
+currExploitS="No exploit"
+currExploit=null
+origShell=1
+
+while 1
+shellType=typeof(currentShell)
+if shellType == "shell" then
+	comp=currentShell.host_computer
+	sstat="Shell"
+	cmdlist="- = Metasploit = -
+	help - Print this list
+	banner - Print a random logo
+	exploits - List available exploits
+	use [exploit] - Set an exploit as active
+	scan [address/local lib] (port) - Scan an address or local library
+- = Defaults = -
+	exit - Exit shell or MS
+	clr - Clear screen"
+else if shellType == "computer" then
+	comp=currentShell
+	sstat="Computer"
+	cmdlist="- = Metasploit = -
+	help - Print this list
+	banner - Print a random logo
+	exploits - List available exploits
+	use [exploit] - Set an exploit as active
+- = Defaults = -
+	exit - Exit shell or MS
+	clr - Clear screen"
+end if
+pubIp=comp.public_ip
+locIp=comp.local_ip
+
+print("\nMetasploit - ("+sstat+") - ("+currentUser+") - ["+currentPath+"]")
+TERM=user_input("{<color=red>"+currExploitS+"</color>}~$")
+SPLIT=TERM.split(" ")
+term=TERM.lower
+split=SPLIT[0].lower
+
+if term == "exit" then
+	if not origShell then
+		currentShell=get_shell
+		currentUser=active_user
+		currentPath=current_path
+	else
+		exit("-={Leaving Metasploit}=-")
+	end if
+end if
+if term == "help" then print(cmdlist)
+if term == "clr" then clear_screen
+if term == "banner" then print(logos[floor(rnd()*logos.len)])
+if term == "exploits" then
+	print("- = Exploits = -")
+	for ex in exploits
+		if ex.obj == "shell" then
+			color="white"
+		else if ex.obj == "computer" then
+			color="yellow"
+		else
+			color="grey"
+		end if
+		print("/<color=red>"+ex.lib+"</color>/<color=green>"+ex.ver+"</color>/"+ex.mem+"/"+ex.exp+"/<color="+color+">"+ex.obj+"</color>")
+	end for
+else if split == "use" then
+	if SPLIT.len > 2 then
+		print("Invalid command usage")
+		continue
+	end if
+	sel=SPLIT[1].split("/")
+	sel.pull
+	selLib=sel[0]
+	selVer=sel[1]
+	selMem=sel[2]
+	selExp=sel[3]
+	selObj=sel[4]
+	for ex in exploits
+		if ex.lib == selLib and ex.ver == selVer and ex.mem == selMem and ex.exp == selExp then
+			currExploit=exploits[exploits.indexOf(ex)]
+			currExploitS=SPLIT[1]
+			break
+		end if
+	end for
+else if split == "scan" then
+	if SPLIT.len == 1 then
+		print("- = Local libraries = -")
+		for file in comp.File("/lib/").get_files
+			print(file.name)
+		end for
+		continue
+	end if
+	localScan=1
+	if SPLIT.hasIndex(2) then localScan=0
+	if localScan then
+		if not origShell then
+			print("Cannot scan local libs on a connected system")
+			continue
+		end if
+		lib=SPLIT[1]
+		if not comp.File("/lib/"+lib) then
+			print("Lib does not exist")
+			print("Run scan with no parameters to list all libs")
+			continue
+		end if
+		ml=mx.load("/lib/"+lib)
+	else
+		ip=SPLIT[2]
+		port=SPLIT[3].to_int
+		if not is_valid_ip(ip) or not get_router(ip) then
+			print("Invalid IP")
+			continue
+		end if
+		if typeof(port) != "number" then
+			print("Invalid port")
+			continue
+		end if
+		ns=mx.net_use(ip,port)
+		ml=ns.dump_lib
+	end if
+	name=ml.lib_name
+	ver=ml.version
+	num=0
+	inDB=0
+	for ex in exploits
+		if ex.lib == name and ex.ver == ver then
+			inDB=1
+			break
+		end if
+	end for
+	if inDB then
+		print("Exploits already in database!")
+		print("If you are certain you wish to continue, we can clear the database of exploits for this lib and resume scanning")
+		confirm=user_input("[Y/N]~$").lower
+		if confirm == "y" then
+			for ex in exploits
+				if ex.lib == name and ex.ver == ver then exploits.remove(exploits.indexOf(ex))
+			end for
+		else
+			continue
+		end if
+	end if
+	scan=mx.scan(ml)
+	for mem in scan
+		mems=mx.scan_address(ml,mem).split("Unsafe check: ")
+		for ent in mems
+			if ent == mems[0] then continue
+			exp=ent[ent.indexOf("<b>")+3:ent.indexOf("</b>")]
+			print(mem+" "+exp)
+			result=ml.overflow(mem,exp)
+			if typeof(result) != "null" then
+				obj=typeof(result)
+				if obj == "number" and name != "kernel_router.so" then
+					obj="passwd"
+				else if obj == "number" and name == "kernel_router.so" then
+					obj="firewall"
+				end if
+				exploit={}
+				exploit.obj=obj
+				exploit.mem=mem
+				exploit.exp=exp
+				exploit.lib=lib
+				exploit.ver=ver
+				exploits.push(exploit)
+				num=num+1
+			end if
+		end for
+	end for
+	exploitsf.set_content("")
+	for ex in exploits
+		exploitsf.set_content(exploitsf.get_content+"/"+ex.lib+"/"+ex.ver+"/"+ex.mem+"/"+ex.exp+"/"+ex.obj+char(10))
+	end for
+end if
+end while

@@ -1,0 +1,16 @@
+//traceLib for ctf
+TraceLib={}
+TraceLib.storedHash=null
+
+
+TraceLib.analyze=function(shell,file)
+	print("Analyzing file...")
+	shell.launch(file.path,"ANALYZE")
+	TraceLib.storedHash=shell.host_computer.File(file.path+".alz").get_content
+end function
+
+
+TraceLib.decompile=function(shell,file)
+	print("
+	genRandomString=function(cont)
+end function

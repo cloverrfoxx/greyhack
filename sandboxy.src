@@ -1,0 +1,354 @@
+//S&boxy
+import_code("/root/BTC")
+ver="1.0.0"
+
+callSand=function()
+	globals.server=get_shell.connect_service
+	if typeof(server) != "shell" then exit("<color=red><b>Could not connect</b></color>")
+	globals.root=server.connect_service
+	if typeof(root) != "shell" then exit("<color=red><b>Could not connect</b></color>")
+	globals.sandbox=server.connect_service
+	if typeof(sandbox) != "shell" then exit("<color=red><b>Could not connect</b></color>")
+end function
+
+Sha256 = function(password)
+	
+	Blocks = [[0]]
+	i=0
+	e=0
+	while i < password.len
+		e=4
+		while e > 0 and password.hasIndex(i)
+			e=e-1
+			Blocks[-1][-1] = Blocks[-1][-1] + code(password[i])*256^e
+			i=i+1
+		end while
+		if e == 0 then
+			if Blocks[-1].len == 16 then Blocks = Blocks + [[0]] else Blocks[-1] = Blocks[-1] + [0]
+		end if
+	end while
+	
+	if e > 0 then
+		Blocks[-1][-1] = Blocks[-1][-1] + (2147483648/256^(4-e))
+	else
+		Blocks[-1][-1] = 2147483648
+	end if
+	
+	if Blocks[-1].len == 16 then Blocks = Blocks + [[0]]
+	while Blocks[-1].len != 15
+		Blocks[-1] = Blocks[-1] + [0]
+	end while
+	
+	Blocks[-1] = Blocks[-1] + [password.len*8]
+	
+	add = function(a, b)
+		return (a + b) % 4294967296
+	end function
+	
+	XOR = function(a, b)
+		return bitwise("^", floor(a/65536), floor(b/65536))*65536+bitwise("^", a%65536, b%65536)
+	end function
+	
+	AND = function(a, b)
+		return bitwise("&", floor(a/65536), floor(b/65536))*65536+bitwise("&", a%65536, b%65536)
+	end function
+	
+	OR = function(a, b)
+		return bitwise("|", floor(a/65536), floor(b/65536))*65536+bitwise("|", a%65536, b%65536)
+	end function
+	
+	NOT = function(n)
+		return 4294967295-n
+	end function
+	
+	Ch = function(x, y, z)
+		return OR(AND(x, y), AND(NOT(x), z))
+	end function
+	
+	Maj = function(x, y, z)
+		return OR(OR(AND(x, y), AND(x, z)), AND(y, z))
+	end function
+	
+	shr = function(n, shifts)
+		return floor(n/2^shifts)
+	end function
+	
+	rotr = function(n, rots)
+		rots = 2^rots
+		return (n % rots) * (4294967296/rots) + floor(n/rots)
+	end function
+	
+	sigma0 = function(n)
+		return XOR(XOR(rotr(n, 7), rotr(n, 18)), shr(n, 3))
+	end function
+	
+	sigma1 = function(n)
+		return XOR(XOR(rotr(n, 17), rotr(n, 19)), shr(n, 10))
+	end function
+	
+	SIGMA0 = function(n)
+		return XOR(XOR(rotr(n, 2), rotr(n, 13)), rotr(n, 22))
+	end function
+	
+	SIGMA1 = function(n)
+		return XOR(XOR(rotr(n, 6), rotr(n, 11)), rotr(n, 25))
+	end function
+	
+	K = []
+	K = K + [1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221]
+	K = K + [3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580]
+	K = K + [3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986]
+	K = K + [2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895]
+	K = K + [666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037]
+	K = K + [2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344]
+	K = K + [430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779]
+	K = K + [1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298]
+	
+	H = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225]
+	
+	for Block in Blocks
+		W = Block[0:]
+		
+		for i in range(16, 63)
+			W = W + [add(add(add(sigma1(W[i-2]), W[i-7]), sigma0(W[i-15])), W[i-16])]
+		end for
+		
+		a = H[0]
+		b = H[1]
+		c = H[2]
+		d = H[3]
+		e = H[4]
+		f = H[5]
+		g = H[6]
+		h = H[7]
+		
+		for i in range(0, 63)
+			T1 = add(add(add(add(SIGMA1(e), Ch(e, f, g)), h), K[i]), W[i])
+			T2 = add(SIGMA0(a), Maj(a, b, c))
+			h = g
+			g = f
+			f = e
+			e = add(d, T1)
+			d = c
+			c = b
+			b = a
+			a = add(T1, T2)
+		end for
+		H[0] = add(a, H[0])
+		H[1] = add(b, H[1])
+		H[2] = add(c, H[2])
+		H[3] = add(d, H[3])
+		H[4] = add(e, H[4])
+		H[5] = add(f, H[5])
+		H[6] = add(g, H[6])
+		H[7] = add(h, H[7])
+	end for
+	
+	hexTable = "0123456789abcdef"
+	output = ""
+	for i in H.indexes
+		for j in range(7)
+			output = output + hexTable[floor(H[i]/16^j) % 16]
+		end for
+	end for
+	return output
+end function
+
+getPath=function(path)
+	cpath=current_path
+	if path != "/" then
+		path=path.split("/")
+		if path[-1] == "" then path.pop
+		if path[0] == ".." then
+			if path.len == 1 then
+				path=parent_path(cpath)
+			else
+				path.pull
+				if parent_path(cpath) == "/" then
+					path=parent_path(cpath)+path.join("/")
+				else
+					path=parent_path(cpath)+"/"+path.join("/")
+				end if
+			end if
+		else if path[0] == "." then
+			if path.len == 1 then
+				path=cpath
+			else
+				path.pull
+				if cpath == "/" then
+					path=cpath+path.join("/")
+				else
+					path=cpath+"/"+path.join("/")
+				end if
+			end if
+		else if path[0] == "#" and home != "/" then
+			path.pull
+			path=home+"/"+path.join("/")
+		else if path[0] != "" then
+			if cpath == "/" then
+				path=cpath+path.join("/")
+			else
+				path=cpath+"/"+path.join("/")
+			end if
+		else if path[0] == "" then
+			path=path.join("/")
+		end if
+	end if
+	return path
+end function
+
+test=function()
+    print("<color=#309FFF>File test fee is 20 BTC</color>")
+    print("<color=#309FFF>Please input file path</color>")
+    path=getPath(user_input("<color=#309FFF>$ </color><color=white>"))
+    if not get_shell.host_computer.File(path) then exit("<color=#309FFF>File does not exist</color>")
+    if not get_shell.host_computer.File(path).has_permission("r") then exit("<color=#309FFF>No permissions to file</color>")
+    if get_shell.host_computer.File(path).is_folder then exit("<color=#309FFF>Cannot upload folders</color>")
+    if not get_shell.host_computer.File(path).is_binary then exit("<color=#309FFF>Not a program</color>")
+    output=BTC.transfer("sparki","20")
+    if not output.bool then exit("<color=#309FFF>Purchase failed</color>")
+    print("<color=#309FFF>Uploading file...</color>\n")
+    get_shell.scp(path,"/sandbox",root)
+    print("<color=#309FFF>Saving system state...</color>")
+    name=path.split("/")[-1]
+    newName=Sha256(name)
+    path="/sandbox/"+path.split("/")[-1]
+    newPath="/sandbox/"+newName
+    comp=root.host_computer
+    comp.File(path).chmod("o-wrx")
+    comp.File(path).chmod("u-wrx")
+    comp.File(path).chmod("g-wrx")
+    comp.File(path).set_owner("root")
+    comp.File(path).set_group("root")
+    comp.File(path).chmod("o+x")
+    comp.File(path).move("/sandbox",newName)
+
+	safeRepos=comp.File("/etc/apt/sources.txt").get_content.split("\n")[3:-2].len
+	
+	safeProcs=[]
+	procs=comp.show_procs.split("\n")[1:]
+	for proc in procs
+		proc=proc.split(" ")
+		safeProcs.push({"user": proc[0], "id": proc[1], "name": proc[-1]})
+	end for
+	
+	safeFiles=[]
+	newFiles=[]
+	rootf=comp.File("/")
+	newFiles=newFiles+rootf.get_folders+rootf.get_files
+	while newFiles.len
+		currFile=newFiles.pull
+		if currFile.path=="/sandbox" then continue
+		safeFiles.push({"path": currFile.path, "size": currFile.size})
+		
+		for file in currFile.get_folders+currFile.get_files
+			newFiles.push(file)
+		end for
+	end while
+
+    print("<color=#309FFF>Running file...</color>")
+
+    sandbox.launch(newPath)
+
+    print("<color=#309FFF>Run complete</color>")
+    print("<color=#309FFF>Checking filesystem...</color>")
+
+    newProcs=comp.show_procs.split("\n")[1:]
+
+    detected=0
+
+    newRepos=comp.File("/etc/apt/sources.txt").get_content.split("\n")[3:-2].len
+
+    if newRepos > safeRepos then
+        print("<color=#309FFF>Repository list changed</color>")
+        print("<color=#309FFF>Assuming safe</color>")
+    end if
+
+    for proc in newProcs
+        proc=proc.split(" ")
+        proc={"user": proc[0], "id": proc[1], "name": proc[-1]}
+        if safeProcs.indexOf(proc) == null then
+            print("<color=#309FFF>RSHELL DETECTED!</color>")
+            detected=1
+            comp.close_program(proc.id.to_int)
+            if proc.name == newName then
+                print("<color=#309FFF>Assuming false-positive</color>")
+                detected=0
+            end if
+        end if
+        wait(1)
+    end for
+
+    newFiles=[]
+    newFiles=newFiles+rootf.get_folders+rootf.get_files
+    while newFiles.len
+        currFile=newFiles.pull
+        file={"path": currFile.path, "size": currFile.size}
+
+        if currFile.path=="/sandbox" then continue
+        if safeFiles.indexOf(file) == null and not currFile.is_folder then
+            print("<color=#309FFF>FILE CHANGED! "+currFile.path+"</color>")
+            currFile.delete
+            detected=1
+        end if
+        for file in currFile.get_folders
+            newFiles.push(file)
+        end for
+    end while
+
+    print("<color=#309FFF>Test finished</color>")
+    comp.File(newPath).delete
+    if not detected then
+        print("<color=#309FFF>No viruses detected</color>")
+    else
+        print("<color=#309FFF>Virus detected</color>")
+    end if
+    print("<color=#309FFF>Proceed with caution</color>")
+	get_shell.start_terminal
+	exit()
+end function
+
+logo=function()
+print("<color=#1C5F96>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+print("<color=#309FFF>    _____   </color><color=white>___</color><color=#309FFF>       __                          </color>")
+print("<color=#309FFF>   / ___/  </color><color=white>( _ )</color><color=#309FFF>     / /_   ____    _  __   __  __</color>")
+print("<color=#309FFF>   \__ \  </color><color=white>/ __ \/|</color><color=#309FFF>  / __ \ / __ \  | |/_/  / / / /</color>")
+print("<color=#309FFF>  ___/ / </color><color=white>/ /_/  <</color><color=#309FFF>  / /_/ // /_/ / _>  <   / /_/ / </color>")
+print("<color=#309FFF> /____/  </color><color=white>\____/\/</color><color=#309FFF> /_.___/ \____/ /_/|_|   \__, /  </color>")
+print("<color=#309FFF>                                         /____/   </color>")
+print("<color=#1C5F96>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+end function
+
+apt=include_lib("/lib/aptclient.so")
+if apt then
+	sources=get_shell.host_computer.File("/etc/apt/sources.txt")
+	if sources and sources.has_permission("r") then
+		inSource=0
+		sources=sources.get_content.split("\n")
+		for source in sources
+			source=source.split(":")
+			if source[0] == "    ""68.223.109.53""" then inSource=1
+		end for
+		if not inSource then
+			apt.add_repo("205.54.111.56",1542)
+			apt.update
+		end if
+		out=apt.check_upgrade(program_path)
+		if out and typeof(out) == "number" then
+			print("<color=#309FFF>Updating...</color>\n")
+			apt.install(program_path.split("/")[-1],parent_path(program_path))
+			exit("<color=#309FFF>Please re-run S&boxy</color>")
+		end if
+	end if
+end if
+
+callSand()
+
+while 1
+    logo()
+    print("<i><color=#309FFF>[1] </color><color=white>Test file</color></i>")
+    print("<i><color=#309FFF>[2] </color><color=white>Exit</i></color></i>")
+    opt=user_input("<color=#309FFF>$ </color><color=white>")
+    if opt == "2" then exit("<color=#309FFF>Come back soon!</color>")
+    if opt == "1" then test()
+end while

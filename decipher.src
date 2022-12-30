@@ -1,0 +1,24 @@
+cp=include_lib("/lib/crypto.so")
+GetPassword = function(userPass)
+	password=cp.decipher(userPass)
+	return(password)
+end function
+if params.len != 1 then exit
+origFile = params[0]
+if origFile.len < 32 then exit
+lines=[origFile]
+for line in lines
+	userPass=line.split(":")
+	if userPass.len == 2 then
+		user=userPass[0]
+		userPass=userPass[1]
+		password=GetPassword(userPass)
+		if not password then print("password for "+user+" not found")
+		if password then print(user+":"+password)
+	else
+		userPass=userPass[0]
+		password=GetPassword(userPass)
+		if not password then print ("could not decipher "+userPass)
+		if password then print(password)
+	end if
+end for

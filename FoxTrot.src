@@ -1,0 +1,1506 @@
+import_code("/root/BytesDev")
+import_code("/root/minifox")
+import_code("/root/Fox.so")
+cob=get_custom_object
+if get_shell.host_computer.public_ip == "servIp" then exit("You really thought you could run this on the main server and I <b>WOULDN'T</b> have protection against that?")
+ver = "2.8.3"
+internal_ver=1
+fox="<color=#cf6f25>  _,-=._              /|_/|\n"
+fox=fox+"<color=#cf6f25>  `-.}   `=._,.-=-._.,  @ @._,\n"
+fox=fox+"<color=#cf6f25>     `._ _,-.   )      _,.-'\n"
+fox=fox+"<color=#cf6f25>        `    G.m-""^m`m'\n"
+moto ="<color=#445239><i>Make any system a FoxTrot!</color>"
+logo = "<color=#445239><b>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-<b></color>\n"
+logo = logo+"<color=#cf6f25><b>    ______                 ______                  __ </b></color>\n"
+logo = logo+"<color=#cf6f25><b>   / ____/  ____    _  __ /_  __/   _____  ____   / /_</b></color>\n"
+logo = logo+"<color=#cf6f25><b>  / /_     / __ \  | |/_/  / /     / ___/ / __ \ / __/</b></color>\n"
+logo = logo+"<color=#cf6f25><b> / __/    / /_/ / _>  <   / /     / /    / /_/ // /_  </b></color>\n"
+logo = logo+"<color=#cf6f25><b>/_/       \____/ /_/|_|  /_/     /_/     \____/ \__/  </b></color>\n"
+logo = logo+"<color=#445239><b>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-<b></color>\n"
+logo = logo+"<color=#445239>v. "+ver+"</color>\n"
+logo = logo+fox
+logo = logo+moto+"\n"
+logo = logo+"<color=#445239>By Clover (discord.gg/9qFt4KJgtE)</color>\n"
+print(logo)
+libs=FoxLib.General.LibFinder()
+mxf=libs.mxf
+cpf=libs.cpf
+if not mxf then exit("<color=#ff0000><b>-={FATAL ERROR: Could not locate library 'metaxploit' in the system!}=-</b></color>")
+mx=include_lib(mxf)
+print("<color=#6a855e><b>Library 'metaxploit' v."+mx.load(mxf).version+" loaded successfully!</b></color>")
+if not cpf then exit("<color=#ff0000><b>-={FATAL ERROR: Could not locate library 'crypto' in the system!}=-</b></color>")
+cp=include_lib(cpf)
+print("<color=#6a855e><b>Library 'crypto' v."+mx.load(cpf).version+" loaded successfully!</b></color>")
+apt = include_lib("/lib/aptclient.so")
+foxtrot=program_path
+scnln = "/usr/bin/ScanLan.exe"
+results=[]
+if not get_shell.host_computer.File(scnln) then scnln = current_path+"/ScanLan.exe"
+if not get_shell.host_computer.File(scnln) then scnln = null
+owner="Clover"
+
+if apt then
+	inSource=apt.show("30.30.30.30")
+	inSourceF=apt.show("32.165.47.151")
+	if inSource == "30.30.30.30 repository not found" then
+		apt.add_repo("30.30.30.30",1542)
+		apt.update
+	end if
+	if inSourceF == "32.165.47.151 repository not found" then
+		apt.add_repo("32.165.47.151")
+		apt.update
+	end if
+	if typeof(apt.check_upgrade(mxf)) == "number" and apt.check_upgrade(mxf) then apt.install("metaxploit.so",parent_path(mxf))
+	if typeof(apt.check_upgrade(foxtrot)) == "number" and apt.check_upgrade(foxtrot) then
+		print("FoxTrot updated! Autoupdating...\n")
+		apt.install("FoxTrot",parent_path(foxtrot))
+		exit("Please re-launch FoxTrot")
+	end if
+end if
+
+mx=include_lib(mxf)
+
+//login
+
+tfaa=function(fuser)
+	out={}
+	out.bool=1
+	cont=server.host_computer.File("/.FoxTrot/users/"+fuser+"/mail.enc").get_content
+	cont=FoxLib.General.Deserialize(cont)
+	print("<color=#6a855e>Verify email - "+cont.verify+"</color>")
+	
+	mconf=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>: ")
+	if Sha256(mconf) != cont.hashed then
+		out.bool=0
+		out.err="Could not validate email"
+		return out
+	end if
+	
+	mail=mail_login
+	if typeof(mail) == "string" then
+		out.bool=0
+		out.err="<color=red>-={FATAL ERROR: Could not send 2FA email}=-</b></color>"
+		return out
+	end if
+	
+	tfan=floor(rnd*2000000)
+	text="<color=red><b>=-= ALERT -=-</b></color>"+char(10)+"<color=red>This is an automated alert sent by FoxTrot</color>"+char(10)+"<color=red>ACCOUNT LOGIN DETECTED</color>"+char(10)+"<color=red>Account: </color><color=white>"+fuser+"</color>"+char(10)+"<color=red>IP: </color><color=white>"+get_shell.host_computer.public_ip+"</color>"+char(10)+"<color=red>Time: </color><color=white>["+current_date+"]</color>"+char(10)+"<color=red>2FA: </color><color=white>"+tfan+"</color>"
+	mail.send("null@null.null","FOXTROT ALERT",text)
+	
+	auth=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>2FA: ")
+	if auth != str(tfan) then
+		out.bool=0
+		out.err="Incorrect 2FA code."
+		return out
+	end if
+	return out
+end function
+
+login=function(fuser,fpass)
+	if server.host_computer.File("/.FoxTrot/users/"+fuser) == null then exit("<color=red><b>-={Could not verify your identity!}=-</b></color>")
+	userAcc=server.host_computer.File("/.FoxTrot/users/"+fuser+"/passwd.enc")
+	userData = userAcc.get_content
+	
+	if Sha256(fpass) != userData then exit("<color=red><b>-={Could not verify your identity!}=-</b></color>")
+	if server.host_computer.File("/.FoxTrot/users/"+fuser+"/license").get_content == "BAN" then exit("<color=red><b>-={This account has been permanently banned.}=-</b></color>")
+	tfa=server.host_computer.File("/.FoxTrot/users/"+fuser+"/sec.lvl").get_content
+	if tfa == "1" then
+		x=tfaa(fuser)
+		if not x.bool then exit x.err
+	end if
+end function
+
+checklgn=function()
+	out={}
+	out.bool=1
+	fpass=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>Password: ",1)
+	if Sha256(fpass) != fdata.get_content then
+		out.bool=0
+		out.err="<color=red><b>-={Could not verify your identity}=-</b></color>"
+		return out
+	end if
+	if fconf.get_content == "1" then return tfaa(fuser)
+	return out
+end function
+
+register=function()
+	allowedChars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+	print("<color=red><b>CAUTION: Be careful while creating an account! We cannot recover your password if you forget it!</b></color>")
+	globals.fuser=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>Username: ")
+	if fuser.len < 3 then
+		print("Username too short!")
+		wait(1)
+		return 0
+	end if
+	if fuser.len > 20 then
+		print("Username too long!")
+		wait(1)
+		return 0
+	end if
+	for chr in fuser
+		if allowedChars.indexOf(chr) == null then
+			print("Illegal characters used in username!")
+			wait(1)
+			return 0
+		end if
+	end for
+	if server.host_computer.File("/.FoxTrot/users/"+fuser) then
+		print("That username is taken!")
+		wait(1)
+		return 0
+	end if
+	globals.fpass=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>Password: ",1)
+	cpass=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>Confirm: ",1)
+	if cpass != fpass then
+		print("Passwords do not match")
+		wait(1)
+		return 0
+	end if
+	print("<color=#6a855e>Redeem your license under account setting after registering</color>")
+	cont=server.host_computer.File("/.FoxTrot/used_licenses").get_content
+	cont=FoxLib.General.Deserialize(cont)
+	cont[fuser]="FREE"
+	cont=FoxLib.General.Serialize(cont,1)
+	server.host_computer.File("/.FoxTrot/used_licenses").set_content(cont)
+	server.host_computer.create_folder("/.FoxTrot/users/",fuser)
+	server.host_computer.touch("/.FoxTrot/users/"+fuser,"passwd.enc")
+	server.host_computer.touch("/.FoxTrot/users/"+fuser,"mail.enc")
+	server.host_computer.touch("/.FoxTrot/users/"+fuser,"modules")
+	server.host_computer.touch("/.FoxTrot/users/"+fuser,"license")
+	server.host_computer.touch("/.FoxTrot/users/"+fuser,"sec.lvl")
+	server.host_computer.File("/.FoxTrot/users/").chmod("o-wrx",1)
+	server.host_computer.File("/.FoxTrot/users/").chmod("g-wrx",1)
+	server.host_computer.File("/.FoxTrot/users/").chmod("u-wrx",1)
+	server.host_computer.File("/.FoxTrot/users/"+fuser+"/sec.lvl").set_content("0")
+	server.host_computer.File("/.FoxTrot/users/"+fuser+"/passwd.enc").set_content(Sha256(fpass))
+	server.host_computer.File("/.FoxTrot/users/"+fuser+"/license").set_content("FREE")
+	server.host_computer.File("/.FoxTrot/users/"+fuser+"/mail.enc").set_content("none")
+	server.host_computer.File("/.FoxTrot/users/"+fuser+"/modules").set_content("[]")
+	return 1
+end function
+
+//end login
+
+getRandomIp=function()
+	octets=[]
+	for i in range(0,3)
+		if i == 0 then octets.push(ceil(rnd*223)) else octets.push(floor(rnd*256))
+	end for
+	return octets.join(".")
+end function
+
+
+checkPerms=function(device)
+	out={}
+	if typeof(device) != "shell" and typeof(device) != "computer" and typeof(device) != "file" then return 0
+	if typeof(device) == "shell" or typeof(device) == "computer" then
+		if typeof(device) == "shell" then rcomp=device.host_computer else rcomp=device
+		rfile=rcomp.File("/")
+		ruser="guest"
+		if rfile and rfile.has_permission("w") then
+			ruser="root"
+		else
+			rfile=rcomp.File("/home")
+			if rfile then
+				for user in rfile.get_folders
+					if user.name == "guest" then continue
+					if user.has_permission("w") then ruser=user.name
+				end for
+			end if
+		end if
+		out.user=ruser
+		out.lan=rcomp.local_ip
+		out.pub=rcomp.public_ip
+	end if
+	return out
+end function
+exploit=@FoxLib.VulnV.Exploit
+compression=@FoxLib.General.Compression
+
+getExploits=function()
+	globals.exploits=[]
+	if server then
+		e=""
+		globals.dbfile=servdb.get_files[-1]
+		for file in servdb.get_files
+			if file.get_content.len > 1 then e=e+compression(file.get_content,"decompress")
+		end for
+		for line in e.split("/")
+			if line == "" then continue
+			newLib={}
+			newLib.name=line.split("#")[0]
+			newLib.ver=line.split("#")[1].split(char(10))[0]
+			newLib.vulns=[]
+			vulns=line.split(":")
+			vulns.pull
+			for l in vulns
+				l=l.split("\n")
+				if l[0] == "" then continue
+				ex={"mem": 0, "vulns": []}
+				ex.mem=l.pull
+				for vuln in l
+					if vuln == "" then continue
+					ex.vulns.push(vuln)
+				end for
+				newLib.vulns.push(ex)
+			end for
+			exploits.push(newLib)
+		end for
+		return
+	end if
+end function
+
+Scan=function()
+	scanned=exploit(lmx,ml,args)
+	for mem in scanned.db.exploits
+		for ent in mem.vulns
+			result=ent.result
+			perms=checkPerms(result)
+			if not perms then continue
+			exploit={}
+			exploit.obj=result
+			exploit.user=perms.user
+			exploit.mem=mem.mem
+			exploit.exp=ent.vuln
+			exploit.lan=perms.lan
+			exploit.pub=perms.pub
+			if exlib then exploit.port=exlib.name else exploit.port=expport
+			if results.indexOf(exploit) != null then continue
+			results.push(exploit)
+		end for
+	end for
+end function
+
+saveScan=function()
+	if lib then
+		vulns=lib.vulns
+		for insec in vulns
+			mem=insec.mem
+			for vuln in insec.vulns
+				exp=vuln
+				if args then result=ml.overflow(mem,exp,args) else result=ml.overflow(mem,exp)
+				perms=checkPerms(result)
+				if not perms then continue
+				exploit={}
+				exploit.obj=result
+				exploit.user=perms.user
+				exploit.mem=mem
+				exploit.exp=exp
+				exploit.lan=perms.lan
+				exploit.pub=perms.pub
+				if exlib then exploit.port=exlib.name else exploit.port=expport
+				if results.indexOf(exploit) != null then continue
+				results.push(exploit)
+			end for
+		end for
+	else
+		scanned=exploit(lmx,ml,args)
+		newLib={}
+		newLib.name=scanned.db.name
+		newLib.ver=scanned.db.ver
+		newLib.vulns=[]
+		for mem in scanned.db.exploits
+			ex={}
+			ex.mem=mem.mem
+			ex.vulns=[]
+			for ent in mem.vulns
+				exp=ent.vuln
+				ex.vulns.push(exp)
+				result=ent.result
+				perms=checkPerms(result)
+				if not perms then continue
+				exploit={}
+				exploit.obj=result
+				exploit.user=perms.user
+				exploit.mem=mem.mem
+				exploit.exp=exp
+				exploit.lan=perms.lan
+				exploit.pub=perms.pub
+				if exlib then exploit.port=exlib.name else exploit.port=expport
+				if results.indexOf(exploit) != null then continue
+				results.push(exploit)
+			end for
+			newLib.vulns.push(ex)
+		end for
+		n="/"+newLib.name+"#"+newLib.ver+char(10)
+		for vuln in newLib.vulns
+			n=n+":"+vuln.mem+char(10)+vuln.vulns.join(char(10))+char(10)
+		end for
+		if server then
+			if dbfile.get_content.len > 1 then
+				if compression(compression(dbfile.get_content,"decompress")+n,"compress").len >= 160000 then
+					server.host_computer.touch("/root/exploits","exp"+server.host_computer.File("/root/exploits").get_files.len+1)
+					globals.dbfile=servdb.get_files[-1]
+				end if
+			end if
+		end if
+		if dbfile.get_content.len == 0 then dbfile.set_content(compression(n,"compress")) else dbfile.set_content(compression(compression(dbfile.get_content,"decompress")+n,"compress"))
+	end if
+end function
+
+Sha256=@FoxLib.Crypto.Sha256
+
+decrypt = @FoxLib.VulnV.Decipher
+
+printMenu=function(items)
+	menu=[]
+	for i in range(0,items.len-1)
+		menu.push("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>"+(i+1)+"</color><color=#6A855E>] </color><color=#cf6f25>"+items[i]+"</color>")
+	end for
+	menu.push("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>0</color><color=#6A855E>] </color><color=#cf6f25>Exit</color>")
+	menu.push("<color=#445239>|</color>")
+	print(menu.join("\n"))
+end function
+
+print("<color=#6a855e><b>Connecting to FoxTrot servers. . .</b></color>")
+proxy=get_shell.connect_service
+if typeof(proxy) != "shell" then exit("<color=red><b>-={Error: Could not establish connection}=-</b></color>")
+
+proxy.host_computer.touch("/var","system.bak")
+bak=proxy.host_computer.File("/var/system.bak")
+bak.set_content(FoxLib.General.rndstring(512))
+bak.move("/var/system.log")
+wait(.2)
+log=proxy.host_computer.File("/var/system.log")
+log.chmod("o-wrx")
+log.chmod("g-wrx")
+log.chmod("u-wrx")
+
+server=proxy.connect_service
+if typeof(server) != "shell" then exit("<color=red><b>-={Error: Could not establish connection}=-</b></color>")
+print("<color=#6a855e><b>Connection established!</b></color>")
+if internal_ver != server.host_computer.File("/root/ver").get_content.val then exit("<color=red><b>-={Error: Unsupported FoxTrot version.}=-</b></color>")
+server.launch("/root/rcon")
+scp=cob.server.cp
+error=function(reason)
+	out={}
+	out.bool=0
+	out.err=reason
+	return out
+end function
+
+if server.host_computer.File("/.FoxTrot/maintenance").get_content != "0" then exit("<color=red><b>-={"+server.host_computer.File("/.FoxTrot/maintenance").get_content+"}=-</b></color>")
+
+if launch_path != program_path then
+	print("<color=red><b>Invalid launch program detected, account may be compromised</b></color>")
+	wait(1)
+end if
+
+if params.len > 0 then
+	fuser=params[0]
+	if params.len > 1 then fpass=params[1] else fpass=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>Password: ",1)
+	login(fuser,fpass)
+else
+	while 1
+		clear_screen
+		print(logo)
+		print("<color=#6A855E>[</color><color=#cf6f25>Login</color><color=#6A855E>] or [</color><color=#cf6f25>Register</color><color=#6A855E>]</color>")
+		print("<color=#6A855E><i>Run FoxTrot as such (foxtrot [username] [password]) to log in quicker!</i></color>")
+		print("<color=#6A855E>Buy a license at www.unityfe.org!</color>")
+		opt=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>: ").lower
+		if opt == "login" then
+			fuser=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>Username: ")
+			fpass=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>Password: ",1)
+			login(fuser,fpass)
+			break
+		end if
+		
+		if opt == "register" then
+			check=register()
+			if check then break
+		end if
+	end while
+end if
+
+fmods=server.host_computer.File("/.FoxTrot/users/"+fuser+"/modules")
+fdata=server.host_computer.File("/.FoxTrot/users/"+fuser+"/passwd.enc")
+fconf=server.host_computer.File("/.FoxTrot/users/"+fuser+"/sec.lvl")
+fmail=server.host_computer.File("/.FoxTrot/users/"+fuser+"/mail.enc")
+ls=server.host_computer.File("/.FoxTrot/users/"+fuser+"/license")
+servdb=server.host_computer.File("/root/exploits")
+
+clear=function()
+	clear_screen
+	print logo
+end function
+
+wait(2)
+
+while 1
+	opt=null
+	clear
+	print("<color=#445239>/</color> <color=#cf6f25>Main menu</color>")
+	printMenu(["Hacks","Viruses","Utility","Security","Account","Shop","Credits"])
+	opt=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>#: ")
+	if opt == "0" then exit("<color=#6a855e><b>-={Leaving FoxTrot, come back soon!}=-</b></color>")
+
+	if opt == "7" then
+		print("<color=#445239>/</color> <color=#cf6f25>Credits</color>")
+		print("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>Clover</color><color=#6a855e>] Developer and Publisher of FoxTrot</color>")
+		print("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>RedFox.py</color><color=#6a855e>] UI inspiration</color>")
+		print("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>jhook/Plu70</color><color=#6a855e>] MiniFoxOS piping code and minor command inspiration</color>")
+		print("<color=#445239>\</color> <color=#cf6f25>Honorable mentions</color>")
+		print("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>Trashed</color><color=#6a855e>] Alpha testing</color>")
+		print("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>tester_name_here</color><color=#6a855e>] Alpha testing</color>")
+		print("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>And you</color><color=#6a855e>] for downloading FoxTrot!</color>")
+		user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>Press any key to exit:",0,1)
+		opt=null
+	end if
+
+	//if opt == "6" then
+	//	while 1
+	//		opt=null
+	//		clear
+	//		print("<color=#445239>/</color> <color=#cf6f25>FoxTrot Module Shop</color>")
+	//		mods=FoxLib.General.Deserialize(fmods.get_content)
+	//		if mods.indexOf("1") != null then break
+//
+	//		//hacks
+	//		if mods.indexOf("dict") == null then print("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>DictSSH</color><color=#6A855E>] </color><color=#cf6f25>50 Bytes</color>")
+	//		//virus
+	//		if mods.indexOf("0") == null and mods.indexOf("rsh") == null then print("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>RSheller</color><color=#6A855E>] </color><color=#cf6f25>5 Bytes</color>")
+	//		//sec
+	//		if mods.indexOf("vd") == null then print("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>Fyrwall</color><color=#6A855E>] </color><color=#cf6f25>100 Bytes</color>")
+	//		if mods.indexOf("fvpn") == null then print("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>FoxVPN</color><color=#6A855E>] </color><color=#cf6f25>100 Bytes</color>")
+	//		if mods.indexOf("corr") == null then print("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>Corrupt</color><color=#6A855E>] </color><color=#cf6f25>5 Bytes</color>")
+	//		print("<color=#445239>|</color>")
+	//		print("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>0</color><color=#6A855E>] </color><color=#cf6f25>Back</color>")
+	//		opt=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>: ").lower
+	//		if opt == "0" then;opt=null;break;end if
+//
+	//		if opt == "dictssh" then
+	//			if mods.indexOf("dict") != null then continue
+	//			print("<color=red><b>YOU ARE PURCHASING : DictSSH : FOR : 50 Bytes : CONTINUE?</color>")
+	//			opt=user_input("<color=red>[y/N]$").lower
+	//			if opt != "y" then continue
+	//			output=Bytes.transfer(owner,"50")
+	//			if output.bool then
+	//				print(output.out)
+	//			else
+	//				print(output.err)
+	//				wait(2)
+	//				continue
+	//			end if
+	//			mods.push("dict")
+	//			fmods.set_content(str(mods))
+	//		end if
+//
+	//		if opt == "fyrwall" then
+	//			if mods.indexOf("vd") != null then continue
+	//			print("<color=red><b>YOU ARE PURCHASING : Fyrwall : FOR : 100 Bytes : CONTINUE?</color>")
+	//			opt=user_input("<color=red>[y/N]$").lower
+	//			if opt != "y" then continue
+	//			output=Bytes.transfer(owner,"100")
+	//			if output.bool then
+	//				print(output.out)
+	//			else
+	//				print(output.err)
+	//				wait(2)
+	//				continue
+	//			end if
+	//			mods.push("vd")
+	//			fmods.set_content(str(mods))
+	//		end if
+//
+	//		if opt == "rsheller" then
+	//			if mods.indexOf("0") != null or mods.indexOf("rsh") != null then continue
+	//			print("<color=red><b>YOU ARE PURCHASING : RSheller : FOR : 5 Bytes : CONTINUE?</color>")
+	//			opt=user_input("<color=red>[y/N]$").lower
+	//			if opt != "y" then continue
+	//			output=Bytes.transfer(owner,"5")
+	//			if output.bool then
+	//				print(output.out)
+	//			else
+	//				print(output.err)
+	//				wait(2)
+	//				continue
+	//			end if
+	//			mods.push("rsh")
+	//			fmods.set_content(str(mods))
+	//		end if
+//
+	//		if opt == "foxvpn" then
+	//			if mods.indexOf("fvpn") != null then continue
+	//			print("<color=red><b>YOU ARE PURCHASING : FoxVPN : FOR : 100 Bytes : CONTINUE?</color>")
+	//			opt=user_input("<color=red>[y/N]$").lower
+	//			if opt != "y" then continue
+	//			output=Bytes.transfer(owner,"100")
+	//			if output.bool then
+	//				print(output.out)
+	//			else
+	//				print(output.err)
+	//				wait(2)
+	//				continue
+	//			end if
+	//			mods.push("fvpn")
+	//			fmods.set_content(str(mods))
+	//		end if
+//
+	//		if opt == "corrupt" then
+	//			if mods.indexOf("corr") != null then continue
+	//			print("<color=red><b>YOU ARE PURCHASING : Corrupt : FOR : 5 Bytes : CONTINUE?</color>")
+	//			opt=user_input("<color=red>[y/N]$").lower
+	//			if opt != "y" then continue
+	//			output=Bytes.transfer(owner,"5")
+	//			if output.bool then
+	//				print(output.out)
+	//			else
+	//				print(output.err)
+	//				wait(2)
+	//				continue
+	//			end if
+	//			mods.push("corr")
+	//			fmods.set_content(str(mods))
+	//		end if
+	//	end while
+	//end if//shop
+
+	if opt == "1" then
+		while 1
+			opt=null
+			clear
+			print("<color=#445239>/</color> <color=#cf6f25>Exploits and the like</color>")
+			printMenu(["MetaXploit","DictSSH"])
+			opt=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>#: ")
+			if opt == "0" then;opt=null;break;end if
+			if opt == "1" then
+				while 1
+					clear_screen
+					print("<color=#445239>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+					print("<color=#cf6f25>    __  ___         __            _  __             __           _    __ </color>")
+					print("<color=#cf6f25>   /  |/  /  ___   / /_  ____ _  | |/ /    ____    / /  ____    (_)  / /_</color>")
+					print("<color=#cf6f25>  / /|_/ /  / _ \ / __/ / __ `/  |   /    / __ \  / /  / __ \  / /  / __/</color>")
+					print("<color=#cf6f25> / /  / /  /  __// /_  / /_/ /  /   |    / /_/ / / /  / /_/ / / /  / /_  </color>")
+					print("<color=#cf6f25>/_/  /_/   \___/ \__/  \__,_/  /_/|_|   / .___/ /_/   \____/ /_/   \__/  </color>")
+					print("<color=#cf6f25>                                       /_/                               </color>")
+					print("<color=#445239>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+					print("<color=#6A855E><b>Usage: [ REMOTE ] OR [ PRIVESC ] -=- [Back]</b></color>")
+					print("<color=#6A855E><b>REMOTE - Remote attack, IP or DOMAIN</b></color>")
+					print("<color=#6A855E><b>PRIVESC - Local attack, all libs in /lib</b></color>")
+					choice=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>Choice: ")
+					if choice.lower == "back" then break
+					globals.results=[]
+					globals.exlib=[]
+					globals.expport=null
+					quick=0
+
+					mls=[]
+					if choice.lower == "privesc" then
+						if not get_shell.host_computer.File("/lib") then continue
+						for l in get_shell.host_computer.File("/lib").get_files
+							l=l.path
+							if typeof(mx.load(l)) == "MetaLib" then mls.push(mx.load(l))
+						end for
+					else if choice.lower == "remote" then
+						ip=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>IP: ")
+						if not ip.len then
+							print("<color=red><b>-={Error: Invalid IP}=-</b></color>")
+							wait(1)
+							continue
+						end if
+						if ip[:3] == "www" then ip=nslookup(ip)
+						if not is_valid_ip(ip) then
+							print("<color=red><b>-={Error: Invalid IP}=-</b></color>")
+							wait(1)
+							continue
+						end if
+						islan=is_lan_ip(ip)
+						router=get_router(ip)
+						if islan then router=get_router
+						if not router then
+							print("<color=red><b>-={Error: Invalid IP}=-</b></color>")
+							wait(1)
+							continue
+						end if
+						rver=router.kernel_version
+						fwr=router.firewall_rules
+						if islan then
+							ports=router.device_ports(ip)
+						else
+							ports=router.used_ports
+						end if
+						ips=[]
+						if ip != router.local_ip then
+							hport=router.device_ports(router.local_ip)[0]
+							m={}
+							m.ip=router.local_ip
+							m.ports=[hport]
+							ips.push(m)
+							m=null
+						end if
+						fwinfo="action port source dest"
+						for rules in fwr
+							fwinfo=fwinfo+"\n"+rules
+						end for
+						extinfo="<color=white>"+ip+"</color>"
+						info="lan port status service version"
+						print(extinfo)
+						if fwr then print(format_columns(fwinfo))
+						for port in ports
+							inm=0
+							for m in ips
+								if m.ip == port.get_lan_ip then
+									m.ports.push(port)
+									inm=1
+								end if
+							end for
+							if not inm then
+								m={}
+								m.ip=port.get_lan_ip
+								m.ports=[port]
+								ips.push(m)
+							end if
+						end for
+						for m in ips
+							ports=m.ports
+							mip=m.ip
+							info=info+"\n"+mip+" /"
+							if mip[-2:] == ".1" then info=info+"\n |0 routed router "+rver
+							for port in ports
+								service=router.port_info(port)
+								status="routed"
+								if port.is_closed then status="closed"
+								info=info+"\n |"+port.port_number+" "+status+" "+service
+							end for
+						end for
+						if not islan or ip[-2:] == ".1" then; for sub in router.devices_lan_ip
+							subIn=0
+							for m in ips
+								if sub == m.ip then subIn=1
+							end for
+							if subIn then continue
+							info=info+"\n"+sub
+						end for;end if
+						print(format_columns(info)+"\n")
+						whoisinfo=whois(ip).split("\n")
+						print("WhoIs results")
+						if whoisinfo.len < 3 then
+							print("<color=#6A855E>Could not perform WhoIs operation</color>")
+						else
+							print("<color=#6A855E>"+whoisinfo[0]+"<br>"+whoisinfo[1]+"<br>"+whoisinfo[2]+"</color>")
+						end if
+
+						expport=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>Port#: ")
+						if expport.lower == "back" then break
+						globals.expport=expport.to_int
+						if typeof(expport) != "number" then
+							print("<color=red><b>-={Error: Invalid port number}=-</b></color>")
+							wait(1)
+							continue
+						end if
+						ns=mx.net_use(ip,expport)
+						if not ns then
+							print("<color=red><b>-={Error: Could not establish net session}=-</b></color>")
+							wait(1)
+							continue
+						end if
+						mls.push(ns.dump_lib)
+					else
+						continue
+					end if
+					print("<color=#445239>Exploit arguments, for password change exploit or local ip with router exploits</color>")
+					print("<color=#445239>Leave blank for normal exploits</color>")
+					args=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>Args: ")
+					if args.lower == "back" then break
+					if args == "" then args=null
+					if not mls.len then 
+						print("<color=red><b>-={Error: No exploits found}=-</b></color>")
+						wait(1)
+						continue
+					end if
+
+					for ml in mls
+						globals.ml=ml
+						print("Scanning lib: "+ml.lib_name+" v."+ml.version)
+						if server then
+							getExploits
+							lib=null
+							for dblib in exploits
+								if ml.lib_name == dblib.name and ml.version == dblib.ver then
+									lib=dblib
+									break
+								end if
+							end for
+							//mods=FoxLib.General.Deserialize(fmods.get_content)
+							//if mods.indexOf("1") == null and mods.indexOf("0") == null and not quick then
+							//	print("<color=#6a855e>Quick exploit? (10 Bytes)</color>")
+							//	quick=user_input("<color=#445239>[y/N]$").lower
+							//	if quick == "y" then quick=2 else quick=0
+							//else
+							//	quick=1
+							//end if
+							//if quick == 2 then
+							//	output=Bytes.transfer(owner,"10")
+							//	if output.bool then
+							//		print(output.out)
+							//		quick=1
+							//	else
+							//		print(output.err)
+							//		quick=0
+							//	end if
+							//end if
+							//if quick then
+							//	server.launch("/root/rcon")
+							//	cmx=cob.server.mx
+							//else
+							//	cmx=mx
+							//end if
+							cmx=mx
+						end if
+						globals.lmx=cmx
+						if quick then
+							getExploits
+							lib=null
+							for dblib in exploits
+								if ml.lib_name == dblib.name and ml.version == dblib.ver then
+									lib=dblib
+									break
+								end if
+							end for
+							saveScan()
+						else
+							Scan()
+						end if
+					end for
+
+					rinfo=[["<color=#445239>[Num]","[Object]","[Perms]","[Lan]","[PubIP]","[Port]</color>"].join(" ")]
+					num=1
+					for ex in results
+						rinfo.push(["<color=#6A855E>["+num+"]",ex.obj,ex.user,ex.lan,ex.pub,ex.port+"</color>"].join(" "))
+						num=num+1
+					end for
+					print(format_columns(rinfo.join("\n")))
+					while 1
+						if results.len == 0 then
+							print("<color=red><b>-={No exploits found}=-</b></color>")
+							wait(1)
+							break
+						end if
+						ind=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>Num#: ")
+						if ind.lower == "back" then break
+						ind=ind.to_int
+						if typeof(ind) != "number" then
+							print("<color=red><b>-={Invalid exploit number}=-</b></color>")
+							wait(1)
+							continue
+						end if
+						if ind <= 0 or ind > results.len then
+							print("<color=red><b>-={Invalid exploit number}=-</b></color>")
+							wait(1)
+							continue
+						end if
+						ind=ind-1
+						ex=results[ind]
+						shell=ex.obj
+						user=ex.user
+						minifox(shell,user)
+						break
+					end while
+				end while
+			end if
+
+			if opt == "2" then
+				//mods=FoxLib.General.Deserialize(fmods.get_content)
+				//if mods.indexOf("1") == null and mods.indexOf("dict") == null then
+				//	print("<color=#6a855e>Could not verify ownership of this module! Please purchase it in the Shop</color>")
+				//	wait(2)
+				//	continue
+				//end if
+				while 1
+					clear_screen
+					print("<color=#445239>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+					print("<color=#cf6f25>    ____     _           __    _____   _____    __  __</color>")
+					print("<color=#cf6f25>   / __ \   (_)  _____  / /_  / ___/  / ___/   / / / /</color>")
+					print("<color=#cf6f25>  / / / /  / /  / ___/ / __/  \__ \   \__ \   / /_/ / </color>")
+					print("<color=#cf6f25> / /_/ /  / /  / /__  / /_   ___/ /  ___/ /  / __  /  </color>")
+					print("<color=#cf6f25>/_____/  /_/   \___/  \__/  /____/  /____/  /_/ /_/   </color>")
+					print("<color=#445239>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+					print("<color=#445239><b>Usage: [IP_or_DOMAIN] -=- [Back]</b></color>")
+					ip=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>IP: ")
+					if ip.lower == "back" then break
+					if ip[:3] == "www" then ip=nslookup(ip)
+					islan=is_lan_ip(ip)
+					check=get_router(ip)
+					if islan then check=get_router
+					if not check then
+						print("<color=red><b>-={Error: Invalid IP}=-</b></color>")
+						wait(1)
+						continue
+					end if
+					port=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>Port: ")
+					if port.lower == "back" then break
+					port=port.to_int
+					if typeof(port) != "number" then
+						print("<color=red><b>-={Error: Invalid port}=-</b></color>")
+						wait(1)
+						continue
+					end if
+					ns=mx.net_use(ip,port)
+					if not ns then
+						print("<color=red><b>-={Error: Invalid port}=-</b></color>")
+						wait(1)
+						continue
+					end if
+					if ns.dump_lib.lib_name != "libssh.so" then
+						print("<color=red><b>-={Error: Invalid port}=-</b></color>")
+						wait(1)
+						continue
+					end if
+					user=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>User: ")
+					passwds=server.host_computer.File("/root/passwds")
+					passwd=[]
+					for file in passwds.get_files
+						cont=FoxLib.General.Compression(file.get_content,"decompress").split(char(10))
+						passwd=passwd+cont
+					end for
+					pnum=passwd.len
+					num=1
+					for pass in passwd
+						if pass=="" then continue
+						print("<color=#6a855e>Attempting password "+pass+" "+num+"/"+pnum+"</color>")
+						num=num+1
+						attempt=get_shell.connect_service(ip,port,user,pass,"ssh")
+						if typeof(attempt) == "shell" then
+							print("<color=#6a855e><b>-=-= Password found! "+pass+" =-=-</b></color>")
+							minifox(attempt)
+						end if
+					end for
+					print("<color=red><b>-={Error: Could not establish connection}=-</b></color>")
+					wait(1)
+					break
+				end while
+			end if
+		end while
+	end if//exploits
+
+	if opt == "2" then
+		while 1
+			opt=null
+			clear
+			print("<color=#445239>/</color> <color=#cf6f25>Viruses</color>")
+			printMenu(["RSheller"])
+			opt=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>: ")
+			if opt == "0" then;opt=null;break;end if
+			if opt == "1" then
+				//mods=FoxLib.General.Deserialize(fmods.get_content)
+				//if mods.indexOf("1") == null and mods.indexOf("0") == null and mods.indexOf("rsh") == null then
+				//	print("<color=#6a855e>Could not verify ownership of this module! Please purchase it in the Shop</color>")
+				//	wait(2)
+				//	continue
+				//end if
+				while 1
+					opt=null
+					clear_screen
+					print("<color=#445239>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+					print("<color=#cf6f25>    ____    _____    __            __    __              </color>")
+					print("<color=#cf6f25>   / __ \  / ___/   / /_   ___    / /   / /  ___    _____</color>")
+					print("<color=#cf6f25>  / /_/ /  \__ \   / __ \ / _ \  / /   / /  / _ \  / ___/</color>")
+					print("<color=#cf6f25> / _, _/  ___/ /  / / / //  __/ / /   / /  /  __/ / /    </color>")
+					print("<color=#cf6f25>/_/ |_|  /____/  /_/ /_/ \___/ /_/   /_/   \___/ /_/     </color>")
+					print("<color=#445239>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+					print("<color=red><b>it is HIGHLY RECOMMENDED to NOT RUN an RShell Client on your home system!</b></color>"+char(10))
+					print("<color=red><b>RShell Interface REQUIRES the system to have the hackshop RShell server running!</b></color>"+char(10))
+					print("<color=red><b>it is HIGHLY RECOMMENDED to NOT RUN an RShell Server on your home system!</b></color>")
+					print("<color=#445239>/</color> <color=#cf6f25>RSheller Menu</color>")
+					printMenu(["Interface","Infect"])
+					opt=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>#: ")
+					if opt == "0" then;opt=null;break;end if
+					if opt == "1" then
+						shells=[]
+						check=include_lib("/lib/librshell.so")
+						if not check then
+							print("<color=red><b>-={librshell.so not found, bailing out}=-</b></color>")
+							wait(1)
+							continue
+						end if
+						while shells.len == 0
+							shells=mx.rshell_server
+						end while
+						opt=null
+						print(shells.len+" shells")
+						rsinfo="num pubip locip user\n"
+						for i in shells
+							rsinfo=rsinfo+char(10)+(__i_idx+1)+"| "+i.host_computer.public_ip+" "+i.host_computer.local_ip+" "+checkPerms(i).user
+						end for
+						print(format_columns(rsinfo))
+						while not opt or opt > shells.len or opt <= 0
+							opt=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>Num#: ")
+							if opt.lower == "back" then break
+							opt=opt.to_int
+						end while
+						if typeof(opt) != "number" then continue
+						print("<color=#6a855e>Starting shell #"+opt+"</color>")
+						minifox(shells[opt-1],checkPerms(shells[opt-1]).user)
+						opt=null
+					end if
+					if opt == "2" then
+						ip=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>RShell Server IP: ")
+						port=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>RShell port: ")
+						if port.lower == "back" then continue
+						port=port.to_int
+						if typeof(port) != "number" then
+							print("<color=red><b>-={Error: Invalid port}=-</b></color>")
+							wait(1)
+							continue
+						end if
+						taskname=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>Process name: ")
+						mx.rshell_client(ip,port,taskname)
+					end if
+				end while
+			end if
+		end while
+	end if//viruses
+
+	if opt == "3" then
+		while 1
+			opt=null
+			clear
+			print("<color=#445239>/</color> <color=#cf6f25>Utilities</color>")
+			printMenu(["Sniffer"])
+			opt=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>: ")
+			if opt == "0" then;opt=null;break;end if
+			if opt == "1" then
+				while 1
+					clear_screen
+					print("<color=#445239>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+					print("<color=#cf6f25>   _____            _     ____    ____              </color>")
+					print("<color=#cf6f25>  / ___/   ____    (_)   / __/   / __/  ___    _____</color>")
+					print("<color=#cf6f25>  \__ \   / __ \  / /   / /_    / /_   / _ \  / ___/</color>")
+					print("<color=#cf6f25> ___/ /  / / / / / /   / __/   / __/  /  __/ / /    </color>")
+					print("<color=#cf6f25>/____/  /_/ /_/ /_/   /_/     /_/     \___/ /_/     </color>")
+					print("<color=#445239>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+					print("<color=#6A855E><b>Usage: [ Save Encode.src Y/N ] -=- [Back]</b></color>")
+					opt=user_input("<color=#6A855E>[Y/n]$").lower
+					if opt == "back" then break
+					if opt != "n" then save=1 else save=0
+					print("<color=#6A855E>Waiting for network activity...</color>")
+					sniff=mx.sniffer(save)
+					print(sniff)
+					user_input("<color=#6a855e>Press any key to continue</color>")
+				end while
+			end if
+		end while
+	end if//utils while
+
+	if opt == "4" then
+		while 1
+			opt=null
+			clear
+			print("<color=#445239>/</color> <color=#cf6f25>System Security</color>")
+			printMenu(["Fyrwall","FoxVPN","Corrupt"])
+			opt=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>: ")
+			if opt == "0" then;opt=null;break;end if
+			if opt == "1" then
+				//mods=FoxLib.General.Deserialize(fmods.get_content)
+				//if mods.indexOf("1") == null and mods.indexOf("vd") == null then
+				//	print("<color=#6a855e>Could not verify ownership of this module! Please purchase it in the Shop</color>")
+				//	wait(2)
+				//	continue
+				//end if
+				while 1
+					clear_screen
+					print("<color=#445239>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+					print("<color=#cf6f25>    ______                                       __    __</color>")
+					print("<color=#cf6f25>   / ____/   __  __   _____ _      __  ____ _   / /   / /</color>")
+					print("<color=#cf6f25>  / /_      / / / /  / ___/| | /| / / / __ `/  / /   / / </color>")
+					print("<color=#cf6f25> / __/     / /_/ /  / /    | |/ |/ / / /_/ /  / /   / /  </color>")
+					print("<color=#cf6f25>/_/        \__, /  /_/     |__/|__/  \__,_/  /_/   /_/   </color>")
+					print("<color=#cf6f25>          /____/                                         </color>")
+					print("<color=#445239>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+					print("<color=#6A855E><b>Usage: [ -s / -h ] -=- [Back]</b></color>")
+					print("<color=#6a855e><b>WARNING - Secure HOME removes permissions from EVERYTHING, forcing you to use sudo -s for everything. Be careful</b></color>")
+					print("<color=#6A855E><b>-s: secure SERVER</b></color>")
+					print("<color=#6A855E><b>-h: secure HOME</b></color>")
+					print("<color=#6A855E><b>Make sure you use the right one!</b></color>")
+					if active_user != "root" then
+						print("<color=red><b>-={Error: Root user required}=-</b></color>")
+						wait(1)
+						break
+					end if
+					opt=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>: ").lower
+					if opt == "back" then break
+					if opt != "-s" and opt != "-h" then
+						print("<color=red><b>-={Error: Invalid selection}=-</b></color>")
+						wait(1)
+						continue
+					end if
+					if opt == "-b" then home=1
+					if opt == "-s" then home=0
+					if user_mail_address then home=1
+					print("<color=#6A855E>Fyrwall Security</color>")
+					print("<color=#6A855E>Securing system...</color>")
+					comp=get_shell.host_computer
+					if comp.File("/etc/passwd") then comp.File("/etc/passwd").delete
+					if comp.File("/etc/apt/sources.txt") and comp.File("/etc/apt/sources.txt").has_permission("r") and comp.File("/etc/apt/sources.txt").has_permission("w") then
+						sources=comp.File("/etc/apt/sources.txt")
+						r=sources.get_content.split("\n")
+						r[1]="  ""official_server"": false,"
+						sources.set_content(r.join(char(10)))
+					end if
+					root=comp.File("/")
+					root.chmod("o-wrx",1)
+					root.chmod("g-wrx",1)
+					root.chmod("u-wrx",1)
+					root.set_owner("root",1)
+					root.set_group("root",1)
+					if home then
+						root.chmod("g+x",1)
+						if comp.File("/usr/bin") then comp.File("/usr/bin").chmod("g+rx",1)
+					else
+						if comp.File("/home") then comp.File("/home").delete
+					end if
+					if comp.File("/lib/kernel_module.so") then comp.File("/lib/kernel_module.so").delete
+					print("<color=#6A855E>System secured</color>")
+					wait(1)
+					break
+				end while
+			end if
+
+			if opt == "2" then
+				//mods=FoxLib.General.Deserialize(fmods.get_content)
+				//if mods.indexOf("1") == null and mods.indexOf("fvpn") == null then
+				//	print("<color=#6a855e>Could not verify ownership of this module! Please purchase it in the Shop</color>")
+				//	wait(2)
+				//	continue
+				//end if
+				while 1
+					clear_screen
+					print("<color=#445239>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+					print("<color=#cf6f25>    ______                _    __    ____     _   __</color>")
+					print("<color=#cf6f25>   / ____/  ____    _  __| |  / /   / __ \   / | / /</color>")
+					print("<color=#cf6f25>  / /_     / __ \  | |/_/| | / /   / /_/ /  /  |/ / </color>")
+					print("<color=#cf6f25> / __/    / /_/ / _>  <  | |/ /   / ____/  / /|  /  </color>")
+					print("<color=#cf6f25>/_/       \____/ /_/|_|  |___/   /_/      /_/ |_/   </color>")
+					print("<color=#445239>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+					print("<color=#6A855E>Connecting to VPN. . .</color>\n")
+					wait(0.1)
+					print("<color=#6A855E>Ensuring secure connection. . .</color>\n")
+					wait(0.1)
+					print("<color=#6A855E>Clearing logs. . .</color>\n")
+					wait(0.1)
+					print("<color=#6A855E>Reticulating splines. . .</color>\n")
+					wait(0.1)
+					print("<color=#6A855E><b>Connected!</b></color>")
+					print("<color=#6A855E><b>Usage: [user@password] [IP] [port]</b></color>")
+					creds=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>: ")
+					if creds.lower == "back" then break
+					creds=creds.split(" ")
+					if creds.len != 3 then
+						print("<color=red><b>-={Error: Invalid credentials}=-</b></color>")
+						wait(1)
+						break
+					end if
+					ip=creds[1]
+					if not get_router(ip) then
+						print("<color=red><b>-={Error: Invalid credentials}=-</b></color>")
+						wait(1)
+						break
+					end if
+					port=creds[-1].to_int
+					if typeof(port) != "number" then
+						print("<color=red><b>-={Error: Invalid credentials}=-</b></color>")
+						wait(1)
+						break
+					end if
+					if creds[0].split("@").len != 2 then
+						print("<color=red><b>-={Error: Invalid credentials}=-</b></color>")
+						wait(1)
+						break
+					end if
+					user=creds[0].split("@")[0]
+					password=creds[0].split("@")[1]
+					print("<color=#6A855E>Establishing secure tunnel through VPN. . .</color>")
+					ssh=server.connect_service(ip,port,user,password,"ssh")
+					if typeof(ssh) != "shell" then
+						print("<color=red><b>-={Error: Could not connect}=-</b></color>")
+						wait(1)
+						break
+					end if
+					print("<color=#6A855E>Connected!</color>")
+					ssh.start_terminal
+					exit
+				end while
+			end if
+
+			if opt == "3" then
+				//if fmods.get_content != "max" and fmods.get_content.split(",").indexOf("corr") == null then
+				//	print("<color=#6A855E>Could not verify ownership of this module! Please purchase it in the Shop section!</color>")
+				//	wait(2)
+				//	continue
+				//end if
+				while 1
+					clear_screen
+					print("<color=#445239>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+					print("<color=#cf6f25>   ______                                           __ </color>")
+					print("<color=#cf6f25>  / ____/  ____    _____   _____  __  __    ____   / /_</color>")
+					print("<color=#cf6f25> / /      / __ \  / ___/  / ___/ / / / /   / __ \ / __/</color>")
+					print("<color=#cf6f25>/ /___   / /_/ / / /     / /    / /_/ /   / /_/ // /_  </color>")
+					print("<color=#cf6f25>\____/   \____/ /_/     /_/     \__,_/   / .___/ \__/  </color>")
+					print("<color=#cf6f25>                                        /_/            </color>")
+					print("<color=#445239>-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</color>")
+					print("<color=#6A855E><b>Usage: [Continue Y/N]</b></color>")
+					if active_user != "root" then
+						print("<color=red><b>-={Error: Root user required}=-</b></color>")
+						wait(1)
+						break
+					end if
+					conf=user_input("<color=#6A855E>[y/N]$").lower
+					if conf != "y" then break
+					comp=get_shell.host_computer
+					var=comp.File("/var")
+					
+					print("<color=#6A855E>Fyrwall Security Logging Prevention</color>")
+					print("<color=#6A855E>Corrupting logs. . .</color>")
+					comp.touch("/var","system.bak")
+					log=comp.File("/var/system.log")
+					p=null
+					if log then
+						p=log.permissions[1:]
+						log.delete
+					end if
+
+					bak=comp.File("/var/system.bak")
+					if bak then
+						bak.set_content(FoxLib.General.rndstring(512)+char(10)+"Fyrwall Security Logging Prevention")
+						bak.move("/var","system.log")
+					end if
+					wait(.2)
+					log=comp.File("/var/system.log")
+					if log then
+						if log.size.to_int < 1000 then
+							print("<color=#6A855E>Log corruption successful.</color>")
+							log.chmod("u-wrx")
+							log.chmod("g-wrx")
+							log.chmod("o-wrx")
+							if p then
+								up=p[:3].replace("-","")
+								gp=p[3:-3].replace("-","")
+								op=p[-3:].replace("-","")
+							else
+								p=get_shell.host_computer.File("/var").permissions[1:]
+								up=p[:3].replace("-","")
+								gp=p[3:-3].replace("-","")
+								op=p[-3:].replace("-","")
+							end if
+							log.chmod("u+"+up)
+							log.chmod("g+"+gp)
+							log.chmod("o+"+op)
+						else
+							print("<color=#6A855E>Log corruption failure.</color>")
+						end if
+					end if
+					wait(1)
+					break
+				end while
+			end if
+		end while
+	end if //security
+
+	if opt == "5" then
+		while 1
+			opt=null
+			clear
+			print("<color=#445239>/</color> <color=#cf6f25>Account Management</color>")
+			print("<color=#6a855e>\_[Username]: </color><color=#cf6f25><b>"+fuser+"</b></color>")
+			seclevel=fconf.get_content
+			if seclevel == "1" then seclevel="2FA" else seclevel="none"
+			print("<color=#6a855e>\_[Security level]: </color><color=#cf6f25><b>"+seclevel+"</b></color>")
+			printMenu(["Security Settings", "Mail Settings", "License Settings", "Delete Account"])
+			opt=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>#: ")
+			if opt == "0" then;opt=null;break;end if
+			if opt == "1" then
+				while 1
+					opt=null
+					clear_screen
+					print("<color=#445239>/</color> <color=#cf6f25>Security settings</color>")
+					printMenu(["Set security level","Change password"])
+					opt=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>#: ")
+					if opt == "0" then;opt=null;break;end if
+					if opt == "1" then
+						if fmail.get_content == "none" then
+							print("<color=red><b>-={Error: Email required}=-</b></color>")
+							wait(1)
+							continue
+						end if
+						x=checklgn
+						if not x.bool then
+							print(x.err)
+							wait(1)
+							continue
+						end if
+						while 1
+							opt=null
+							clear_screen
+							print("<color=#445239>/</color> <color=#cf6f25>Set security level</color>")
+							printMenu(["2FA","NONE"])
+							setlevel=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>: ")
+							if setlevel == "0" then break
+							if setlevel != "1" and setlevel != "2" then break
+							if setlevel == "2" then setlevel="0"
+							fconf.set_content(setlevel)
+							wait(1)
+							break
+						end while
+					end if
+
+					if opt == "2" then
+						opt=null
+						x=checklgn
+						if not x.bool then
+							print(x.err)
+							wait(1)
+							continue
+						end if
+
+						newPass=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>New password: ",1)
+						confirm=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>Confirm: ",1)
+						if newPass != confirm then
+							print("<color=red><b>-={Error: Passwords do not match}=-</b></color>")
+							wait(1)
+							continue
+						end if
+						userData=Sha256(newPass)
+						fdata.set_content(userData)
+						print("<color=#6A855E>Password successfully changed</color>")
+						wait(1)
+						continue
+					end if
+				end while
+			end if
+
+			if opt == "2" then
+				while 1
+					opt=null
+					clear_screen
+					print("<color=#445239>/</color> <color=#cf6f25>Mail settings</color>")
+					if fmail.get_content != "none" then cmail=FoxLib.General.Deserialize(fmail.get_content).verify else cmail="none"
+					print("<color=#6a855e>\_[Current Email]: </color><color=#cf6f25><b>"+cmail+"</b></color>")
+					printMenu(["Change Email"])
+					opt=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>#: ")
+					if opt == "0" then;opt=null;break;end if
+					if opt == "1" then
+						x=checklgn
+						if not x.bool then
+							print(x.err)
+							wait(1)
+							continue
+						end if
+						fmaila=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>New email: ")
+						if fmaila.split("@").len != 2 then
+							fmail.set_content("none")
+							fconf.set_content("0")
+							print("<color=#6a855e>Set email to none</color>")
+							wait(1)
+							continue
+						end if
+						print("<color=#6a855e>Email password is not saved, it is only used to verify email ownership</color>")
+						fmaill=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>Password: ",1)
+						if typeof(mail_login(fmaila,fmaill)) == "string" then
+							print("<color=red><b>-={Could not verify email ownership}=-</b></color>")
+							wait(1)
+							continue
+						end if
+						nmail={}
+						nmail.verify=fmaila[0]+("*"*(fmaila.indexOf("@")-1))+fmaila[fmaila.indexOf("@"):]
+						nmail.hashed=Sha256(fmaila)
+						nmail=FoxLib.General.Serialize(nmail)
+						fmail.set_content(nmail)
+						print("<color=#6a855e>Successfully saved email</color>")
+						wait(1)
+						continue
+					end if
+				end while
+			end if
+
+			//if opt == "3" then
+			//	while 1
+			//		opt=null
+			//		clear_screen
+			//		print("<color=#445239>/</color> <color=#cf6f25>License management</color>")
+			//		discount=0
+			//		mods=FoxLib.General.Deserialize(fmods.get_content)
+			//		if mods.indexOf("0") != null then discount=discount+200
+			//		if mods.indexOf("dict") != null then discount=discount+50
+			//		if mods.indexOf("vd") != null then discount=discount+100
+			//		if mods.indexOf("rsh") != null then discount=discount+5
+			//		if mods.indexOf("fvpn") != null then discount=discount+100
+			//		if mods.indexOf("corr") != null then discount=discount+5
+			//		cLicense="Free access"
+			//		if ls.get_content[0] == "V" then cLicense="Default access"
+			//		if ls.get_content[:3] == "ALL" then cLicense="All access"
+			//		if ls.get_content[:3] == "DEV" then cLicense="Developer"
+			//		print("<color=#445239>\_[Current license]: </color><color=#cf6f25><b>"+cLicense+"</b></color>")
+			//		printMenu(["Upgrade license","Redeem license"])
+			//		opt=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>#: ")
+			//		if opt == "0" then;opt=null;break;end if
+			//		if opt == "1" then
+			//			if cLicense=="All access" or cLicense=="Developer" then
+			//				print("<color=#6a855e>Cannot upgrade license further!</color>")
+			//				wait(1)
+			//				continue
+			//			end if
+			//			if cLicense=="Free access" then printMenu(["Default access - 20 Bytes","All access - 100 Bytes"]) else printMenu(["All access - 80 Bytes"])
+			//			opt=user_input("<color=#445239>\_</color><color=#6A855E>[</color><color=#cf6f25>: ")
+			//			if opt == "0" then;opt=null;break;end if
+			//			if opt == "1" and cLicense=="Default access" then
+			//				opt=null
+			//				price=str(1000-discount)
+			//				print("<color=red><b>YOU ARE PURCHASING : ALL ACCESS UPGRADE : FOR "+price+" Bytes : CONTINUE?</color>")
+			//				opt=user_input("<color=red>[y/N]$").lower
+			//				if opt != "y" then continue
+			//				output=Bytes.transfer(owner,price)
+			//				if output.bool then
+			//					print("<color=#6a855e>Upgrade successful!</color>")
+			//				else
+			//					print("<color=#6a855e>"+output.err+"</color>")
+			//					wait(1)
+			//					continue
+			//				end if
+			//				fmods.set_content("[""1""]")
+			//				newLicense="ALL"+FoxLib.General.rndstring(1)+"-"+FoxLib.General.rndstring(8)+"-"+FoxLib.General.rndstring(8)
+			//				ls.set_content(newLicense)
+			//				cont=server.host_computer.File("/.FoxTrot/used_licenses").get_content
+			//				cont=FoxLib.General.Deserialize(cont)
+			//				cont.fuser=newLicense
+			//				cont=FoxLib.General.Serialize(cont,1)
+			//				server.host_computer.File("/.FoxTrot/used_licenses").set_content(cont)
+			//				print("<color=red><b>REMEMBER YOUR LICENSE KEY! IT MAY BE USED FOR ACCOUNT OWNERSHIP VERIFICATION</b></color>")
+			//				print("<color=#6a855e>License key: <b>"+newLicense+"</b></color>")
+			//				print("<color=#6a855e>License key: <b>"+newLicense+"</b></color>")
+			//				print("<color=#6a855e>License key: <b>"+newLicense+"</b></color>")
+			//				print("<color=#6a855e>License key: <b>"+newLicense+"</b></color>")
+			//				user_input("<color=#6a855e>Press enter to continue</color>")
+			//				wait(1)
+			//				continue
+			//			end if
+			//			if opt == "1" and cLicense=="Free access" then
+			//				opt=null
+			//				print("<color=red><b>YOU ARE PURCHASING : DEFAULT ACCESS UPGRADE : FOR 200 Bytes : CONTINUE?</color>")
+			//				opt=user_input("<color=red>[y/N]$").lower
+			//				if opt != "y" then continue
+			//				output=Bytes.transfer(owner,"200")
+			//				if output.bool then
+			//					print("<color=#6a855e>Upgrade successful!</color>")
+			//				else
+			//					print("<color=#6a855e>"+output.err+"</color>")
+			//					wait(1)
+			//					continue
+			//				end if
+			//				fmods.set_content("[""0""]")
+			//				newLicense="V"+FoxLib.General.rndstring(3)+"-"+FoxLib.General.rndstring(8)+"-"+FoxLib.General.rndstring(8)
+			//				ls.set_content(newLicense)
+			//				cont=server.host_computer.File("/.FoxTrot/used_licenses").get_content
+			//				cont=FoxLib.General.Deserialize(cont)
+			//				cont.fuser=newLicense
+			//				cont=FoxLib.General.Serialize(cont,1)
+			//				server.host_computer.File("/.FoxTrot/used_licenses").set_content(cont)
+			//				print("<color=red><b>REMEMBER YOUR LICENSE KEY! IT MAY BE USED FOR ACCOUNT OWNERSHIP VERIFICATION</b></color>")
+			//				print("<color=#6a855e>License key: <b>"+newLicense+"</b></color>")
+			//				print("<color=#6a855e>License key: <b>"+newLicense+"</b></color>")
+			//				print("<color=#6a855e>License key: <b>"+newLicense+"</b></color>")
+			//				print("<color=#6a855e>License key: <b>"+newLicense+"</b></color>")
+			//				user_input("<color=#6a855e>Press enter to continue</color>")
+			//				wait(1)
+			//				continue
+			//			end if
+			//			if opt == "2" and cLicense=="Free access" then
+			//				opt=null
+			//				print("<color=red><b>YOU ARE PURCHASING : ALL ACCESS UPGRADE : FOR 1000 Bytes : CONTINUE?</color>")
+			//				opt=user_input("<color=red>[y/N]$").lower
+			//				if opt != "y" then continue
+			//				output=Bytes.transfer(owner,"1000")
+			//				if output.bool then
+			//					print("<color=#6a855e>Upgrade successful!</color>")
+			//				else
+			//					print("<color=#6a855e>"+output.err+"</color>")
+			//					wait(1)
+			//					continue
+			//				end if
+			//				fmods.set_content("[""1""]")
+			//				newLicense="ALL"+FoxLib.General.rndstring(1)+"-"+FoxLib.General.rndstring(8)+"-"+FoxLib.General.rndstring(8)
+			//				ls.set_content(newLicense)
+			//				cont=server.host_computer.File("/.FoxTrot/used_licenses").get_content
+			//				cont=FoxLib.General.Deserialize(cont)
+			//				cont.fuser=newLicense
+			//				cont=FoxLib.General.Serialize(cont,1)
+			//				server.host_computer.File("/.FoxTrot/used_licenses").set_content(cont)
+			//				print("<color=red><b>REMEMBER YOUR LICENSE KEY! IT MAY BE USED FOR ACCOUNT OWNERSHIP VERIFICATION</b></color>")
+			//				print("<color=#6a855e>License key: <b>"+newLicense+"</b></color>")
+			//				print("<color=#6a855e>License key: <b>"+newLicense+"</b></color>")
+			//				print("<color=#6a855e>License key: <b>"+newLicense+"</b></color>")
+			//				print("<color=#6a855e>License key: <b>"+newLicense+"</b></color>")
+			//				user_input("<color=#6a855e>Press enter to continue</color>")
+			//				wait(1)
+			//				continue
+			//			end if
+			//		end if
+//
+			//		if opt == "2" then
+			//			if cLicense=="All access" or cLicense=="Developer" then
+			//				print("<color=#6a855e>Cannot upgrade license further!</color>")
+			//				wait(1)
+			//				continue
+			//			end if
+			//			print("<color=#6a855e>If you didn't mean to enter this meny, type ""Back"" to return</color>")
+			//			newKey=user_input("<color=#445239>\_</color><color=#6a855e>[</color><color=#cf6f25>License: ")
+			//			if newKey.lower == "back" then continue
+			//			if cLicense == "Default access" and newKey[0] == "V" then
+			//				print("<color=red><b>-={Error: Cannot redeem license of same access type!}=-</b></color>")
+			//				wait(1)
+			//				continue
+			//			end if
+			//			licenses = server.host_computer.File("/.FoxTrot/open_licenses").get_content
+			//			licenses = FoxLib.General.Deserialize(licenses)
+			//			if licenses.indexOf(newKey) == null then
+			//				print("<color=red><b>-={Error: Could not validate license}=-</b></color>")
+			//				wait(1)
+			//				continue
+			//			end if
+			//			licenses.remove(newKey)
+			//			licenses = FoxLib.General.Serialize(licenses,1)
+			//			if newKey[0] == "V" then
+			//				mods=["0"]+mods
+			//				if mods.indexOf("rsh") != null then mods.remove("rsh")
+			//				fmods.set_content(str(mods))
+			//			end if
+			//			if newKey[:3] == "ALL" or newKey[:3] == "DEV" then fmods.set_content("[""1""]")
+//
+			//			cont=server.host_computer.File("/.FoxTrot/used_licenses").get_content
+			//			cont=FoxLib.General.Deserialize(cont)
+			//			cont[fuser]=newKey
+			//			cont=FoxLib.General.Serialize(cont,1)
+			//			ls.set_content(newKey)
+			//			server.host_computer.File("/.FoxTrot/open_licenses").set_content(licenses)
+			//			server.host_computer.File("/.FoxTrot/used_licenses").set_content(cont)
+//
+			//			print("<color=#6a855e>License updated to "+newKey+"</color>")
+			//			print("<color=#6a855e>Save your license key in a safe spot! It may be used for account ownership verification!</color>")
+			//			user_input("<color=#6a855e>Press any key to continue</color>",0,1)
+			//			wait(1)
+			//			continue
+			//		end if
+			//	end while
+			//end if
+
+			if opt == "4" then
+				x=checklgn
+				if not x.bool then
+					print(x.err)
+					wait(1)
+					break
+				end if
+				print("<color=red><b>ACCOUNT DELETION</b></color>")
+				print("<color=red><b>Caution: You will lose your license forever! This is not a refund! This action is not reversable!</color>")
+				opt=user_input("<color=red>[y/N]$").lower
+				if opt != "y" then continue
+				server.host_computer.File("/.FoxTrot/users/"+fuser).delete
+				cont=server.host_computer.File("/.FoxTrot/used_licenses").get_content
+				cont=FoxLib.General.Deserialize(cont)
+				if cont.indexOf(fuser) != null then cont.remove(fuser)
+				cont=FoxLib.General.Serialize(cont,1)
+				server.host_computer.File("/.FoxTrot/used_licenses").set_content(cont)
+				exit("<color=red><b>Account deleted. Goodbye.</b></color>")
+			end if
+		end while
+	end if
+end while

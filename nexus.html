@@ -1,0 +1,150 @@
+<html>
+<title>The Nexus -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-</title>
+<style>
+  body { font: 10px Times, serif; color: #707070; text-align: center; }
+  html{
+    background-color:#0E0E0E;
+  }
+  div{
+    text-align: center;
+    font-size: 14px;
+  }
+  h1 {
+    color: #8254d1;
+    text-shadow: 4px 4px 0px #7141c4;
+  }
+  h2 {
+    color: #303030;
+  }
+  p {
+    color: white;
+    font-size: 14px;
+  }
+  .btn {
+    cursor: pointer;
+  }
+  .btn-primary{
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+    border: none;
+    margin-left: 4px;
+    margin-right: 4px;
+    background-color: #080808;
+  }
+  .btn-primary:hover{
+    background: #7141c4;
+    color: black;
+  }
+  .body{
+    height: 100%;
+    margin-top: 145px;
+  }
+  .scroll-window{
+    height:600px;
+    overflow-y: auto;
+    margin-bottom: 120px;
+  }
+  .header{
+    position: fixed;
+    top: -10px;
+    background-color: #0E0E0E;
+  }
+  .div-main{
+    margin-top:-24px;
+  }
+  .footer{
+    position: fixed;
+    bottom: 0px;
+    background-color: #0E0E0E;
+  }
+  .text-body {
+    text-align: left;
+    font-size:14px;
+    padding-left: 24px;
+    color:gray;
+  }
+  .text-note {
+    text-align: left;
+    font-size:12px;
+    padding-left: 48px;
+    color:#505050;
+  }
+  .rotate {
+    transform: rotate(-2deg);
+  }
+  #div-main {
+  display: block;
+  margin-bottom: 800px;
+  }
+  #div-downloads {
+  display: none;
+  margin-bottom: 500px;
+  }
+  #div-contracts {
+  display: none;
+  margin-bottom: 800px;
+  }
+</style>
+<table class="header">
+	<tr>
+		<td>
+			<br><center><div class="rotate"><h1 style="font-size:35px;">The Nexus</h1></div></center>
+			<hr><div style="margin-right:38px">
+			<button class="btn btn-primary" onclick="mainFunc()"> home </button>
+			<button class="btn btn-primary" onclick="dlFunc()"> downloads </button>
+			<button class="btn btn-primary" onclick="contFunc()"> contracts </button>
+			</div><hr>
+		</td>
+	</tr>
+</table>
+
+<table class="body">
+<tr>
+<td>
+<div id="div-main">
+<table class="scroll-window">
+
+<tr><th><div><br><h1> -Welcome to the Nexus!-</h1></div></th></tr>
+<tr><th><p>In development!</p></th></tr>
+</table>
+</div>
+
+<div id="div-downloads">
+<table class="scroll-window">
+<tr>
+<th><div><br><h2><u>-Downloads-</u></h2><br><br><button class="btn btn-primary" style="width:100px;" id="InformaticaShop" value="Download"></div></th>
+</tr>
+<tr>
+<th><center style="margin-top:20px;"><b style="color:white;"><u>Nexus</u></b></th>
+</tr>
+<tr>
+	<td>
+		<p>
+			*The main program*
+		</p>
+		<br><br><br>
+	</td>
+</tr>
+</table>
+</div>
+
+</tr>
+</table>
+
+<script>
+var main = document.getElementById("div-main");
+var downloads = document.getElementById("div-downloads");
+
+function mainFunc() {
+	main.style.display="block";
+	downloads.style.display="none";
+};
+
+function dlFunc() {
+	main.style.display="none";
+	downloads.style.display="block";
+};
+
+</script>
+</html>
