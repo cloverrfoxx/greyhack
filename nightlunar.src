@@ -442,7 +442,7 @@ end function
 
 getExploits=function()
 	globals.exploits=[]
-	if server then
+	if server.shell then
 		e=""
 		globals.dbfile=servdb.get_files[-1]
 		for file in servdb.get_files
