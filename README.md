@@ -1,3 +1,3 @@
 # greyhackscripts
-collection of clovers's grey hack scripts
-open source uwu
+collection of clovers's open source grey hack scripts
+GPL LICENSE on these copies :)
