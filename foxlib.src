@@ -27,10 +27,10 @@ end function
 
 FoxLib.General.Serialize=function(array=null,fancy=0)
     if not str(array).len then return 0
-    if array == null or (str(array)[0] != "{" and str(array)[0] != "[") then return 0
+    if array == null then return 0
     type=null
-    if str(array)[0] == "{" then type="map"
-    if str(array)[0] == "[" then type="list"
+    if array isa map then type="map"
+    if array isa list then type="list"
     //if type == "map" then
     //    tmp={}
     //    for i in array.indexes
@@ -62,8 +62,8 @@ FoxLib.General.Serialize=function(array=null,fancy=0)
             v="Err_Function"
             vt="string"
         end if
-        if str(v)[0] == "{" or str(v)[0] == "[" then v=FoxLib.General.Serialize(v,fancy)
-        
+        if v == null then v="null"
+        if v isa map or v isa list then v=FoxLib.General.Serialize(v,fancy)
         if type == "list" then
             if vt == "string" then v=""""+v+""""
             if fancy then
@@ -245,7 +245,7 @@ FoxLib.General.RandArt=function(data=null)
         ints=[]
     
         for i in range(0,hex.len-1,2)
-            ints.push((FoxLib.General.ParseInt(hex[i:i+2],16)))
+            ints.push((FoxLib.General.ParseInt(hex[i:i+2],10,16)))
         end for
         return ints
     end function
@@ -488,8 +488,57 @@ FoxLib.General.Compression=function(st=null,type=null)
     end if
 end function
 
+FoxLib.General.FetchMails=function(email=null)
+    if not email or typeof(email) != "MetaMail" then return 0
+    mails=email.fetch
+    out=[]
+    for mail in mails
+        mail=mail.split(char(10))
+        m={}
+        m.id=mail[2].split(": ")[1]
+        m.from=mail[3].split(": ")[1]
+        m.subj=mail[4].split(": ")[1]
+        m.body=mail[5:].join(char(10))
+        out.push(m)
+    end for
+    return out
+end function
+
 //                      CRYPTOGRAPHY FUNCTIONS
 FoxLib.Crypto={}
+
+//Shade:
+//Symmetric key encryption for Shade
+
+    //make use of ParseInt :)
+    //maybe make a simple feistel too :O
+    //pretty much just throw everything we have at it, but don't make it too big
+//Encryption & Decryption process
+//Encryption:
+//
+//Output the string as Base64 encoded
+
+//Decryption:
+//Decode the string with Base64
+
+FoxLib.Crypto.Shade=function(ss=null,key=null,type=null)
+    if not ss or not ss isa string then return 0
+    if not key or not key isa string then return 0
+    if not type or not type isa string or (type != "enc" and type != "dec") then return 0
+
+    nk=0
+    for i in key
+        nk=nk+i.code
+    end for
+    bs=16
+
+    if type == "enc" then
+
+    else if type == "dec" then
+
+    end if
+    return ss
+end function
 
 FoxLib.Crypto.Vigenere=function(s=null,key=null,type=null)
     if not key or not key isa string then return 0
@@ -1000,17 +1049,16 @@ FoxLib.VulnV.Exploit=function(mx=null,ml=null,args=null)
     if not (mx or ml) then return
     scan=mx.scan(ml)
     out={}
-    out.db={}
-    out.db.name=ml.lib_name
-    out.db.ver=ml.version
-    out.db.exploits=[]
+    out.name=ml.lib_name
+    out.ver=ml.version
+    out.exploits=[]
     for mem in scan
         ex={}
         ex.mem=mem
         ex.vulns=[]
-        mems=mx.scan_address(ml,mem).split("Unsafe check: ")
+        mems=mx.scan_address(ml,mem).split("Unsafe check: ")[1:]
         for ent in mems
-            if ent == mems[0] then continue
+            //if ent == mems[0] then continue
             exp=ent[ent.indexOf("<b>")+3:ent.indexOf("</b>")]
             if not args then result=ml.overflow(mem,exp) else result=ml.overflow(mem,exp,args)
             v={}
@@ -1018,7 +1066,7 @@ FoxLib.VulnV.Exploit=function(mx=null,ml=null,args=null)
             v.result=result
             ex.vulns.push(v)
         end for
-        out.db.exploits.push(ex)
+        out.exploits.push(ex)
     end for
     return out
 end function
