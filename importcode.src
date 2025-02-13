@@ -17,7 +17,9 @@ handleFileImports = function(pathSrc)
 
     if text.len < 1 then continue
     //-- handle relative imports
-    if text[0] == "." then text = parent_path(pathSrc)+text[1:]
+    if text[:2] == "./" then text = parent_path(pathSrc)+text[2:]
+    //-- handle non-dot relative imports
+    if text[0] != "/" then text = parent_path(pathSrc)+"/"+text[1:]
     //-- handle nested imports
     if text[-4:]==".src" then
       result = handleFileImports(text)
