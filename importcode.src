@@ -45,4 +45,5 @@ if origFile[0] != "/" then origFile=current_path+"/"+origFile
 result = handleFileImports(origFile)
 if result then exit result
 
-get_shell.build(origFile, parent_path(origFile), 0)
+//-- do not build last src actually
+//-- get_shell.build(origFile, parent_path(origFile), 0)
