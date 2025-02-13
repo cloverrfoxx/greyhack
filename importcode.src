@@ -1,0 +1,46 @@
+if params.len != 1 then exit(program_path+" [/path/to/file.src]")
+
+importStr = "import_"+"code("""
+
+handleFileImports = function(pathSrc)
+  srcFile = get_shell.host_computer.File(pathSrc)
+  if not srcFile or srcFile.is_binary then return pathSrc+": Not a source code file"
+
+  src = srcFile.get_content
+  pos = 0
+  while pos < src.len and src.indexOf(importStr)!=null
+    pos = src.indexOf(importStr) + importStr.len
+    if pos >= 2 and src[pos-2:pos]=="//" then continue
+
+    importCap = src[pos:].indexOf(""")")
+    text = src[pos:importCap]
+
+    if text.len < 1 then continue
+    //-- handle relative imports
+    if text[0] == "." then text = parent_path(pathSrc)+text[1:]
+    //-- handle nested imports
+    if text[-4:]==".src" then
+      result = handleFileImports(text)
+      if result then
+        print result
+      else
+        get_shell.build(text, parent_path(text), 1)
+        text = text[:-4]
+      end if
+    end if
+
+    src = src[:pos+importStr.len] + text + src[importCap:]
+  end while
+
+  srcFile.set_content(src)
+
+  return 0
+end function//() <-- shuts up syntax highlighter
+
+origFile = params[0]
+if origFile[0] != "/" then origFile=current_path+"/"+origFile
+
+result = handleFileImports(origFile)
+if result then exit result
+
+get_shell.build(origFile, parent_path(origFile), 0)
