@@ -230,7 +230,7 @@ if sel == 1 then
         sel=sel.to_int
     end while
     lib=libs[sel-1]
-    base=base.replace("$libpath$",""""+lib.path+"""")
+    base=base.replace("\$libpath\$",""""+lib.path+"""")
     exploits=[]
 
     print("Scanning exploits, this may take a second...")
@@ -291,24 +291,24 @@ if sel == 1 then
 
     if exp.jump == 1 then
         base=base+templates.of.args
-        base=base.replace("$memory$",""""+exp.mem+"""")
-        base=base.replace("$value$",""""+exp.ent+"""")
+        base=base.replace("\$memory\$",""""+exp.mem+"""")
+        base=base.replace("\$value\$",""""+exp.ent+"""")
         base=base+templates.results.computer
         compile
     end if
 
     if exp.type == "shell" then
         base=base+templates.of.none
-        base=base.replace("$memory$",""""+exp.mem+"""")
-        base=base.replace("$value$",""""+exp.ent+"""")
+        base=base.replace("\$memory\$",""""+exp.mem+"""")
+        base=base.replace("\$value\$",""""+exp.ent+"""")
         base=base+templates.results.shell
         compile
     end if
 
     if exp.type == "computer" then
         base=base+templates.of.none
-        base=base.replace("$memory$",""""+exp.mem+"""")
-        base=base.replace("$value$",""""+exp.ent+"""")
+        base=base.replace("\$memory\$",""""+exp.mem+"""")
+        base=base.replace("\$value\$",""""+exp.ent+"""")
         base=base+templates.results.computer
         compile
     end if
@@ -436,24 +436,24 @@ if sel == 2 then
 
     if exp.jump == 1 then
         base=base+templates.of.args
-        base=base.replace("$memory$",""""+exp.mem+"""")
-        base=base.replace("$value$",""""+exp.ent+"""")
+        base=base.replace("\$memory\$",""""+exp.mem+"""")
+        base=base.replace("\$value\$",""""+exp.ent+"""")
         base=base+templates.results.computer
         compile
     end if
 
     if exp.type == "shell" then
         base=base+templates.of.none
-        base=base.replace("$memory$",""""+exp.mem+"""")
-        base=base.replace("$value$",""""+exp.ent+"""")
+        base=base.replace("\$memory\$",""""+exp.mem+"""")
+        base=base.replace("\$value\$",""""+exp.ent+"""")
         base=base+templates.results.shell
         compile
     end if
 
     if exp.type == "computer" then
         base=base+templates.of.none
-        base=base.replace("$memory$",""""+exp.mem+"""")
-        base=base.replace("$value$",""""+exp.ent+"""")
+        base=base.replace("\$memory\$",""""+exp.mem+"""")
+        base=base.replace("\$value\$",""""+exp.ent+"""")
         base=base+templates.results.computer
         compile
     end if
