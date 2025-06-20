@@ -59,7 +59,7 @@ cmp=cmp+"if result.File(""/"").has_permission(""w"") then root = 4" + char(10)+c
 //use results
 cmp=cmp+"tmp=0 + passwds + users + root" + char(10) + "if tmp == 0 then exit(""Exploit failed."")" + char(10)
 cmp=cmp+"perms=[]" + char(10) + "for i in range(1,tmp)" + char(10)
-cmp=cmp+"	if passwds == 2 then"+char(10)+"     passwds = passwds - 1"+char(10)+"     perms.push(str(i) + "") Get all passwords in /etc/passwd"")"+char(10)+" end if"+char(10)
+cmp=cmp+"	if passwds == 2 then"+char(10)+"     passwds = passwds - 1"+char(10)+"     perms.push(str(i) + "") Get all passwords in /etc/passwd"")"+char(10)+" continue"+char(10)+" end if"+char(10)
 cmp=cmp+" if users == 3 then"+char(10)+"      users = users - 1"+char(10)+"       perms.push(str(i) + "") Get all users emails"")"+char(10)+" continue"+char(10)+" end if"+char(10)
 cmp=cmp+" if users == 2 then"+char(10)+"      users = users - 1"+char(10)+"       perms.push(str(i) + "") Get all users banks"")"+char(10)+" continue"+char(10)+"  end if"+char(10)
 cmp=cmp+" if root == 4 then"+char(10)+"       root = root - 1"+char(10)+"     perms.push(str(i) + "") Change user password"")"+char(10)+" continue"+char(10)+"   end if"+char(10)
