@@ -204,6 +204,8 @@ init=sel
 print
 base=templates.libscan.meta
 
+port=null
+
 compile=function
     type="unk"
     if init == 1 then type="local"
