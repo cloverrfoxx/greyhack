@@ -192,7 +192,7 @@ genRandomString=@FoxLib.General.rndstring
 exploit=@FoxLib.VulnV.Exploit
 decipher=@FoxLib.VulnV.Decipher
 
-//-- ctrl + h (vscode) - replace all "encryption_key" in nightlunar/lunarcmd with your own encryption key
+//-- ctrl + h (vscode) - replace all "encryption_key" in lunar/lunarcmd with your own encryption key
 encrypt=function(pass,secret,type)
 
 	cryptChars=function(pass)
