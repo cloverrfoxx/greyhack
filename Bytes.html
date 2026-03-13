@@ -1,0 +1,290 @@
+<html>
+<title>The official Bytes website -={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-={B$}=-</title>
+<style>
+  body { font: 10px Times, serif; color: #707070; text-align: center; }
+  html{
+    background-color:#0E0E0E;
+  }
+  div{
+    text-align: center;
+    font-size: 14px;
+  }
+  h1 {
+    color: #6A855E;
+    text-shadow: 4px 4px 0px #445239;
+  }
+  h2 {
+    color: #303030;
+  }
+  p {
+    color: white;
+    font-size: 14px;
+  }
+  .color-white{
+    color: white;
+  }
+  .div-primary{
+    position: top;
+  }
+  .btn {
+    cursor: pointer;
+  }
+  .btn-primary{
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+    border: none;
+    margin-left: 4px;
+    margin-right: 4px;
+    background-color: #080808;
+  }
+  .btn-primary:hover{
+    background: #445239;
+    color: black;
+  }
+  .btn-secondary{
+    border-radius: 8px;
+    color: white;
+    border: none;
+    margin:-4px;
+    background-color: #080808;
+  }
+  .btn-secondary:hover{
+    background: #cc0099;
+    color: black;
+  }
+  .btn-text{
+    color: white;
+  }
+  .body{
+    height: 100%;
+    margin-top: 145px;
+  }
+  .scroll-window{
+    height:600px;
+    overflow-y: auto;
+    margin-bottom: 120px;
+  }
+  .header{
+    position: fixed;
+    top: -10px;
+    background-color: #0E0E0E;
+  }
+  .div-main{
+    margin-top:-24px;
+  }
+  .footer{
+    position: fixed;
+    bottom: 0px;
+    background-color: #0E0E0E;
+  }
+  .text-header {
+    font-size:20px;
+    color:white;
+  }
+  .text-body-header {
+    text-align: left;
+    font-size:14px;
+    padding-left: 8px;
+    color:white;
+  }
+  .text-body {
+    text-align: left;
+    font-size:14px;
+    padding-left: 24px;
+    color:gray;
+  }
+  .text-note {
+    text-align: left;
+    font-size:12px;
+    padding-left: 48px;
+    color:#505050;
+  }
+  .text-note-center{
+    font-size:12px;
+    color:#505050;
+  }
+  .text-scroll {
+    overflow-y:auto;
+    height:575px
+  }
+  .rotate {
+    transform: rotate(2deg);
+  }
+  .vr {
+    transform: rotate(90deg);
+    padding-top: 40px;
+  }
+  .term-green {
+    background:black;
+    color:green;
+    margin-left:5px;
+  }
+  #div-main {
+  display: block;
+  margin-bottom: 800px;
+  }
+  #div-about {
+    display: none;
+    margin-bottom: 800px;
+  }
+  #div-downloads {
+  display: none;
+  margin-bottom: 500px;
+  }
+  #div-trusted {
+  display: none;
+  }
+</style>
+
+<table class="header">
+  <tr>
+    <td>
+        <br><center><div class="rotate"><h1 style="font-size:35px;">Bytes</h1></div></center>
+        <hr><div style="margin-right:38px">
+        <button class="btn btn-primary" onclick="mainFunc()"> home </button>
+        <button class="btn btn-primary" onclick="aboutFunc()"> about </button>
+        <button class="btn btn-primary"> ranked </button>
+        <button class="btn btn-primary"> login </button>
+        <button class="btn btn-primary" onclick="downloadsFunc()"> downloads </button>
+		<button class="btn btn-primary" onclick="trustedFunc()"> trusted </button>
+		<button class="btn btn-primary" id="LoginBank"> bank </button>
+      </div><hr>
+    </td>
+  </tr>
+</table>
+
+<table class="body">
+  <tr>
+    <td>
+<div id="div-main">
+  <table class="scroll-window">
+
+    <tr><th><br><div><h2><u> -welcome to the official Bytes site- </u></h2></div></th></tr>
+    <tr>
+      <td>
+          <center>
+            <br><br>
+			<p style="font-size:20px;"><b style="color:#6A855E;">%Users%</b> registered users</p>
+			<p>news</p>
+            <table style="text-align:left;width:700px;"><tr><td>
+              <b class="text-body"><br>
+                <!--<i class="text-note">[8.13.09]</i> <b style="color:white;">Bytes Public initial upload<br>-->
+				        <i class="text-note">[6.23.04]</i> <b style="color:white;">created<br>
+                <br><br><br><br>
+
+              </b>
+            </td></tr></table>
+          </center>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div id="div-about">
+  <table class="scroll-window">
+    <tr><th><div><br><h2><u>-Bytes-</u></h2></div></th></tr>
+    <tr><th><div size="5px">[About Bytes]</div></th></tr>
+    <tr>
+      <td>
+      <center style="color:white;font-size:20px;">Bytes is a playermade cryptocurrency by Clover</center>
+      <center style="color:white;font-size:20px;">It was inspired by BTC to become a more modern BTC alternative</center>
+      <center style="color:white;font-size:20px;">122.14.7.249 is the ONLY official download website for it!</center>
+      </td>
+    </tr>
+  </table>
+  </div>
+
+<div id="div-downloads">
+  <table class="scroll-window">
+    <tr>
+      <th><div><br><h2><u>-downloads-</u></h2><br><br><button class="btn btn-primary" style="width:100px;" id="InformaticaShop" value="get files"></div></th>
+    </tr>
+    <tr>
+      <th><center><b style="color:white;"><u>Bytes</u></b><br>(script)</center></th>
+      <th><center><b style="color:white;"><u>BytesLibTemplate.src</u></b></center><center>(manual)</center></th>
+    </tr>
+    <tr>
+      <td>
+        <p>*The main Bytes client and importable Bytes lib*<br>
+  	  *unreleased*<br></p>
+      </td>
+      <td>
+        <p>*Bytes lib manual*<br></p>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div id="div-trusted">
+  <table class="scroll-window">
+    <tr><th><div><br><h2><u>-trusted sellers-</u></h2></div></th></tr>
+    <tr>
+      <td><br><br>
+  	  <br><div><b>None right now.</b></div>
+        <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+      </td>
+    </tr>
+  </table>
+</div>
+
+</tr>
+</table>
+
+<table class="footer">
+  <tr>
+    <td>
+      <hr><center>| Bytes by Clover | &#xa9;2005 |</center>
+    </td>
+  </tr>
+</table>
+</div>
+
+    <script>
+
+    var main = document.getElementById("div-main");
+    var downloads = document.getElementById("div-downloads");
+	var trusted = document.getElementById("div-trusted");
+  var about = document.getElementById("div-about");
+
+    function mainFunc() {
+		if (main.style.display === "none") {
+			main.style.display = "block";
+			downloads.style.display = "none";
+			trusted.style.display = "none";
+      about.style.display="none";
+        } else {
+			main.style.display = "block";
+        }
+    }
+    function downloadsFunc() {
+        if (downloads.style.display === "none") {
+			downloads.style.display = "block";
+			main.style.display = "none";
+			trusted.style.display = "none";
+      about.style.display="none";
+        } else {
+			downloads.style.display = "block";
+        }
+    }
+	function trustedFunc() {
+        if (trusted.style.display === "none") {
+			trusted.style.display = "block";
+			main.style.display = "none";
+			downloads.style.display = "none";
+      about.style.display="none";
+        } else {
+			trusted.style.display = "block";
+        }
+    }
+    function aboutFunc() {
+      if (about.style.display === "none") {
+        about.style.display = "block";
+        main.style.display="none";
+        downloads.style.display="none";
+      } else {
+        about.style.display = "block";
+      }
+    }
+      </script>
+</html>
